@@ -6,6 +6,9 @@
 #include <godot_cpp/godot.hpp>
 
 #include "beeper.h"
+#include "input_manager.hpp"
+#include "moba_camera.hpp"
+#include "unit.hpp"
 
 using namespace godot;
 
@@ -15,6 +18,9 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   }
 
   GDREGISTER_RUNTIME_CLASS(Beeper)
+  GDREGISTER_CLASS(Unit)
+  GDREGISTER_CLASS(InputManager)
+  GDREGISTER_CLASS(MOBACamera)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

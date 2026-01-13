@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://c5tbqvym1x8jq"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_1"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.2, 0.8, 0.2, 0.7)
+transparency = 1
+
+[node name="ClickIndicator" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_1")
+material = SubResource("StandardMaterial3D_1")

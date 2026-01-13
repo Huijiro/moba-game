@@ -5,6 +5,15 @@ target_sources(
 
   ./beeper.h
   ./beeper.cpp
+
+  ./unit.hpp
+  ./unit.cpp
+
+   ./input_manager.hpp
+   ./input_manager.cpp
+
+   ./moba_camera.hpp
+   ./moba_camera.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE "src")

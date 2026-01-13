@@ -7,6 +7,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(GodotGame LANGUAGES CXX VERSION 1.0.0)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fno-gnu-unique" GODOTCPP_COMPILER_SUPPORTS_NO_GNU_UNIQUE)
+if(NOT GODOTCPP_COMPILER_SUPPORTS_NO_GNU_UNIQUE AND NOT DEFINED GODOTCPP_USE_HOT_RELOAD)
+    message(STATUS "Disabling GODOTCPP_USE_HOT_RELOAD because the compiler rejects -fno-gnu-unique")
+    set(GODOTCPP_USE_HOT_RELOAD OFF CACHE BOOL "Enable the extra accounting required to support hot reload. (ON|OFF)")
+endif()
+
 add_library(${PROJECT_NAME} SHARED)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
