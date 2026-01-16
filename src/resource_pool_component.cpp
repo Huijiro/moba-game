@@ -9,9 +9,7 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Engine;
 using godot::PropertyInfo;
-using godot::UtilityFunctions;
 using godot::Variant;
 
 ResourcePoolComponent::ResourcePoolComponent() = default;

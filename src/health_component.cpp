@@ -12,9 +12,7 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Engine;
 using godot::PropertyInfo;
-using godot::String;
 using godot::UtilityFunctions;
 using godot::Variant;
 

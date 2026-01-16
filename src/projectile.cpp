@@ -1,6 +1,5 @@
 #include "projectile.hpp"
 
-#include <cmath>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
@@ -13,7 +12,6 @@
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
-using godot::Object;
 using godot::PropertyInfo;
 using godot::UtilityFunctions;
 using godot::Variant;

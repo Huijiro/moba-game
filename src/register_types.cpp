@@ -12,6 +12,7 @@
 #include "interactable.hpp"
 #include "match_manager.hpp"
 #include "moba_camera.hpp"
+#include "movement_component.hpp"
 #include "projectile.hpp"
 #include "resource_pool_component.hpp"
 #include "test_movement.hpp"
@@ -33,6 +34,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(MatchManager)
   GDREGISTER_CLASS(TestMovement)
   GDREGISTER_CLASS(UnitComponent)
+  GDREGISTER_CLASS(MovementComponent)
   GDREGISTER_CLASS(HealthComponent)
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(AttackComponent)

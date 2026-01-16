@@ -1,0 +1,11 @@
+#ifndef GDEXTENSION_UNIT_ORDER_H
+#define GDEXTENSION_UNIT_ORDER_H
+
+enum class OrderType {
+  NONE,
+  MOVE,
+  ATTACK,
+  INTERACT,
+};
+
+#endif  // GDEXTENSION_UNIT_ORDER_H

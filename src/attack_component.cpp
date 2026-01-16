@@ -1,7 +1,6 @@
 #include "attack_component.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -16,9 +15,6 @@
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
-using godot::List;
-using godot::Node3D;
-using godot::Object;
 using godot::PropertyInfo;
 using godot::String;
 using godot::UtilityFunctions;

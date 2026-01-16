@@ -9,7 +9,6 @@
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
-using godot::Object;
 using godot::String;
 using godot::UtilityFunctions;
 

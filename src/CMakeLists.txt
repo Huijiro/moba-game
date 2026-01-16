@@ -24,8 +24,13 @@ target_sources(
   ./test_movement.hpp
   ./test_movement.cpp
 
+  ./unit_order.hpp
+
   ./unit_component.hpp
   ./unit_component.cpp
+
+  ./movement_component.hpp
+  ./movement_component.cpp
 
   ./health_component.hpp
   ./health_component.cpp
