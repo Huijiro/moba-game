@@ -32,3 +32,12 @@ mesh = SubResource("CylinderMesh_btf8p")
 [node name="MovementComponent" type="MovementComponent" parent="."]
 
 [node name="HealthComponent" type="HealthComponent" parent="."]
+
+[node name="AnimationController" type="AnimationController" parent="."]
+animations = Array[Dictionary]([{
+"animation_name": &"",
+"playback_speed": 1.0,
+"trigger_signal": &""
+}])
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]

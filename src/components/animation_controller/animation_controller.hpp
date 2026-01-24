@@ -1,81 +1,93 @@
 /// @file animation_controller.hpp
-/// @brief Animation playback controller for Unit animations
+/// @brief Inspector-configurable animation playback controller
 ///
-/// AnimationController is a component that bridges component signals to
-/// AnimationPlayer. It receives fire-and-forget signal callbacks and plays
-/// corresponding animations.
+/// AnimationController manages animations through an inspector-exposed list
+/// of animation bindings. Each binding maps a signal trigger to an animation
+/// with a configurable playback speed.
+///
+/// Features:
+///   - Inspector-friendly animation list configuration
+///   - Automatic signal connection on _ready()
+///   - Per-animation speed control
+///   - Flexible signal parameter handling (supports 0 and 1 parameter)
 ///
 /// Usage:
 ///   1. Add AnimationController as child of Unit
-///   2. Unit must have an AnimationPlayer child (searched recursively)
-///   3. Connect component signals to play_animation() in editor:
-///      - MovementComponent.movement_started() → play_animation("walk", 1.0)
-///      - AttackComponent.attack_started() → play_animation("attack", 1.0)
-///      - HealthComponent.died() → play_animation("death", 0.5)
-///   4. No C++ code needed - animations play automatically via signals
+///   2. Unit must have AnimationPlayer child (searched recursively)
+///   3. Configure animations in inspector:
+///      - Add animation bindings (name, signal, speed)
+///      - Signals are auto-connected to play_animation()
+///   4. Done! No editor signal connections needed
 ///
-/// Example Scene Structure:
-///   Unit (CharacterBody3D)
-///   ├── AnimationPlayer (animations: idle, walk, attack, death)
-///   ├── MovementComponent
-///   ├── HealthComponent
-///   ├── AttackComponent
-///   └── AnimationController ← discovers AnimationPlayer automatically
-///
-/// Speed Synchronization:
-///   AttackComponent emits attack_speed_changed(multiplier) signal
-///   AnimationController receives it as speed parameter to play_animation()
-///   Result: Attack animation plays at speed matching attack_speed stat
-///
-/// See: ANIMATION_SYSTEM.md for complete documentation
-/// See: ANIMATION_CODE_USAGE.md for code examples
+/// Example Animation List:
+///   - idle: no signal (plays on demand), speed 1.0
+///   - walk: MovementComponent.movement_started, speed 1.0
+///   - attack: AttackComponent.attack_started, speed 1.2
+///   - death: HealthComponent.died, speed 0.5
 
 #ifndef GDEXTENSION_ANIMATION_CONTROLLER_H
 #define GDEXTENSION_ANIMATION_CONTROLLER_H
 
 #include <godot_cpp/classes/animation_player.hpp>
+#include <vector>
 
+#include "animation_binding.hpp"
 #include "unit_component.hpp"
 
 using godot::AnimationPlayer;
 
 /// @class AnimationController
-/// @brief Manages animation playback via signals
+/// @brief Inspector-configurable animation controller
 ///
-/// Fire-and-forget animation controller. Components emit signals on state
-/// changes, AnimationController plays corresponding animations. No coupling
-/// between animations and game logic.
+/// Manages a list of animation bindings configured in the inspector.
+/// Automatically connects signals and plays animations on demand.
 class AnimationController : public UnitComponent {
   GDCLASS(AnimationController, UnitComponent)
 
  protected:
   static void _bind_methods();
 
-  /// Cached reference to AnimationPlayer found in scene tree
+  /// Cached reference to AnimationPlayer
   AnimationPlayer* animation_player = nullptr;
 
-  /// Recursively search node tree for first AnimationPlayer
-  /// @param node Starting node to search from
-  /// @return AnimationPlayer if found, nullptr otherwise
+  /// List of animation bindings (inspector-configurable)
+  godot::TypedArray<AnimationBinding> animation_bindings;
+
+  /// Recursively search for first AnimationPlayer in tree
   AnimationPlayer* find_animation_player(godot::Node* node);
+
+  /// Extract signal object from string path
+  /// @param signal_path Full path to signal (e.g.,
+  /// "../MovementComponent:movement_started")
+  /// @return Signal object if found, nullptr otherwise
+  godot::Object* find_signal_emitter(const godot::StringName& signal_path);
+
+  /// Connect all signals in animation_bindings
+  void connect_animation_signals();
 
  public:
   AnimationController();
   ~AnimationController();
 
-  /// Initialize component and find AnimationPlayer
+  /// Initialize: find AnimationPlayer and connect signals
   void _ready() override;
 
-  /// Play animation with optional speed multiplier
-  /// @param name Animation name (e.g., "walk", "attack", "death")
-  /// @param speed Playback speed multiplier (default: 1.0)
-  ///              - 1.0 = normal speed
-  ///              - 1.2 = 20% faster (used for attack speed sync)
-  ///              - 0.8 = 20% slower
-  ///
-  /// Called via signal binds in editor. Prints debug output.
-  /// Silently ignores if AnimationPlayer not found.
-  void play_animation(const godot::StringName& name, float speed = 1.0f);
+  /// Set animation bindings list (called from inspector)
+  /// @param bindings TypedArray of AnimationBinding objects
+  void set_animations(const godot::TypedArray<AnimationBinding>& bindings);
+
+  /// Get animation bindings list
+  godot::TypedArray<AnimationBinding> get_animations() const;
+
+  /// Play animation by name with optional speed override
+  /// @param name Animation name to play
+  /// @param speed Speed multiplier (if 0, uses configured speed)
+  void play_animation(const godot::StringName& name, float speed = 0.0f);
+
+  /// Play animation by index in bindings list
+  /// @param index Index in animation_bindings
+  /// @param speed Speed override (if 0, uses configured speed)
+  void play_animation_index(int32_t index, float speed = 0.0f);
 };
 
 #endif  // GDEXTENSION_ANIMATION_CONTROLLER_H

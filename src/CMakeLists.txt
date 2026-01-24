@@ -35,8 +35,10 @@ target_sources(
   ./components/attack_component/projectile.hpp
   ./components/attack_component/projectile.cpp
   
-  ./components/animation_controller/animation_controller.hpp
-  ./components/animation_controller/animation_controller.cpp
+   ./components/animation_controller/animation_controller.hpp
+   ./components/animation_controller/animation_controller.cpp
+   ./components/animation_controller/animation_binding.hpp
+   ./components/animation_controller/animation_binding.cpp
   
   ./components/resource_pool_component/resource_pool_component.hpp
   ./components/resource_pool_component/resource_pool_component.cpp
