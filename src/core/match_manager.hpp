@@ -30,10 +30,19 @@ class MatchManager : public Node {
   void set_moba_camera(MOBACamera* camera);
   MOBACamera* get_moba_camera() const;
 
+  // Game settings - channel interrupt behavior
+  void set_channel_requires_stop_command_only(bool value);
+  bool get_channel_requires_stop_command_only() const;
+
  private:
   Unit* main_unit = nullptr;
   InputManager* player_controller = nullptr;
   MOBACamera* moba_camera = nullptr;
+
+  // Game settings
+  // If true: channels only stop with S (stop) command
+  // If false: channels also stop on ability key release
+  bool channel_requires_stop_command_only = true;
 };
 
 #endif  // GDEXTENSION_MATCH_MANAGER_H
