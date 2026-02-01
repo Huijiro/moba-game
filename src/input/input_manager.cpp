@@ -445,14 +445,16 @@ void InputManager::_init_default_keybinds() {
   int ability_count = ability_component->get_ability_count();
   for (int i = 0; i < ability_count; i++) {
     if (ability_component->has_ability(i)) {
-      String action_name = String("ui_ability_") + String::num(i + 1);
+      String action_name =
+          String("ui_ability_") +
+          String::num(i + 1, 0);  // Force integer format (no decimals)
       keybind_map[action_name] = i;
       String key_name = _get_key_name_for_action(action_name);
       Ref<AbilityDefinition> ability = ability_component->get_ability(i);
       String ability_name =
           ability.is_valid() ? ability->get_ability_name() : "Unknown";
-      UtilityFunctions::print("[InputManager] Ability " + String::num(i + 1) +
-                              " (" + ability_name +
+      UtilityFunctions::print("[InputManager] Ability " +
+                              String::num(i + 1, 0) + " (" + ability_name +
                               ") bound to key: " + key_name);
     }
   }
