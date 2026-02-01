@@ -1,1 +1,28 @@
-# Godot Game Template with CMake
+# MOBA Game - Godot 4.6 C++ GDExtension
+
+A MOBA (Multiplayer Online Battle Arena) built with Godot 4.6 and C++ GDExtension.
+
+## Quick Start
+
+### Development with OpenCode
+
+This project uses OpenCode for AI-assisted development with structured GitHub Projects tracking:
+
+```bash
+cd /path/to/moba-game
+opencode
+```
+
+Then ask: `"What tasks are ready from moba-game?"`
+
+Load skills as needed:
+- `/skill moba-github-workflow` - Track work, pick tasks, create PRs
+- `/skill moba-component-development` - Build MOBA components
+- `/skill moba-testing` - Build, test, and debug
+- `/skill moba-workflow-overview` - See complete workflows
+
+**GitHub Projects Board:** https://github.com/Huijiro/moba-game/projects/7
+
+### Standard Development
+
+See [AGENTS.md](AGENTS.md) for detailed architecture and development instructions.

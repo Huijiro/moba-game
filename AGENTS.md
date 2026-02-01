@@ -1,10 +1,72 @@
-# RPG Game - Development Guide for AI Agents
+# MOBA Game - Development Guide for AI Agents
 
 This document provides comprehensive guidance for AI agents working on this Godot 4.6 C++ GDExtension project.
 
+## Development Workflow
+
+This project uses **OpenCode with GitHub Projects** for structured, tracked development:
+
+### Starting a Session
+
+```bash
+cd /path/to/moba-game
+opencode
+```
+
+Ask: `"What tasks are ready from moba-game?"`
+
+### Available Skills
+
+Four OpenCode skills guide development in `.opencode/skills/`:
+
+1. **moba-github-workflow**
+   - Track work through GitHub Projects
+   - Pick and understand task requirements
+   - Create PRs with issue references (auto-closes on merge)
+   - Use: `/skill moba-github-workflow`
+
+2. **moba-component-development**
+   - Build new MOBA components following established patterns
+   - Handle Godot bindings correctly
+   - Integrate with Unit class properly
+   - Use: `/skill moba-component-development`
+
+3. **moba-testing**
+   - Build with ninja and verify compilation
+   - Test components in Godot engine
+   - Debug issues and validate acceptance criteria
+   - Use: `/skill moba-testing`
+
+4. **moba-workflow-overview**
+   - Complete workflow documentation
+   - Example development scenarios
+   - Best practices and patterns
+   - Use: `/skill moba-workflow-overview`
+
+### Workflow Overview
+
+```
+1. Start: opencode
+2. Choose: "What tasks are ready?"
+3. Load: Load appropriate skill
+4. Work: Implement with OpenCode's guidance
+5. Test: Build and verify
+6. PR: Create PR with "Fixes #N"
+7. Merge: Issue auto-closes, board updates
+8. Repeat!
+```
+
+### GitHub Projects Board
+
+**URL:** https://github.com/Huijiro/moba-game/projects/7
+
+**Columns:** Backlog → Ready → In Progress → In Review → Done
+
+**Work:** Pick tasks from Ready, implement, create PR with issue reference
+
 ## Project Overview
 
-**RPG Game** is a MOBA-style action RPG built with:
+**MOBA Game** is a Multiplayer Online Battle Arena built with:
 - **Engine**: Godot 4.6
 - **Primary Language**: C++ (GDExtension)
 - **Build System**: CMake + Ninja
@@ -57,7 +119,7 @@ ninja
 ## Project Structure
 
 ```
-rpg-game/
+moba-game/
 ├── src/                                # C++ source files
 │   ├── register_types.hpp/.cpp         # GDExtension registration
 │   ├── common/                         # Shared types and enums
@@ -373,8 +435,39 @@ git log --oneline
 - Raycasts are relatively cheap but avoid in hot loops
 - Consider caching navigation agent reference instead of finding each frame
 
+## OpenCode Skills
+
+All OpenCode skills are self-contained in `.opencode/skills/` and provide detailed guidance for:
+
+### moba-github-workflow
+- Show available tasks from GitHub Projects
+- Understand issue requirements and acceptance criteria
+- Create PRs with issue references
+- Track progress through the board
+
+### moba-component-development
+- Component base class pattern (UnitComponent)
+- Godot binding patterns (ClassDB, properties, signals)
+- Integration with Unit class
+- Detailed code examples
+
+### moba-testing
+- Build process and commands
+- Common build/runtime errors and solutions
+- Testing in Godot editor
+- Verification checklist
+
+### moba-workflow-overview
+- Complete workflow examples
+- When to use each skill
+- Pro tips and best practices
+- File reference guide
+
+Load a skill with: `/skill [name]`
+
 ## Resources and Documentation
 
 - [Godot 4.6 Documentation](https://docs.godotengine.org/en/stable/)
 - [Godot C++ Bindings](https://github.com/godotengine/godot-cpp)
 - [Navigation in Godot](https://docs.godotengine.org/en/stable/usage/3d/using_3d_characters/using_3d_characters.html)
+- [OpenCode Documentation](https://opencode.ai/docs)
