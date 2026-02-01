@@ -24,7 +24,9 @@ class DebugMeshRenderer : public Node3D {
   static void _bind_methods();
 
   bool debug_enabled = true;
-  float default_lifetime = 0.3f;
+  float default_lifetime = 0.1f;
+  float mesh_creation_cooldown = 0.0f;  // Cooldown before creating next mesh
+  float min_mesh_creation_interval = 0.05f;  // Min time between mesh creations
 
   struct DebugMesh {
     MeshInstance3D* mesh;
@@ -60,6 +62,11 @@ class DebugMeshRenderer : public Node3D {
 
   void set_debug_enabled(bool enabled);
   bool is_debug_enabled() const;
+
+  void set_min_mesh_creation_interval(float interval);
+  float get_min_mesh_creation_interval() const;
+
+  void clear_all_meshes();
 
   static DebugMeshRenderer* get_singleton();
 

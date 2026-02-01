@@ -48,6 +48,17 @@ void DebugMeshRenderer::_bind_methods() {
                        &DebugMeshRenderer::is_debug_enabled);
   ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"),
                "set_debug_enabled", "is_debug_enabled");
+
+  ClassDB::bind_method(D_METHOD("set_min_mesh_creation_interval", "interval"),
+                       &DebugMeshRenderer::set_min_mesh_creation_interval);
+  ClassDB::bind_method(D_METHOD("get_min_mesh_creation_interval"),
+                       &DebugMeshRenderer::get_min_mesh_creation_interval);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_mesh_creation_interval"),
+               "set_min_mesh_creation_interval",
+               "get_min_mesh_creation_interval");
+
+  ClassDB::bind_method(D_METHOD("clear_all_meshes"),
+                       &DebugMeshRenderer::clear_all_meshes);
 }
 
 void DebugMeshRenderer::_ready() {
@@ -68,6 +79,11 @@ void DebugMeshRenderer::_physics_process(double delta) {
     return;
   }
 
+  // Decrement mesh creation cooldown
+  if (mesh_creation_cooldown > 0.0f) {
+    mesh_creation_cooldown -= delta;
+  }
+
   cleanup_expired_meshes();
 }
 
@@ -78,6 +94,12 @@ void DebugMeshRenderer::draw_circle(const Vector3& center,
   if (!debug_enabled) {
     return;
   }
+
+  // Rate limit mesh creation to avoid flooding
+  if (mesh_creation_cooldown > 0.0f) {
+    return;
+  }
+  mesh_creation_cooldown = min_mesh_creation_interval;
 
   // Create a thin cylinder to represent a circle
   MeshInstance3D* circle = memnew(MeshInstance3D);
@@ -195,6 +217,25 @@ bool DebugMeshRenderer::is_debug_enabled() const {
 
 DebugMeshRenderer* DebugMeshRenderer::get_singleton() {
   return singleton_instance;
+}
+
+void DebugMeshRenderer::set_min_mesh_creation_interval(float interval) {
+  min_mesh_creation_interval = std::max(0.0f, interval);
+}
+
+float DebugMeshRenderer::get_min_mesh_creation_interval() const {
+  return min_mesh_creation_interval;
+}
+
+void DebugMeshRenderer::clear_all_meshes() {
+  while (!active_meshes.empty()) {
+    DebugMesh dm = active_meshes.front();
+    active_meshes.pop();
+    if (dm.mesh != nullptr && dm.mesh->is_inside_tree()) {
+      dm.mesh->queue_free();
+    }
+  }
+  mesh_creation_cooldown = 0.0f;
 }
 
 void DebugMeshRenderer::cleanup_expired_meshes() {
