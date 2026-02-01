@@ -429,16 +429,29 @@ int InputManager::get_bound_ability(const String& key) const {
 }
 
 void InputManager::_init_default_keybinds() {
-  // Set up default keybinds: ability_1 through ability_6 to slots 0-5
-  // Default key mapping: Q/W/E/R/D/F but these can be rebound in game settings
-  keybind_map["ui_ability_1"] = 0;  // Ability 1 (default: Q)
-  keybind_map["ui_ability_2"] = 1;  // Ability 2 (default: W)
-  keybind_map["ui_ability_3"] = 2;  // Ability 3 (default: E)
-  keybind_map["ui_ability_4"] = 3;  // Ability 4 (default: R)
-  keybind_map["ui_ability_5"] = 4;  // Ability 5 (default: D)
-  keybind_map["ui_ability_6"] = 5;  // Ability 6 (default: F)
-  UtilityFunctions::print(
-      "[InputManager] Initialized default keybinds (Ability 1-6)");
+  // Only bind keys for abilities that actually exist on the controlled unit
+  // This way units with fewer abilities don't have empty keybinds
+  if (controlled_unit == nullptr) {
+    return;
+  }
+
+  auto ability_component = controlled_unit->get_ability_component();
+  if (ability_component == nullptr) {
+    return;
+  }
+
+  int ability_count = ability_component->get_ability_count();
+  for (int i = 0; i < ability_count; i++) {
+    if (ability_component->has_ability(i)) {
+      String action_name = String("ui_ability_") + String::num(i + 1);
+      keybind_map[action_name] = i;
+      UtilityFunctions::print("[InputManager] Bound " + action_name +
+                              " to ability slot " + String::num(i));
+    }
+  }
+
+  UtilityFunctions::print("[InputManager] Initialized keybinds for " +
+                          String::num(ability_count) + " ability slots");
 }
 
 void InputManager::_handle_ability_input(const String& key) {
