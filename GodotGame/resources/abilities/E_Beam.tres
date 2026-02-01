@@ -10,6 +10,7 @@ cast_type = 2
 cast_time = 0.0
 cast_point = 0.0
 channel_duration = 2.0
+channel_tick_interval = 0.5
 targeting_type = 0
 range = 10.0
 aoe_radius = 0.0
