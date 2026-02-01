@@ -43,17 +43,6 @@ void MatchManager::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "moba_camera",
                             godot::PROPERTY_HINT_NODE_TYPE, "MOBACamera"),
                "set_moba_camera", "get_moba_camera");
-
-  // Game settings
-  ClassDB::bind_method(
-      D_METHOD("set_channel_requires_stop_command_only", "value"),
-      &MatchManager::set_channel_requires_stop_command_only);
-  ClassDB::bind_method(D_METHOD("get_channel_requires_stop_command_only"),
-                       &MatchManager::get_channel_requires_stop_command_only);
-  ADD_PROPERTY(
-      PropertyInfo(Variant::BOOL, "channel_requires_stop_command_only"),
-      "set_channel_requires_stop_command_only",
-      "get_channel_requires_stop_command_only");
 }
 
 void MatchManager::_ready() {
@@ -102,15 +91,4 @@ void MatchManager::set_moba_camera(MOBACamera* camera) {
 
 MOBACamera* MatchManager::get_moba_camera() const {
   return moba_camera;
-}
-
-void MatchManager::set_channel_requires_stop_command_only(bool value) {
-  channel_requires_stop_command_only = value;
-  UtilityFunctions::print(
-      "[MatchManager] Channel requires stop command only: " +
-      godot::String(channel_requires_stop_command_only ? "true" : "false"));
-}
-
-bool MatchManager::get_channel_requires_stop_command_only() const {
-  return channel_requires_stop_command_only;
 }

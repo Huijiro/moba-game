@@ -5,4 +5,6 @@ target_sources(
   ./unit.cpp
   ./match_manager.hpp
   ./match_manager.cpp
+  ./game_settings.hpp
+  ./game_settings.cpp
 )
