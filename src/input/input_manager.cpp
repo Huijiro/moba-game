@@ -591,17 +591,33 @@ void InputManager::_handle_ability_input(const String& key) {
   // Handle based on casting mode
   switch (casting_mode) {
     case CastingMode::INSTANT: {
-      // Instant cast mode - only cast self-cast abilities instantly
-      // All other abilities still require targeting input
-      if (targeting_type == 4) {  // SELF_CAST - always instant
+      // Instant cast mode - cast using current cursor position/target
+      if (targeting_type == 4) {  // SELF_CAST - always instant on self
         ability_component->try_cast_point(
             ability_slot, controlled_unit->get_global_position());
         UtilityFunctions::print("[InputManager] Self-cast ability slot " +
                                 String::num(ability_slot));
       } else {
-        // All other targeting types require click (unit, skillshot, point,
-        // area)
-        _enter_ability_targeting_mode(ability_slot, targeting_type);
+        // Use current cursor position for targeting
+        Vector3 cursor_position;
+        godot::Object* cursor_target = nullptr;
+        if (_try_raycast(cursor_position, cursor_target)) {
+          // Cast immediately using cursor position/target
+          if (targeting_type == 0 && cursor_target != nullptr) {
+            // UNIT_TARGET - use target if available
+            ability_component->try_cast(ability_slot, cursor_target);
+            UtilityFunctions::print(
+                "[InputManager] Instant cast on unit target");
+          } else {
+            // SKILLSHOT, POINT_TARGET, AREA - use position
+            ability_component->try_cast_point(ability_slot, cursor_position);
+            UtilityFunctions::print(
+                "[InputManager] Instant cast at cursor position");
+          }
+        } else {
+          // No valid cursor position - fall back to targeting mode
+          _enter_ability_targeting_mode(ability_slot, targeting_type);
+        }
       }
       break;
     }
