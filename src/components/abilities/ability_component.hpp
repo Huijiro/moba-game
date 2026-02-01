@@ -1,8 +1,8 @@
 #ifndef GDEXTENSION_ABILITY_COMPONENT_H
 #define GDEXTENSION_ABILITY_COMPONENT_H
 
-#include <array>
 #include <godot_cpp/classes/ref.hpp>
+#include <vector>
 
 #include "../unit_component.hpp"
 #include "ability_definition.hpp"
@@ -35,11 +35,11 @@ class AbilityComponent : public UnitComponent {
  protected:
   static void _bind_methods();
 
-  // Ability slots (Q, W, E, R)
-  std::array<Ref<AbilityDefinition>, 4> ability_slots;
+  // Ability slots (configurable, typically 4-6: Q, W, E, R, D, F)
+  std::vector<Ref<AbilityDefinition>> ability_slots;
 
   // Cooldown tracking per ability slot
-  std::array<float, 4> cooldown_timers = {0.0f, 0.0f, 0.0f, 0.0f};
+  std::vector<float> cooldown_timers;
 
   // Casting state
   int casting_slot = -1;
@@ -62,6 +62,9 @@ class AbilityComponent : public UnitComponent {
   void set_ability(int slot, const Ref<AbilityDefinition>& ability);
   Ref<AbilityDefinition> get_ability(int slot);
   bool has_ability(int slot);
+
+  int get_ability_count() const;
+  void set_ability_count(int count);
 
   // ========== ABILITY CASTING (Main Entry Points) ==========
   // Try to cast ability at a unit target

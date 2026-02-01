@@ -31,6 +31,10 @@ void AbilityComponent::_bind_methods() {
                        &AbilityComponent::get_ability);
   ClassDB::bind_method(D_METHOD("has_ability", "slot"),
                        &AbilityComponent::has_ability);
+  ClassDB::bind_method(D_METHOD("get_ability_count"),
+                       &AbilityComponent::get_ability_count);
+  ClassDB::bind_method(D_METHOD("set_ability_count", "count"),
+                       &AbilityComponent::set_ability_count);
 
   // ========== CASTING METHODS ==========
   ClassDB::bind_method(D_METHOD("try_cast", "slot", "target"),
@@ -93,6 +97,12 @@ void AbilityComponent::_ready() {
         "[AbilityComponent] Warning: No ResourcePoolComponent for mana "
         "tracking");
   }
+
+  // Initialize ability slots from unit definition
+  // Default to 4 slots if not specified, will be configured by Unit
+  if (ability_slots.empty()) {
+    set_ability_count(4);
+  }
 }
 
 void AbilityComponent::_physics_process(double delta) {
@@ -101,7 +111,7 @@ void AbilityComponent::_physics_process(double delta) {
   }
 
   // Update cooldown timers
-  for (int i = 0; i < 4; i++) {
+  for (size_t i = 0; i < cooldown_timers.size(); i++) {
     if (cooldown_timers[i] > 0.0f) {
       cooldown_timers[i] -= delta;
       if (cooldown_timers[i] < 0.0f) {
@@ -111,7 +121,8 @@ void AbilityComponent::_physics_process(double delta) {
   }
 
   // Handle casting state machine
-  if (casting_slot >= 0 && casting_slot < 4) {
+  if (casting_slot >= 0 &&
+      casting_slot < static_cast<int>(ability_slots.size())) {
     Ref<AbilityDefinition> ability = ability_slots[casting_slot];
     if (ability == nullptr) {
       _finish_casting();
@@ -162,7 +173,7 @@ void AbilityComponent::_physics_process(double delta) {
 
 void AbilityComponent::set_ability(int slot,
                                    const Ref<AbilityDefinition>& ability) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     UtilityFunctions::print("[AbilityComponent] Invalid slot: " +
                             String::num(slot));
     return;
@@ -171,17 +182,31 @@ void AbilityComponent::set_ability(int slot,
 }
 
 Ref<AbilityDefinition> AbilityComponent::get_ability(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return nullptr;
   }
   return ability_slots[slot];
 }
 
 bool AbilityComponent::has_ability(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return false;
   }
   return ability_slots[slot] != nullptr;
+}
+
+int AbilityComponent::get_ability_count() const {
+  return static_cast<int>(ability_slots.size());
+}
+
+void AbilityComponent::set_ability_count(int count) {
+  count = std::max(0, std::min(count, 6));  // Clamp between 0 and 6
+  if (static_cast<int>(ability_slots.size()) != count) {
+    ability_slots.resize(count);
+    cooldown_timers.resize(count, 0.0f);
+    UtilityFunctions::print("[AbilityComponent] Resized to " +
+                            String::num(count) + " ability slots");
+  }
 }
 
 // ========== ABILITY CASTING ==========
@@ -226,21 +251,21 @@ bool AbilityComponent::is_casting() const {
 }
 
 bool AbilityComponent::is_on_cooldown(int slot) const {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return false;
   }
   return cooldown_timers[slot] > 0.0f;
 }
 
 float AbilityComponent::get_cooldown_remaining(int slot) const {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return 0.0f;
   }
   return cooldown_timers[slot];
 }
 
 float AbilityComponent::get_cooldown_duration(int slot) const {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return 0.0f;
   }
   Ref<AbilityDefinition> ability = ability_slots[slot];
@@ -251,7 +276,7 @@ float AbilityComponent::get_cooldown_duration(int slot) const {
 }
 
 int AbilityComponent::get_cast_state(int slot) const {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return static_cast<int>(CastState::IDLE);
   }
   if (slot == casting_slot) {
@@ -266,7 +291,7 @@ int AbilityComponent::get_cast_state(int slot) const {
 // ========== INTERNAL METHODS ==========
 
 bool AbilityComponent::_can_cast(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return false;
   }
 
@@ -310,7 +335,7 @@ ResourcePoolComponent* AbilityComponent::_get_resource_pool(
 }
 
 bool AbilityComponent::_can_afford(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return false;
   }
 
@@ -340,7 +365,7 @@ bool AbilityComponent::_can_afford(int slot) {
 }
 
 void AbilityComponent::_begin_cast(int slot, Object* target) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return;
   }
 
@@ -361,7 +386,7 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
 }
 
 void AbilityComponent::_execute_ability(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return;
   }
 
@@ -410,7 +435,7 @@ void AbilityComponent::_execute_ability(int slot) {
 }
 
 void AbilityComponent::_apply_cooldown(int slot) {
-  if (slot < 0 || slot >= 4) {
+  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return;
   }
 

@@ -37,8 +37,9 @@ class UnitDefinition : public Resource {
   String description = "";
   String unit_type = "hero";  // "hero", "minion", "jungle_camp", "boss", etc.
 
-  // Unit abilities (4 slots: Q, W, E, R)
-  Array abilities;  // Array of AbilityDefinition references
+  // Unit abilities (configurable count, typically 4-6: Q, W, E, R, D, F)
+  int ability_count = 4;  // Number of ability slots for this unit
+  Array abilities;        // Array of AbilityDefinition references
 
   // Future: Stats for scaling
   // int base_health = 100;
@@ -60,6 +61,10 @@ class UnitDefinition : public Resource {
 
   void set_unit_type(const String& type);
   String get_unit_type() const;
+
+  // Ability count management
+  void set_ability_count(int count);
+  int get_ability_count() const;
 
   // Ability management
   void set_ability(int slot, const Ref<AbilityDefinition>& ability);

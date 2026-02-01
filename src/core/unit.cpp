@@ -100,7 +100,12 @@ void Unit::_ready() {
 
   // Auto-populate abilities from unit definition if set
   if (unit_definition.is_valid() && ability_component != nullptr) {
-    for (int i = 0; i < 4; i++) {
+    int ability_count = unit_definition->get_ability_count();
+    ability_component->set_ability_count(ability_count);
+    UtilityFunctions::print("[Unit] Configured " + String::num(ability_count) +
+                            " ability slots");
+
+    for (int i = 0; i < ability_count; i++) {
       auto ability = unit_definition->get_ability(i);
       if (ability.is_valid()) {
         ability_component->set_ability(i, ability);
