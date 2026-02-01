@@ -215,7 +215,7 @@ void InputManager::_process(double delta) {
 
   _update_click_marker(delta);
 
-  // Visual debugging: Draw circles for ability range and AoE while aiming
+  // Visual debugging: Draw aiming line and AoE circle while targeting
   if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
       camera != nullptr) {
     VisualDebugger* debugger = VisualDebugger::get_singleton();
@@ -230,16 +230,18 @@ void InputManager::_process(double delta) {
               ability_component->get_ability(awaiting_target_slot);
           if (ability != nullptr) {
             Vector3 caster_pos = controlled_unit->get_global_position();
-            float range = ability->get_range();
             float aoe_radius = ability->get_aoe_radius();
 
-            // Draw AoE radius at cursor position (bright green - very visible)
-            debugger->draw_circle_xz(mouse_pos, aoe_radius,
-                                     godot::Color(0, 1, 0, 1), 64);
+            // Draw aiming line from caster to cursor (yellow - very visible)
+            debugger->draw_line(caster_pos, mouse_pos,
+                                godot::Color(1, 1, 0, 1));
 
-            // Draw ability range from caster (bright blue - very visible)
-            debugger->draw_circle_xz(caster_pos, range,
-                                     godot::Color(0, 0.5f, 1, 1), 64);
+            // Draw AoE radius at cursor position (bright green - shows impact
+            // area)
+            if (aoe_radius > 0.01f) {
+              debugger->draw_circle_xz(mouse_pos, aoe_radius,
+                                       godot::Color(0, 1, 0, 1), 32);
+            }
           }
         }
       }
