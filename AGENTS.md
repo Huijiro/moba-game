@@ -1,11 +1,11 @@
 # RPG Game - Development Guide for AI Agents
 
-This document provides comprehensive guidance for AI agents working on this Godot 4.5 C++ GDExtension project.
+This document provides comprehensive guidance for AI agents working on this Godot 4.6 C++ GDExtension project.
 
 ## Project Overview
 
 **RPG Game** is a MOBA-style action RPG built with:
-- **Engine**: Godot 4.5.1
+- **Engine**: Godot 4.6
 - **Primary Language**: C++ (GDExtension)
 - **Build System**: CMake + Ninja
 - **Scripting**: GDScript (minimal, used for scene extensions)
@@ -23,7 +23,7 @@ The project uses a GDExtension architecture where C++ classes are registered wit
 - CMake 3.30+
 - Ninja build system
 - C++17 compatible compiler (GCC/Clang)
-- Godot 4.5.1
+- Godot 4.6
 
 ### Build Commands
 
@@ -344,6 +344,6 @@ git log --oneline
 
 ## Resources and Documentation
 
-- [Godot 4.5 Documentation](https://docs.godotengine.org/en/stable/)
+- [Godot 4.6 Documentation](https://docs.godotengine.org/en/stable/)
 - [Godot C++ Bindings](https://github.com/godotengine/godot-cpp)
 - [Navigation in Godot](https://docs.godotengine.org/en/stable/usage/3d/using_3d_characters/using_3d_characters.html)
