@@ -156,8 +156,9 @@ void AbilityComponent::_physics_process(double delta) {
         // Debug visualization: Draw line between caster and target
         VisualDebugger* debugger = VisualDebugger::get_singleton();
         if (debugger != nullptr && debugger->is_debug_enabled()) {
-          // Draw white line from caster to target
-          debugger->draw_line(caster_pos, target_pos, godot::Color(1, 1, 1, 1));
+          // Draw white line from caster to target with thickness
+          debugger->draw_line(caster_pos, target_pos, godot::Color(1, 1, 1, 1),
+                              2.0f);
         }
 
         if (range > 0.0f && distance > range) {

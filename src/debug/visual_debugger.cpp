@@ -25,15 +25,17 @@ VisualDebugger::~VisualDebugger() {
 }
 
 void VisualDebugger::_bind_methods() {
+  ClassDB::bind_method(D_METHOD("draw_circle_xz", "center", "radius", "color",
+                                "segments", "thickness", "filled"),
+                       &VisualDebugger::draw_circle_xz, 32, 1.0f, false);
+
   ClassDB::bind_method(
-      D_METHOD("draw_circle_xz", "center", "radius", "color", "segments"),
-      &VisualDebugger::draw_circle_xz);
+      D_METHOD("draw_box", "center", "size", "color", "thickness", "filled"),
+      &VisualDebugger::draw_box, 1.0f, false);
 
-  ClassDB::bind_method(D_METHOD("draw_box", "center", "size", "color"),
-                       &VisualDebugger::draw_box);
-
-  ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color"),
-                       &VisualDebugger::draw_line);
+  ClassDB::bind_method(
+      D_METHOD("draw_line", "from", "to", "color", "thickness"),
+      &VisualDebugger::draw_line, 1.0f);
 
   ClassDB::bind_method(D_METHOD("clear"), &VisualDebugger::clear);
 
@@ -81,16 +83,15 @@ void VisualDebugger::clear() {
 void VisualDebugger::draw_circle_xz(const Vector3& center,
                                     float radius,
                                     const Color& color,
-                                    int segments) {
+                                    int segments,
+                                    float thickness,
+                                    bool filled) {
   if (!debug_enabled) {
     return;
   }
 
-  // Use more segments for thicker appearance (64 instead of 32)
-  // and draw twice for extra thickness/visibility
-  segments = std::max(segments, 64);
+  segments = std::max(segments, 8);
   float angle_step = 2.0f * 3.14159265f / segments;
-  const float thickness_offset = 0.1f;  // Slight offset for thickness effect
 
   for (int i = 0; i < segments; i++) {
     float angle1 = i * angle_step;
@@ -105,29 +106,41 @@ void VisualDebugger::draw_circle_xz(const Vector3& center,
     Vector3 p1(x1, center.y, z1);
     Vector3 p2(x2, center.y, z2);
 
-    // Add main line segment
-    PendingDraw draw;
-    draw.type = DrawType::LINE;
-    draw.p1 = p1;
-    draw.p2 = p2;
-    draw.color = color;
-    pending_draws.push_back(draw);
+    if (filled) {
+      // Draw triangles from center to edge for filled circle
+      PendingDraw draw;
+      draw.type = DrawType::LINE;
+      draw.p1 = center;
+      draw.p2 = p1;
+      draw.color = color;
+      draw.thickness = thickness;
+      pending_draws.push_back(draw);
 
-    // Add offset line segment for thickness effect
-    Vector3 p1_offset(x1, center.y + thickness_offset, z1);
-    Vector3 p2_offset(x2, center.y + thickness_offset, z2);
-    PendingDraw draw_offset;
-    draw_offset.type = DrawType::LINE;
-    draw_offset.p1 = p1_offset;
-    draw_offset.p2 = p2_offset;
-    draw_offset.color = color;
-    pending_draws.push_back(draw_offset);
+      draw.p1 = p1;
+      draw.p2 = p2;
+      pending_draws.push_back(draw);
+
+      draw.p1 = p2;
+      draw.p2 = center;
+      pending_draws.push_back(draw);
+    } else {
+      // Draw outline
+      PendingDraw draw;
+      draw.type = DrawType::LINE;
+      draw.p1 = p1;
+      draw.p2 = p2;
+      draw.color = color;
+      draw.thickness = thickness;
+      pending_draws.push_back(draw);
+    }
   }
 }
 
 void VisualDebugger::draw_box(const Vector3& center,
                               const Vector3& size,
-                              const Color& color) {
+                              const Color& color,
+                              float thickness,
+                              bool filled) {
   if (!debug_enabled) {
     return;
   }
@@ -158,13 +171,18 @@ void VisualDebugger::draw_box(const Vector3& center,
     draw.p1 = corners[edges[i][0]];
     draw.p2 = corners[edges[i][1]];
     draw.color = color;
+    draw.thickness = thickness;
     pending_draws.push_back(draw);
   }
+
+  // For filled boxes, we'd need to add face drawing logic
+  // For now, just draw the edges with thickness
 }
 
 void VisualDebugger::draw_line(const Vector3& from,
                                const Vector3& to,
-                               const Color& color) {
+                               const Color& color,
+                               float thickness) {
   if (!debug_enabled) {
     return;
   }
@@ -174,6 +192,7 @@ void VisualDebugger::draw_line(const Vector3& from,
   draw.p1 = from;
   draw.p2 = to;
   draw.color = color;
+  draw.thickness = thickness;
   pending_draws.push_back(draw);
 }
 
@@ -192,8 +211,28 @@ void VisualDebugger::_flush_draws() {
   // Add all pending draws
   for (const auto& draw : pending_draws) {
     immediate_mesh->surface_set_color(draw.color);
-    immediate_mesh->surface_add_vertex(draw.p1);
-    immediate_mesh->surface_add_vertex(draw.p2);
+
+    if (draw.thickness > 1.0f) {
+      // For thicker lines, draw multiple parallel lines
+      int line_count = static_cast<int>(draw.thickness);
+      Vector3 direction = (draw.p2 - draw.p1).normalized();
+      Vector3 perpendicular =
+          Vector3(-direction.z, 0, direction.x).normalized();
+
+      float offset_range = draw.thickness * 0.5f;
+      for (int i = 0; i < line_count; i++) {
+        float offset = -offset_range +
+                       (offset_range * 2.0f * i / std::max(1, line_count - 1));
+        Vector3 offset_vec = perpendicular * offset;
+
+        immediate_mesh->surface_add_vertex(draw.p1 + offset_vec);
+        immediate_mesh->surface_add_vertex(draw.p2 + offset_vec);
+      }
+    } else {
+      // Single line
+      immediate_mesh->surface_add_vertex(draw.p1);
+      immediate_mesh->surface_add_vertex(draw.p2);
+    }
   }
 
   // End surface

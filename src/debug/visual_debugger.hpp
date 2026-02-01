@@ -17,13 +17,19 @@ using godot::Vector3;
 
 enum class DrawType {
   LINE,
+  CIRCLE,
 };
 
 struct PendingDraw {
   DrawType type;
   Vector3 p1;
   Vector3 p2;
+  Vector3 center;       // For circles
+  float radius = 0.0f;  // For circles
   Color color;
+  float thickness = 1.0f;  // Line thickness in units
+  bool filled = false;     // Whether to fill shapes
+  int segments = 32;       // For circles
 };
 
 /// Visual debugger using ImmediateMesh for real-time drawing
@@ -50,15 +56,20 @@ class VisualDebugger : public Node3D {
   void draw_circle_xz(const Vector3& center,
                       float radius,
                       const Color& color = Color(0, 1, 0, 1),
-                      int segments = 32);
+                      int segments = 32,
+                      float thickness = 1.0f,
+                      bool filled = false);
 
   void draw_box(const Vector3& center,
                 const Vector3& size,
-                const Color& color = Color(1, 1, 1, 1));
+                const Color& color = Color(1, 1, 1, 1),
+                float thickness = 1.0f,
+                bool filled = false);
 
   void draw_line(const Vector3& from,
                  const Vector3& to,
-                 const Color& color = Color(1, 1, 1, 1));
+                 const Color& color = Color(1, 1, 1, 1),
+                 float thickness = 1.0f);
 
   void clear();
 
