@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/visual_debugger.hpp"
 #include "../resources/resource_pool_component.hpp"
 #include "ability_definition.hpp"
 #include "ability_effect.hpp"
@@ -147,9 +148,18 @@ void AbilityComponent::_physics_process(double delta) {
       Unit* caster = get_unit();
       Unit* target_unit = Object::cast_to<Unit>(casting_target);
       if (target_unit != nullptr && target_unit->is_inside_tree()) {
-        float distance = caster->get_global_position().distance_to(
-            target_unit->get_global_position());
+        Vector3 caster_pos = caster->get_global_position();
+        Vector3 target_pos = target_unit->get_global_position();
+        float distance = caster_pos.distance_to(target_pos);
         float range = ability->get_range();
+
+        // Debug visualization: Draw line between caster and target
+        VisualDebugger* debugger = VisualDebugger::get_singleton();
+        if (debugger != nullptr && debugger->is_debug_enabled()) {
+          // Draw white line from caster to target
+          debugger->draw_line(caster_pos, target_pos, godot::Color(1, 1, 1, 1));
+        }
+
         if (range > 0.0f && distance > range) {
           // Target out of range - interrupt channel
           UtilityFunctions::print(
