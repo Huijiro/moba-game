@@ -591,24 +591,16 @@ void InputManager::_handle_ability_input(const String& key) {
   // Handle based on casting mode
   switch (casting_mode) {
     case CastingMode::INSTANT: {
-      // Instant cast mode - cast immediately if applicable, otherwise wait for
-      // target
-      if (cast_type == 2) {  // CHANNEL
-        // Channels always require targeting click
-        _enter_ability_targeting_mode(ability_slot, targeting_type);
-      } else if (targeting_type == 4) {  // SELF_CAST
+      // Instant cast mode - only cast self-cast abilities instantly
+      // All other abilities still require targeting input
+      if (targeting_type == 4) {  // SELF_CAST - always instant
         ability_component->try_cast_point(
             ability_slot, controlled_unit->get_global_position());
-      } else if (targeting_type == 3) {  // SKILLSHOT
-        // Skillshots require direction targeting - wait for click
-        _enter_ability_targeting_mode(ability_slot, targeting_type);
-      } else if (cast_type == 0) {  // INSTANT cast with no targeting needs
-        // For instant casts, try to cast immediately on unit if available
-        ability_component->try_cast(ability_slot, controlled_unit);
-        UtilityFunctions::print("[InputManager] Instant cast ability slot " +
+        UtilityFunctions::print("[InputManager] Self-cast ability slot " +
                                 String::num(ability_slot));
       } else {
-        // Wait for target click
+        // All other targeting types require click (unit, skillshot, point,
+        // area)
         _enter_ability_targeting_mode(ability_slot, targeting_type);
       }
       break;
