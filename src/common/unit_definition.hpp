@@ -13,9 +13,18 @@ using godot::String;
 
 class AbilityDefinition;
 
-// Unit definition resource - contains any unit's data and 4 ability slots
-// Works for: Heroes, Minions, Jungle Camps, Bosses, NPCs, etc.
-// Save as .tres file and assign to Units in the editor
+/// Unit definition resource - contains any unit's data and 4 ability slots
+/// Works for: Heroes, Minions, Jungle Camps, Bosses, NPCs, etc.
+/// Save as .tres file and assign to Units in the editor
+///
+/// Documentation: See docs/ability-system/02_MODIFYING_UNITS.md
+/// - How to create new unit definitions
+/// - Modifying existing units
+/// - Using units in scenes
+///
+/// Example files:
+/// - GodotGame/resources/units/TestHero.tres
+/// - GodotGame/resources/units/MageHero.tres
 class UnitDefinition : public Resource {
   GDCLASS(UnitDefinition, Resource)
 

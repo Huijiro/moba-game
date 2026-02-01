@@ -28,6 +28,28 @@ class AttackComponent;
 class MovementComponent;
 class AbilityComponent;
 
+/// Character entity with abilities and components
+/// The playable/NPC unit that contains all game systems
+///
+/// Documentation: See docs/ability-system/02_MODIFYING_UNITS.md
+/// - How to create unit definitions
+/// - Using units in scenes
+/// - Supporting different unit types (heroes, minions, bosses)
+///
+/// Key Features:
+/// - Loads abilities from UnitDefinition in _ready()
+/// - Auto-populates AbilityComponent from UnitDefinition.abilities[4]
+/// - Integrates movement, combat, health, abilities into one entity
+/// - Can be controlled by player (InputManager) or AI
+///
+/// To Use:
+/// 1. Create UnitDefinition with 4 abilities (Q, W, E, R)
+/// 2. Add to scene as Unit node
+/// 3. Assign unit_definition property
+/// 4. Add child components (AbilityComponent, ResourcePoolComponent)
+/// 5. On _ready(), Unit auto-populates abilities
+///
+/// Example: GodotGame/unit.tscn (uses TestHero)
 class Unit : public CharacterBody3D {
   GDCLASS(Unit, CharacterBody3D)
 

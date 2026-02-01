@@ -14,9 +14,21 @@ using godot::Vector3;
 
 class ResourcePoolComponent;
 
-// Core ability system component
-// Manages ability slots, casting, cooldowns, and mana costs
-// Attaches to Unit nodes and provides ability execution interface
+/// Core ability system component
+/// Manages ability slots, casting, cooldowns, and mana costs
+/// Attaches to Unit nodes and provides ability execution interface
+///
+/// Documentation: See docs/ability-system/00_INDEX.md
+/// - Core Components section for architecture overview
+/// - Key Methods: try_cast(), try_cast_point(), is_casting()
+/// - State machine: IDLE, CASTING, CHANNELING, ON_COOLDOWN
+/// - Integrates with ResourcePoolComponent for mana validation
+///
+/// Usage:
+/// 1. Add AbilityComponent as child of Unit
+/// 2. Auto-populate from UnitDefinition via Unit._ready()
+/// 3. Call try_cast(slot, target) or try_cast_point(slot, point)
+/// 4. Query states: is_casting(), is_on_cooldown(), get_cooldown_remaining()
 class AbilityComponent : public UnitComponent {
   GDCLASS(AbilityComponent, UnitComponent)
 

@@ -13,8 +13,19 @@ using godot::Resource;
 using godot::String;
 using godot::Texture2D;
 
-// Resource-based ability definition - save as .tres files in editor
-// Contains all the stats and configuration for an ability
+/// Resource-based ability definition - save as .tres files in editor
+/// Contains all the stats and configuration for an ability
+///
+/// Documentation: See docs/ability-system/01_ADDING_ABILITIES.md
+/// - Complete step-by-step guide for creating abilities
+/// - Cast type reference (INSTANT, CAST_TIME, CHANNEL)
+/// - Targeting type reference (UNIT_TARGET, POINT_TARGET, AREA)
+/// - Frost Bolt example walkthrough
+/// - Troubleshooting common issues
+///
+/// Example files:
+/// - GodotGame/resources/abilities/Q_Instant_Strike.tres
+/// - GodotGame/resources/abilities/Frost_Bolt.tres
 class AbilityDefinition : public Resource {
   GDCLASS(AbilityDefinition, Resource)
 
