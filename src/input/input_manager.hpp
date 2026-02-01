@@ -93,8 +93,8 @@ class InputManager : public Node {
   float raycast_distance = 1000.0f;
 
   // Input actions
-  String move_action = "ui_move";  // Default: right-click
-  String cast_action = "ui_cast";  // Default: left-click
+  String move_action = "game_move";  // Default: right-click
+  String cast_action = "game_cast";  // Default: left-click
 
   // Visual feedback
   godot::Node3D* click_marker = nullptr;

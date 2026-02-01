@@ -135,17 +135,18 @@ void InputManager::_input(const Ref<InputEvent>& event) {
   }
 
   // Check for stop command (S key)
-  if (event->is_action_pressed(godot::StringName("ui_stop"))) {
+  if (event->is_action_pressed(godot::StringName("game_stop"))) {
     _handle_stop_command();
     get_viewport()->set_input_as_handled();
     return;
   }
 
   // Check for keyboard input (ability slots 1-6)
-  // Support up to 6 ability slots via ui_ability_1 through ui_ability_6 actions
+  // Support up to 6 ability slots via game_ability_1 through game_ability_6
+  // actions
   for (int i = 1; i <= 6; i++) {
     String action_name =
-        String("ui_ability_") + String::num(i, 0);  // Force integer format
+        String("game_ability_") + String::num(i, 0);  // Force integer format
     StringName action_sname = godot::StringName(action_name);
 
     // Check for ability key press
@@ -517,7 +518,7 @@ void InputManager::_init_default_keybinds() {
   for (int i = 0; i < ability_count; i++) {
     if (ability_component->has_ability(i)) {
       String action_name =
-          String("ui_ability_") +
+          String("game_ability_") +
           String::num(i + 1, 0);  // Force integer format (no decimals)
       keybind_map[action_name] = i;
       String key_name = _get_key_name_for_action(action_name);
