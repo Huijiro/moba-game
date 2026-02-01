@@ -1,0 +1,17 @@
+[gd_resource type="AbilityDefinition" format=3]
+[ext_resource type="Resource" path="res://resources/abilities/TestDamageEffect.tres" id="1_damage"]
+
+[resource]
+ability_name = "Quick Strike"
+description = "Instantly deal 25 damage to target unit"
+mana_cost = 20.0
+cooldown = 5.0
+cast_type = 0
+cast_time = 0.0
+cast_point = 0.0
+channel_duration = 0.0
+targeting_type = 0
+range = 5.0
+aoe_radius = 0.0
+base_damage = 25.0
+effect = ExtResource("1_damage")

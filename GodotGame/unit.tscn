@@ -1,4 +1,5 @@
 [gd_scene format=3 uid="uid://bfetb0lq8t6ji"]
+[ext_resource type="Resource" path="res://resources/units/TestHero.tres" id="1_testunit"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_ig7tw"]
 
@@ -11,6 +12,7 @@ albedo_color = Color(1, 0, 0, 1)
 material = SubResource("StandardMaterial3D_k4y1u")
 
 [node name="Unit" type="Unit" unique_id=1290899300]
+unit_definition = ExtResource("1_testunit")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=609497395]
 debug_enabled = true
@@ -32,5 +34,11 @@ mesh = SubResource("CylinderMesh_btf8p")
 [node name="MovementComponent" type="MovementComponent" parent="." unique_id=709992476]
 
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=1706903160]
+
+[node name="ResourcePoolComponent" type="ResourcePoolComponent" parent="." unique_id=3016490481]
+max_mana = 200.0
+current_mana = 200.0
+
+[node name="AbilityComponent" type="AbilityComponent" parent="." unique_id=2856639392]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1231263238]
