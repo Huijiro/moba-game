@@ -299,6 +299,19 @@ bool AbilityComponent::is_casting() const {
          casting_state == static_cast<int>(CastState::CASTING);
 }
 
+void AbilityComponent::interrupt_casting() {
+  if (casting_slot >= 0) {
+    UtilityFunctions::print("[AbilityComponent] Casting interrupted on slot " +
+                            godot::String::num(casting_slot));
+    // Apply cooldown even though we interrupted
+    if (casting_state == static_cast<int>(CastState::ON_COOLDOWN) ||
+        casting_state == static_cast<int>(CastState::CASTING)) {
+      _apply_cooldown(casting_slot);
+    }
+    _finish_casting();
+  }
+}
+
 bool AbilityComponent::is_on_cooldown(int slot) const {
   if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
     return false;

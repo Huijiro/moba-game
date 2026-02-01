@@ -83,6 +83,10 @@ class AbilityComponent : public UnitComponent {
   float get_cooldown_duration(int slot) const;
   int get_cast_state(int slot) const;
 
+  // ========== CASTING CONTROL ==========
+  // Interrupt active channel or cast (applies cooldown)
+  void interrupt_casting();
+
   // ========== INTERNAL METHODS ==========
  private:
   // Get resource pool by ID, or return default if not found
