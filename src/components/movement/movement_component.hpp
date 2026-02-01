@@ -24,6 +24,7 @@ class MovementComponent : public NavigationAgent3D {
   float rotation_speed = 10.0f;
   bool is_ready = false;
   int32_t frame_count = 0;
+  Vector3 desired_location = Vector3(0, 0, 0);
 
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
@@ -35,6 +36,7 @@ class MovementComponent : public NavigationAgent3D {
   ~MovementComponent();
 
   void _ready() override;
+  void _physics_process(double delta) override;
 
   // Properties
   void set_speed(float new_speed);
@@ -42,6 +44,9 @@ class MovementComponent : public NavigationAgent3D {
 
   void set_rotation_speed(float new_rotation_speed);
   float get_rotation_speed() const;
+
+  void set_desired_location(const Vector3& location);
+  Vector3 get_desired_location() const;
 
   // Core movement processing
   // Returns horizontal velocity (Y component is always 0)

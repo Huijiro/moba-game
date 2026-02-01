@@ -61,6 +61,16 @@ void AttackComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_projectile_speed"),
                        &AttackComponent::get_projectile_speed);
 
+  ClassDB::bind_method(D_METHOD("set_auto_attack_range", "range"),
+                       &AttackComponent::set_auto_attack_range);
+  ClassDB::bind_method(D_METHOD("get_auto_attack_range"),
+                       &AttackComponent::get_auto_attack_range);
+
+  ClassDB::bind_method(D_METHOD("set_attack_buffer_range", "buffer"),
+                       &AttackComponent::set_attack_buffer_range);
+  ClassDB::bind_method(D_METHOD("get_attack_buffer_range"),
+                       &AttackComponent::get_attack_buffer_range);
+
   ClassDB::bind_method(D_METHOD("set_projectile_scene", "scene"),
                        &AttackComponent::set_projectile_scene);
   ClassDB::bind_method(D_METHOD("get_projectile_scene"),
@@ -93,6 +103,12 @@ void AttackComponent::_bind_methods() {
                "set_projectile_scene", "get_projectile_scene");
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "projectile_speed"),
                "set_projectile_speed", "get_projectile_speed");
+
+  ADD_GROUP("Range & Hysteresis", "");
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auto_attack_range"),
+               "set_auto_attack_range", "get_auto_attack_range");
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_buffer_range"),
+               "set_attack_buffer_range", "get_attack_buffer_range");
 
   ADD_SIGNAL(godot::MethodInfo("attack_started",
                                PropertyInfo(Variant::OBJECT, "target")));
@@ -210,6 +226,22 @@ void AttackComponent::set_projectile_scene(const Ref<PackedScene>& scene) {
 
 Ref<PackedScene> AttackComponent::get_projectile_scene() const {
   return projectile_scene;
+}
+
+void AttackComponent::set_auto_attack_range(float range) {
+  auto_attack_range = range;
+}
+
+float AttackComponent::get_auto_attack_range() const {
+  return auto_attack_range;
+}
+
+void AttackComponent::set_attack_buffer_range(float buffer) {
+  attack_buffer_range = std::max(0.0f, buffer);
+}
+
+float AttackComponent::get_attack_buffer_range() const {
+  return attack_buffer_range;
 }
 
 bool AttackComponent::try_fire_at(Unit* target, double delta) {

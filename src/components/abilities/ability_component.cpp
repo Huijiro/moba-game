@@ -37,6 +37,12 @@ void AbilityComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("set_ability_count", "count"),
                        &AbilityComponent::set_ability_count);
 
+  // ========== ARRAY-BASED INTERFACE ==========
+  ClassDB::bind_method(D_METHOD("set_abilities", "abilities"),
+                       &AbilityComponent::set_abilities);
+  ClassDB::bind_method(D_METHOD("get_abilities"),
+                       &AbilityComponent::get_abilities);
+
   // ========== CASTING METHODS ==========
   ClassDB::bind_method(D_METHOD("try_cast", "slot", "target"),
                        &AbilityComponent::try_cast);
@@ -54,9 +60,17 @@ void AbilityComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_cast_state", "slot"),
                        &AbilityComponent::get_cast_state);
 
-  // NOTE: Abilities are set automatically from UnitDefinition in Unit._ready()
-  // No ADD_PROPERTY needed here since set_ability() takes 2 parameters (slot,
-  // ability) and Godot properties only support 1-parameter setters
+  // ========== PROPERTIES ==========
+  ADD_PROPERTY(PropertyInfo(Variant::INT, "ability_count",
+                            godot::PROPERTY_HINT_RANGE, "0,6"),
+               "set_ability_count", "get_ability_count");
+  ADD_PROPERTY(
+      PropertyInfo(Variant::ARRAY, "abilities", godot::PROPERTY_HINT_ARRAY_TYPE,
+                   "AbilityDefinition"),
+      "set_abilities", "get_abilities");
+
+  // NOTE: Individual ability slots can be set via set_ability() method
+  // Abilities are configured directly on the component in the editor
 
   // ========== SIGNALS ==========
   ADD_SIGNAL(godot::MethodInfo("ability_cast_started",
@@ -267,6 +281,30 @@ void AbilityComponent::set_ability_count(int count) {
     UtilityFunctions::print("[AbilityComponent] Resized to " +
                             String::num(count) + " ability slots");
   }
+}
+
+void AbilityComponent::set_abilities(const godot::Array& abilities) {
+  // Update ability_count based on array size
+  set_ability_count(abilities.size());
+
+  // Populate ability slots from array
+  for (int i = 0; i < abilities.size(); i++) {
+    Variant elem = abilities[i];
+    if (elem.get_type() == Variant::OBJECT) {
+      Ref<AbilityDefinition> ability = elem;
+      ability_slots[i] = ability;
+    } else {
+      ability_slots[i] = Ref<AbilityDefinition>();
+    }
+  }
+}
+
+godot::Array AbilityComponent::get_abilities() const {
+  godot::Array result;
+  for (const auto& ability : ability_slots) {
+    result.append(ability);
+  }
+  return result;
 }
 
 // ========== ABILITY CASTING ==========

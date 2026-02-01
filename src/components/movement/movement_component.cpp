@@ -1,6 +1,8 @@
 #include "movement_component.hpp"
 
 #include <cmath>
+#include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -16,9 +18,12 @@
 
 using godot::Basis;
 using godot::Callable;
+using godot::CharacterBody3D;
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::Engine;
 using godot::Node;
+using godot::Object;
 using godot::PropertyInfo;
 using godot::StringName;
 using godot::Transform3D;
@@ -42,6 +47,13 @@ void MovementComponent::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_speed"),
                "set_rotation_speed", "get_rotation_speed");
 
+  ClassDB::bind_method(D_METHOD("set_desired_location", "location"),
+                       &MovementComponent::set_desired_location);
+  ClassDB::bind_method(D_METHOD("get_desired_location"),
+                       &MovementComponent::get_desired_location);
+  ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "desired_location"),
+               "set_desired_location", "get_desired_location");
+
   ClassDB::bind_method(D_METHOD("is_at_destination"),
                        &MovementComponent::is_at_destination);
 
@@ -54,15 +66,39 @@ void MovementComponent::_ready() {
   frame_count = 0;
   is_ready = false;
 
-  // Connect to owner unit's health component death signal
   Unit* owner = get_owner_unit();
   if (owner != nullptr) {
+    // Connect to health component death signal
     HealthComponent* health_comp = owner->get_health_component();
     if (health_comp != nullptr) {
       health_comp->connect(StringName("died"),
                            Callable(this, StringName("_on_owner_unit_died")));
     }
   }
+}
+
+void MovementComponent::_physics_process(double delta) {
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  // Get the parent CharacterBody3D (Unit)
+  CharacterBody3D* body = Object::cast_to<CharacterBody3D>(get_parent());
+  if (body == nullptr) {
+    return;
+  }
+
+  // Get movement velocity from our logic
+  // Note: Use MOVE as default order - Unit will set desired_location based on
+  // actual order
+  Vector3 movement_velocity =
+      process_movement(delta, desired_location, OrderType::MOVE);
+
+  // Apply gravity and move
+  Vector3 velocity = movement_velocity;
+  velocity.y = body->get_velocity().y;  // Preserve vertical velocity (gravity)
+  body->set_velocity(velocity);
+  body->move_and_slide();
 }
 
 void MovementComponent::set_speed(float new_speed) {
@@ -214,6 +250,14 @@ void MovementComponent::_apply_navigation_target_distance(OrderType order) {
       set_target_desired_distance(0.0f);
       break;
   }
+}
+
+void MovementComponent::set_desired_location(const Vector3& location) {
+  desired_location = location;
+}
+
+Vector3 MovementComponent::get_desired_location() const {
+  return desired_location;
 }
 
 bool MovementComponent::is_at_destination() const {

@@ -26,7 +26,7 @@ class ResourcePoolComponent;
 ///
 /// Usage:
 /// 1. Add AbilityComponent as child of Unit
-/// 2. Auto-populate from UnitDefinition via Unit._ready()
+/// 2. Configure abilities array in the editor or via set_abilities()
 /// 3. Call try_cast(slot, target) or try_cast_point(slot, point)
 /// 4. Query states: is_casting(), is_on_cooldown(), get_cooldown_remaining()
 class AbilityComponent : public UnitComponent {
@@ -36,10 +36,14 @@ class AbilityComponent : public UnitComponent {
   static void _bind_methods();
 
   // Ability slots (configurable, typically 4-6: Q, W, E, R, D, F)
+  // Can be edited directly in the Godot inspector
   std::vector<Ref<AbilityDefinition>> ability_slots;
 
   // Cooldown tracking per ability slot
   std::vector<float> cooldown_timers;
+
+  // Godot-exposed array of abilities (synchronized with ability_slots)
+  godot::Array abilities_array;
 
   // Casting state
   int casting_slot = -1;
@@ -68,6 +72,10 @@ class AbilityComponent : public UnitComponent {
 
   int get_ability_count() const;
   void set_ability_count(int count);
+
+  // Array-based interface for editor exposure
+  void set_abilities(const godot::Array& abilities);
+  godot::Array get_abilities() const;
 
   // ========== ABILITY CASTING (Main Entry Points) ==========
   // Try to cast ability at a unit target
