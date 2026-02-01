@@ -20,6 +20,7 @@
 #include "../components/abilities/ability_definition.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/unit.hpp"
+#include "../debug/debug_mesh_renderer.hpp"
 #include "../debug/godot_debug_drawer.hpp"
 #include "../debug/skillshot_debug_renderer.hpp"
 
@@ -217,8 +218,8 @@ void InputManager::_process(double delta) {
   // Debug: Draw targeting area while aiming ability
   if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
       camera != nullptr) {
-    GodotDebugDrawer* drawer = GodotDebugDrawer::get_singleton();
-    if (drawer != nullptr && drawer->is_debug_enabled()) {
+    DebugMeshRenderer* renderer = DebugMeshRenderer::get_singleton();
+    if (renderer != nullptr && renderer->is_debug_enabled()) {
       // Get mouse position and raycast to ground
       Vector3 mouse_pos;
       godot::Object* dummy = nullptr;
@@ -228,14 +229,14 @@ void InputManager::_process(double delta) {
           Ref<AbilityDefinition> ability =
               ability_component->get_ability(awaiting_target_slot);
           if (ability != nullptr) {
-            // Draw the targeting area
-            drawer->draw_ability_area(mouse_pos, ability->get_aoe_radius());
+            // Draw the targeting area (green circle at cursor)
+            renderer->draw_circle(mouse_pos, ability->get_aoe_radius(),
+                                  Color(0, 1, 0, 0.4f), 0.05f);
 
-            // Draw ability range from caster
-            if (drawer->is_draw_ability_ranges()) {
-              drawer->draw_ability_range(controlled_unit->get_global_position(),
-                                         ability->get_range());
-            }
+            // Draw ability range from caster (blue circle)
+            renderer->draw_circle(controlled_unit->get_global_position(),
+                                  ability->get_range(), Color(0, 0.5f, 1, 0.3f),
+                                  0.05f);
           }
         }
       }

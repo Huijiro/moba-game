@@ -25,6 +25,7 @@
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
+#include "debug/debug_mesh_renderer.hpp"
 #include "debug/debug_visuals.hpp"
 #include "debug/godot_debug_drawer.hpp"
 #include "debug/skillshot_debug_renderer.hpp"
@@ -62,6 +63,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(UnitDefinitionManager)
   GDREGISTER_CLASS(DebugVisuals)
   GDREGISTER_CLASS(GodotDebugDrawer)
+  GDREGISTER_CLASS(DebugMeshRenderer)
   GDREGISTER_CLASS(SkillshotDebugRenderer)
   GDREGISTER_CLASS(VisualEffect)
   GDREGISTER_CLASS(ProjectileVisual)
