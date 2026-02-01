@@ -7,6 +7,8 @@
 
 #include "ai/test_movement.hpp"
 #include "camera/moba_camera.hpp"
+#include "common/unit_definition.hpp"
+#include "common/unit_definition_manager.hpp"
 #include "components/abilities/ability_component.hpp"
 #include "components/abilities/ability_definition.hpp"
 #include "components/abilities/ability_effect.hpp"
@@ -47,6 +49,8 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(DamageEffect)
   GDREGISTER_CLASS(AoEDamageEffect)
   GDREGISTER_CLASS(AbilityComponent)
+  GDREGISTER_CLASS(UnitDefinition)
+  GDREGISTER_CLASS(UnitDefinitionManager)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

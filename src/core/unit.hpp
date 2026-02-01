@@ -2,10 +2,12 @@
 #define GDEXTENSION_UNIT_H
 
 #include <godot_cpp/classes/character_body3d.hpp>
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include "../common/unit_definition.hpp"
 #include "../common/unit_order.hpp"
 
 namespace godot {
@@ -62,6 +64,10 @@ class Unit : public CharacterBody3D {
   AttackComponent* get_attack_component() const;
   AbilityComponent* get_ability_component() const;
 
+  // Unit definition setup
+  void set_unit_definition(const godot::Ref<UnitDefinition>& unit_def);
+  godot::Ref<UnitDefinition> get_unit_definition() const;
+
  private:
   void _set_order(OrderType new_order, godot::Object* new_target);
   void _clear_order_targets();
@@ -79,6 +85,7 @@ class Unit : public CharacterBody3D {
 
   MovementComponent* movement_component = nullptr;
   AbilityComponent* ability_component = nullptr;
+  godot::Ref<UnitDefinition> unit_definition = nullptr;
 };
 
 #endif  // GDEXTENSION_UNIT_H

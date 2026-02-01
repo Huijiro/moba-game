@@ -1,5 +1,6 @@
 #include "unit.hpp"
 
+#include "../common/unit_definition.hpp"
 #include "../components/abilities/ability_component.hpp"
 #include "../components/combat/attack_component.hpp"
 #include "../components/health/health_component.hpp"
@@ -69,6 +70,16 @@ void Unit::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::INT, "faction_id"), "set_faction_id",
                "get_faction_id");
 
+  // Unit definition setup
+  ClassDB::bind_method(D_METHOD("set_unit_definition", "unit_def"),
+                       &Unit::set_unit_definition);
+  ClassDB::bind_method(D_METHOD("get_unit_definition"),
+                       &Unit::get_unit_definition);
+  ADD_PROPERTY(
+      PropertyInfo(Variant::OBJECT, "unit_definition",
+                   godot::PROPERTY_HINT_RESOURCE_TYPE, "UnitDefinition"),
+      "set_unit_definition", "get_unit_definition");
+
   ADD_SIGNAL(MethodInfo("order_changed",
                         PropertyInfo(Variant::INT, "previous_order"),
                         PropertyInfo(Variant::INT, "new_order"),
@@ -83,6 +94,18 @@ void Unit::_ready() {
       get_component_by_class("MovementComponent"));
   ability_component = Object::cast_to<AbilityComponent>(
       get_component_by_class("AbilityComponent"));
+
+  // Auto-populate abilities from unit definition if set
+  if (unit_definition.is_valid() && ability_component != nullptr) {
+    for (int i = 0; i < 4; i++) {
+      auto ability = unit_definition->get_ability(i);
+      if (ability.is_valid()) {
+        ability_component->set_ability(i, ability);
+        UtilityFunctions::print("[Unit] Loaded ability slot " + String::num(i) +
+                                ": " + ability->get_ability_name());
+      }
+    }
+  }
 }
 
 void Unit::_physics_process(double delta) {
@@ -299,4 +322,12 @@ AttackComponent* Unit::get_attack_component() const {
 AbilityComponent* Unit::get_ability_component() const {
   Node* component = get_component_by_class("AbilityComponent");
   return Object::cast_to<AbilityComponent>(component);
+}
+
+void Unit::set_unit_definition(const godot::Ref<UnitDefinition>& unit_def) {
+  unit_definition = unit_def;
+}
+
+godot::Ref<UnitDefinition> Unit::get_unit_definition() const {
+  return unit_definition;
 }
