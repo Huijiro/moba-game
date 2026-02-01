@@ -33,7 +33,7 @@ void GameSettings::set_channel_requires_stop_command_only(bool value) {
 int GameSettings::get_casting_mode() {
   ProjectSettings* settings = ProjectSettings::get_singleton();
   if (settings == nullptr) {
-    return static_cast<int>(CastingMode::INSTANT);  // Default
+    return static_cast<int>(CastingMode::CLICK_TO_CAST);  // Default
   }
 
   godot::Variant value = settings->get_setting(SETTING_CASTING_MODE);
@@ -85,10 +85,11 @@ void GameSettings::register_settings() {
         "[GameSettings] Registered channel_requires_stop_command_only = true");
   }
 
-  // Register casting mode setting with default value (INSTANT)
+  // Register casting mode setting with default value (CLICK_TO_CAST)
   if (!settings->has_setting(SETTING_CASTING_MODE)) {
     settings->set_setting(SETTING_CASTING_MODE,
-                          static_cast<int>(CastingMode::INSTANT));
-    UtilityFunctions::print("[GameSettings] Registered casting_mode = INSTANT");
+                          static_cast<int>(CastingMode::CLICK_TO_CAST));
+    UtilityFunctions::print(
+        "[GameSettings] Registered casting_mode = CLICK_TO_CAST");
   }
 }
