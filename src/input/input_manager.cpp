@@ -116,16 +116,15 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     return;
   }
 
-  // Check for keyboard input (ability keys Q/W/E/R)
-  // Use Godot's input action system
-  if (event->is_action_pressed("ui_ability_q")) {
-    _handle_ability_input("ui_ability_q");
-  } else if (event->is_action_pressed("ui_ability_w")) {
-    _handle_ability_input("ui_ability_w");
-  } else if (event->is_action_pressed("ui_ability_e")) {
-    _handle_ability_input("ui_ability_e");
-  } else if (event->is_action_pressed("ui_ability_r")) {
-    _handle_ability_input("ui_ability_r");
+  // Check for keyboard input (ability keys Q/W/E/R/D/F)
+  // Support up to 6 ability slots, map to keybinds
+  const char* ability_keys[] = {"q", "w", "e", "r", "d", "f"};
+  for (const char* key : ability_keys) {
+    String action_name = String("ui_ability_") + String(key);
+    if (event->is_action_pressed(action_name)) {
+      _handle_ability_input(action_name);
+      break;  // Only process one ability key per input event
+    }
   }
 
   // Check for mouse button click
@@ -431,12 +430,16 @@ int InputManager::get_bound_ability(const String& key) const {
 }
 
 void InputManager::_init_default_keybinds() {
-  // Set up default keybinds: Q/W/E/R to ability slots 0/1/2/3
-  keybind_map["ui_ability_q"] = 0;  // Q key
-  keybind_map["ui_ability_w"] = 1;  // W key
-  keybind_map["ui_ability_e"] = 2;  // E key
-  keybind_map["ui_ability_r"] = 3;  // R key
-  UtilityFunctions::print("[InputManager] Initialized default keybinds");
+  // Set up default keybinds: Q/W/E/R/D/F to ability slots 0-5
+  // Supports up to 6 ability slots
+  keybind_map["ui_ability_q"] = 0;  // Q key (primary)
+  keybind_map["ui_ability_w"] = 1;  // W key (primary)
+  keybind_map["ui_ability_e"] = 2;  // E key (primary)
+  keybind_map["ui_ability_r"] = 3;  // R key (primary)
+  keybind_map["ui_ability_d"] = 4;  // D key (extra)
+  keybind_map["ui_ability_f"] = 5;  // F key (extra)
+  UtilityFunctions::print(
+      "[InputManager] Initialized default keybinds (Q/W/E/R/D/F)");
 }
 
 void InputManager::_handle_ability_input(const String& key) {
