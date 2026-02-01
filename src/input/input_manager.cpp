@@ -230,13 +230,13 @@ void InputManager::_process(double delta) {
             float range = ability->get_range();
             float aoe_radius = ability->get_aoe_radius();
 
-            // Draw AoE radius at cursor position (green)
+            // Draw AoE radius at cursor position (bright green - very visible)
             debugger->draw_circle_xz(mouse_pos, aoe_radius,
-                                     godot::Color(0, 1, 0, 1), 32);
+                                     godot::Color(0, 1, 0, 1), 64);
 
-            // Draw ability range from caster (blue)
+            // Draw ability range from caster (bright blue - very visible)
             debugger->draw_circle_xz(caster_pos, range,
-                                     godot::Color(0, 0, 1, 0.5f), 32);
+                                     godot::Color(0, 0.5f, 1, 1), 64);
           }
         }
       }

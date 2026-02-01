@@ -86,7 +86,11 @@ void VisualDebugger::draw_circle_xz(const Vector3& center,
     return;
   }
 
+  // Use more segments for thicker appearance (64 instead of 32)
+  // and draw twice for extra thickness/visibility
+  segments = std::max(segments, 64);
   float angle_step = 2.0f * 3.14159265f / segments;
+  const float thickness_offset = 0.1f;  // Slight offset for thickness effect
 
   for (int i = 0; i < segments; i++) {
     float angle1 = i * angle_step;
@@ -101,13 +105,23 @@ void VisualDebugger::draw_circle_xz(const Vector3& center,
     Vector3 p1(x1, center.y, z1);
     Vector3 p2(x2, center.y, z2);
 
-    // Add line segment to pending draws
+    // Add main line segment
     PendingDraw draw;
     draw.type = DrawType::LINE;
     draw.p1 = p1;
     draw.p2 = p2;
     draw.color = color;
     pending_draws.push_back(draw);
+
+    // Add offset line segment for thickness effect
+    Vector3 p1_offset(x1, center.y + thickness_offset, z1);
+    Vector3 p2_offset(x2, center.y + thickness_offset, z2);
+    PendingDraw draw_offset;
+    draw_offset.type = DrawType::LINE;
+    draw_offset.p1 = p1_offset;
+    draw_offset.p2 = p2_offset;
+    draw_offset.color = color;
+    pending_draws.push_back(draw_offset);
   }
 }
 
