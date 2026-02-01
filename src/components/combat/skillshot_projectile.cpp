@@ -82,7 +82,7 @@ void SkillshotProjectile::_physics_process(double delta) {
     // Draw collision radius at projectile position (yellow circle with
     // thickness)
     debugger->draw_circle_xz(new_pos, hit_radius, godot::Color(1, 1, 0, 1), 16,
-                             1.5f);
+                             1.0f);
   }
 
   // Check if we've exceeded max distance
@@ -149,7 +149,7 @@ void SkillshotProjectile::_detonate() {
   if (debugger != nullptr && debugger->is_debug_enabled()) {
     // Draw AoE explosion radius at detonation point (orange for visibility)
     debugger->draw_circle_xz(explosion_center, aoe_radius,
-                             godot::Color(1, 0.5f, 0, 1), 32, 2.0f, false);
+                             godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
   }
 
   _find_and_damage_units();

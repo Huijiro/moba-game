@@ -158,7 +158,7 @@ void AbilityComponent::_physics_process(double delta) {
         if (debugger != nullptr && debugger->is_debug_enabled()) {
           // Draw white line from caster to target with thickness
           debugger->draw_line(caster_pos, target_pos, godot::Color(1, 1, 1, 1),
-                              2.0f);
+                              1.0f);
         }
 
         if (range > 0.0f && distance > range) {

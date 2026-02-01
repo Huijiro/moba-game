@@ -288,13 +288,13 @@ void InputManager::_process(double delta) {
 
             // Draw aiming line from caster to cursor (yellow - very visible)
             debugger->draw_line(caster_pos, mouse_pos, godot::Color(1, 1, 0, 1),
-                                2.0f);
+                                1.0f);
 
             // Draw AoE radius at cursor position (bright green - shows impact
             // area)
             if (aoe_radius > 0.01f) {
               debugger->draw_circle_xz(mouse_pos, aoe_radius,
-                                       godot::Color(0, 1, 0, 1), 32, 2.0f,
+                                       godot::Color(0, 1, 0, 1), 32, 1.0f,
                                        false);
             }
           }
