@@ -79,6 +79,21 @@ void InputManager::_bind_methods() {
                             godot::PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"),
                "set_click_indicator_scene", "get_click_indicator_scene");
 
+  // Input action configuration
+  ClassDB::bind_method(D_METHOD("set_move_action", "action"),
+                       &InputManager::set_move_action);
+  ClassDB::bind_method(D_METHOD("get_move_action"),
+                       &InputManager::get_move_action);
+  ADD_PROPERTY(PropertyInfo(Variant::STRING, "move_action"), "set_move_action",
+               "get_move_action");
+
+  ClassDB::bind_method(D_METHOD("set_cast_action", "action"),
+                       &InputManager::set_cast_action);
+  ClassDB::bind_method(D_METHOD("get_cast_action"),
+                       &InputManager::get_cast_action);
+  ADD_PROPERTY(PropertyInfo(Variant::STRING, "cast_action"), "set_cast_action",
+               "get_cast_action");
+
   // Keybind methods
   ClassDB::bind_method(D_METHOD("bind_ability_to_key", "key", "ability_slot"),
                        &InputManager::bind_ability_to_key);
@@ -150,8 +165,14 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     return;
   }
 
+  // Check which action was triggered
+  bool is_cast_action =
+      event->is_action_pressed(godot::StringName(cast_action));
+  bool is_move_action =
+      event->is_action_pressed(godot::StringName(move_action));
+
   // If waiting for ability target, handle click for ability
-  if (awaiting_target_slot >= 0) {
+  if (awaiting_target_slot >= 0 && is_cast_action) {
     Vector3 click_position;
     godot::Object* clicked_object = nullptr;
     if (_try_raycast(click_position, clicked_object)) {
@@ -191,8 +212,8 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     return;
   }
 
-  // Normal right-click handling (movement/attack)
-  if (mouse_event->get_button_index() != MOUSE_BUTTON_RIGHT) {
+  // Movement/attack handling
+  if (!is_move_action) {
     return;
   }
 
@@ -307,6 +328,24 @@ void InputManager::set_click_indicator_scene(const Ref<PackedScene>& scene) {
 
 Ref<PackedScene> InputManager::get_click_indicator_scene() const {
   return click_indicator_scene;
+}
+
+void InputManager::set_move_action(const String& action) {
+  move_action = action;
+  UtilityFunctions::print("[InputManager] Move action set to: " + action);
+}
+
+String InputManager::get_move_action() const {
+  return move_action;
+}
+
+void InputManager::set_cast_action(const String& action) {
+  cast_action = action;
+  UtilityFunctions::print("[InputManager] Cast action set to: " + action);
+}
+
+String InputManager::get_cast_action() const {
+  return cast_action;
 }
 
 bool InputManager::_try_raycast(Vector3& out_position,

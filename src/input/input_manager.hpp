@@ -62,6 +62,13 @@ class InputManager : public Node {
   void set_click_indicator_scene(const Ref<PackedScene>& scene);
   Ref<PackedScene> get_click_indicator_scene() const;
 
+  // Input action configuration
+  void set_move_action(const String& action);
+  String get_move_action() const;
+
+  void set_cast_action(const String& action);
+  String get_cast_action() const;
+
   // Keybind management
   void bind_ability_to_key(const String& key, int ability_slot);
   void unbind_key(const String& key);
@@ -84,6 +91,10 @@ class InputManager : public Node {
   Camera3D* camera = nullptr;
   godot::PhysicsDirectSpaceState3D* physics_state = nullptr;
   float raycast_distance = 1000.0f;
+
+  // Input actions
+  String move_action = "ui_move";  // Default: right-click
+  String cast_action = "ui_cast";  // Default: left-click
 
   // Visual feedback
   godot::Node3D* click_marker = nullptr;
