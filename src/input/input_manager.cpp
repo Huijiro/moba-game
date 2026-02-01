@@ -400,6 +400,8 @@ void InputManager::_handle_ability_input(const String& key) {
   }
 
   // Try to cast the ability
-  // For now, use null target (will use attack target or point target later)
-  ability_component->try_cast(ability_slot, nullptr);
+  // Use the unit's current attack target if available
+  // This allows abilities to target whatever unit is currently being attacked
+  Unit* target = controlled_unit->get_attack_target();
+  ability_component->try_cast(ability_slot, target);
 }

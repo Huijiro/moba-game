@@ -80,6 +80,9 @@ void Unit::_bind_methods() {
                    godot::PROPERTY_HINT_RESOURCE_TYPE, "UnitDefinition"),
       "set_unit_definition", "get_unit_definition");
 
+  // Target helpers
+  ClassDB::bind_method(D_METHOD("get_attack_target"), &Unit::get_attack_target);
+
   ADD_SIGNAL(MethodInfo("order_changed",
                         PropertyInfo(Variant::INT, "previous_order"),
                         PropertyInfo(Variant::INT, "new_order"),
@@ -330,4 +333,8 @@ void Unit::set_unit_definition(const godot::Ref<UnitDefinition>& unit_def) {
 
 godot::Ref<UnitDefinition> Unit::get_unit_definition() const {
   return unit_definition;
+}
+
+Unit* Unit::get_attack_target() const {
+  return attack_target;
 }

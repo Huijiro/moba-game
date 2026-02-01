@@ -90,6 +90,9 @@ class Unit : public CharacterBody3D {
   void set_unit_definition(const godot::Ref<UnitDefinition>& unit_def);
   godot::Ref<UnitDefinition> get_unit_definition() const;
 
+  // Target access for abilities
+  Unit* get_attack_target() const;
+
  private:
   void _set_order(OrderType new_order, godot::Object* new_target);
   void _clear_order_targets();
