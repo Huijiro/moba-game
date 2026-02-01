@@ -73,6 +73,7 @@ class InputManager : public Node {
   void _show_click_marker(const Vector3& position);
   void _update_click_marker(double delta);
   void _handle_ability_input(const String& key);
+  void _handle_stop_command();
   void _init_default_keybinds();
 
   // Get key name from input action (e.g., "ui_ability_1" -> "Q")

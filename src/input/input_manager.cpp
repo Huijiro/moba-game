@@ -119,6 +119,13 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     return;
   }
 
+  // Check for stop command (S key)
+  if (event->is_action_pressed(godot::StringName("ui_stop"))) {
+    _handle_stop_command();
+    get_viewport()->set_input_as_handled();
+    return;
+  }
+
   // Check for keyboard input (ability slots 1-6)
   // Support up to 6 ability slots via ui_ability_1 through ui_ability_6 actions
   for (int i = 1; i <= 6; i++) {
@@ -585,6 +592,47 @@ void InputManager::_handle_ability_input(const String& key) {
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for position target - click to cast");
+  }
+}
+
+void InputManager::_handle_stop_command() {
+  if (controlled_unit == nullptr) {
+    return;
+  }
+
+  bool did_stop_anything = false;
+
+  // Cancel any ability targeting/channeling
+  if (awaiting_target_slot >= 0) {
+    UtilityFunctions::print(
+        "[InputManager] Cancelled targeting mode for ability " +
+        String::num(awaiting_target_slot));
+    awaiting_target_slot = -1;
+    is_awaiting_unit_target = false;
+    did_stop_anything = true;
+  }
+
+  if (channeling_ability_slot >= 0) {
+    auto ability_component = controlled_unit->get_ability_component();
+    if (ability_component != nullptr) {
+      UtilityFunctions::print(
+          "[InputManager] Stop command: Channel interrupted on ability slot " +
+          String::num(channeling_ability_slot));
+      channeling_ability_slot = -1;
+      channeling_action_name = "";
+      did_stop_anything = true;
+    }
+  }
+
+  // Cancel any movement orders
+  if (controlled_unit->has_method("issue_stop_order")) {
+    controlled_unit->call("issue_stop_order");
+    UtilityFunctions::print("[InputManager] Stop command: Cancelled movement");
+    did_stop_anything = true;
+  }
+
+  if (!did_stop_anything) {
+    UtilityFunctions::print("[InputManager] Stop command: Nothing to stop");
   }
 }
 
