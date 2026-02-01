@@ -3,7 +3,7 @@
 
 #include <godot_cpp/variant/string_name.hpp>
 
-#include "unit_component.hpp"
+#include "../unit_component.hpp"
 
 using godot::StringName;
 

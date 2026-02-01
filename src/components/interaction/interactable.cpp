@@ -3,7 +3,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include "unit.hpp"
+#include "../../core/unit.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;

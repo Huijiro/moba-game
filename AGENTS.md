@@ -1,11 +1,11 @@
 # RPG Game - Development Guide for AI Agents
 
-This document provides comprehensive guidance for AI agents working on this Godot 4.5 C++ GDExtension project.
+This document provides comprehensive guidance for AI agents working on this Godot 4.6 C++ GDExtension project.
 
 ## Project Overview
 
 **RPG Game** is a MOBA-style action RPG built with:
-- **Engine**: Godot 4.5.1
+- **Engine**: Godot 4.6
 - **Primary Language**: C++ (GDExtension)
 - **Build System**: CMake + Ninja
 - **Scripting**: GDScript (minimal, used for scene extensions)
@@ -23,7 +23,7 @@ The project uses a GDExtension architecture where C++ classes are registered wit
 - CMake 3.30+
 - Ninja build system
 - C++17 compatible compiler (GCC/Clang)
-- Godot 4.5.1
+- Godot 4.6
 
 ### Build Commands
 
@@ -58,12 +58,43 @@ ninja
 
 ```
 rpg-game/
-├── src/                          # C++ source files
-│   ├── unit.hpp/.cpp             # Player character implementation
-│   ├── input_manager.hpp/.cpp    # Input and click-to-move system
-│   ├── moba_camera.hpp/.cpp      # Isometric camera controller
-│   ├── beeper.hpp/.cpp           # Example/test class
-│   ├── register_types.hpp/.cpp   # GDExtension registration
+├── src/                                # C++ source files
+│   ├── register_types.hpp/.cpp         # GDExtension registration
+│   ├── common/                         # Shared types and enums
+│   │   ├── unit_order.hpp              # Order type enum
+│   │   └── CMakeLists.txt
+│   ├── core/                           # Core game systems
+│   │   ├── unit.hpp/.cpp               # Player character implementation
+│   │   ├── match_manager.hpp/.cpp      # Game manager
+│   │   └── CMakeLists.txt
+│   ├── input/                          # Input systems
+│   │   ├── input_manager.hpp/.cpp      # Input and click-to-move system
+│   │   └── CMakeLists.txt
+│   ├── camera/                         # Camera systems
+│   │   ├── moba_camera.hpp/.cpp        # Isometric camera controller
+│   │   └── CMakeLists.txt
+│   ├── components/                     # Component system
+│   │   ├── unit_component.hpp/.cpp     # Base component class
+│   │   ├── movement/                   # Movement component
+│   │   │   ├── movement_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── combat/                     # Combat components
+│   │   │   ├── attack_component.hpp/.cpp
+│   │   │   ├── projectile.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── health/                     # Health component
+│   │   │   ├── health_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── resources/                  # Resource pool component
+│   │   │   ├── resource_pool_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── interaction/                # Interaction component
+│   │   │   ├── interactable.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   └── CMakeLists.txt
+│   ├── ai/                             # AI and test utilities
+│   │   ├── test_movement.hpp/.cpp      # Test AI for movement
+│   │   └── CMakeLists.txt
 │   └── CMakeLists.txt
 ├── GodotGame/
 │   ├── main.tscn                 # Main scene with all gameplay systems
@@ -344,6 +375,6 @@ git log --oneline
 
 ## Resources and Documentation
 
-- [Godot 4.5 Documentation](https://docs.godotengine.org/en/stable/)
+- [Godot 4.6 Documentation](https://docs.godotengine.org/en/stable/)
 - [Godot C++ Bindings](https://github.com/godotengine/godot-cpp)
 - [Navigation in Godot](https://docs.godotengine.org/en/stable/usage/3d/using_3d_characters/using_3d_characters.html)

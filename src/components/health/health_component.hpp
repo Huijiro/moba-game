@@ -1,7 +1,7 @@
 #ifndef GDEXTENSION_HEALTH_COMPONENT_H
 #define GDEXTENSION_HEALTH_COMPONENT_H
 
-#include "unit_component.hpp"
+#include "../unit_component.hpp"
 
 class HealthComponent : public UnitComponent {
   GDCLASS(HealthComponent, UnitComponent)

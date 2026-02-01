@@ -6,7 +6,7 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
-#include "unit_order.hpp"
+#include "../common/unit_order.hpp"
 
 namespace godot {
 class Object;

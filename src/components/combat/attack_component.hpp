@@ -5,7 +5,7 @@
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/core/property_info.hpp>
 
-#include "unit_component.hpp"
+#include "../unit_component.hpp"
 
 using godot::List;
 using godot::PackedScene;

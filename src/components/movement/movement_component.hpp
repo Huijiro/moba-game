@@ -5,7 +5,7 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
-#include "unit_order.hpp"
+#include "../../common/unit_order.hpp"
 
 using godot::NavigationAgent3D;
 using godot::PackedStringArray;

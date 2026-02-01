@@ -5,19 +5,18 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
-#include "attack_component.hpp"
-#include "beeper.h"
-#include "health_component.hpp"
-#include "input_manager.hpp"
-#include "interactable.hpp"
-#include "match_manager.hpp"
-#include "moba_camera.hpp"
-#include "movement_component.hpp"
-#include "projectile.hpp"
-#include "resource_pool_component.hpp"
-#include "test_movement.hpp"
-#include "unit.hpp"
-#include "unit_component.hpp"
+#include "ai/test_movement.hpp"
+#include "camera/moba_camera.hpp"
+#include "components/combat/attack_component.hpp"
+#include "components/combat/projectile.hpp"
+#include "components/health/health_component.hpp"
+#include "components/interaction/interactable.hpp"
+#include "components/movement/movement_component.hpp"
+#include "components/resources/resource_pool_component.hpp"
+#include "components/unit_component.hpp"
+#include "core/match_manager.hpp"
+#include "core/unit.hpp"
+#include "input/input_manager.hpp"
 
 using namespace godot;
 
@@ -26,7 +25,6 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
     return;
   }
 
-  GDREGISTER_RUNTIME_CLASS(Beeper)
   GDREGISTER_CLASS(Unit)
   GDREGISTER_CLASS(Interactable)
   GDREGISTER_CLASS(InputManager)
