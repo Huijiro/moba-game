@@ -58,12 +58,43 @@ ninja
 
 ```
 rpg-game/
-├── src/                          # C++ source files
-│   ├── unit.hpp/.cpp             # Player character implementation
-│   ├── input_manager.hpp/.cpp    # Input and click-to-move system
-│   ├── moba_camera.hpp/.cpp      # Isometric camera controller
-│   ├── beeper.hpp/.cpp           # Example/test class
-│   ├── register_types.hpp/.cpp   # GDExtension registration
+├── src/                                # C++ source files
+│   ├── register_types.hpp/.cpp         # GDExtension registration
+│   ├── common/                         # Shared types and enums
+│   │   ├── unit_order.hpp              # Order type enum
+│   │   └── CMakeLists.txt
+│   ├── core/                           # Core game systems
+│   │   ├── unit.hpp/.cpp               # Player character implementation
+│   │   ├── match_manager.hpp/.cpp      # Game manager
+│   │   └── CMakeLists.txt
+│   ├── input/                          # Input systems
+│   │   ├── input_manager.hpp/.cpp      # Input and click-to-move system
+│   │   └── CMakeLists.txt
+│   ├── camera/                         # Camera systems
+│   │   ├── moba_camera.hpp/.cpp        # Isometric camera controller
+│   │   └── CMakeLists.txt
+│   ├── components/                     # Component system
+│   │   ├── unit_component.hpp/.cpp     # Base component class
+│   │   ├── movement/                   # Movement component
+│   │   │   ├── movement_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── combat/                     # Combat components
+│   │   │   ├── attack_component.hpp/.cpp
+│   │   │   ├── projectile.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── health/                     # Health component
+│   │   │   ├── health_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── resources/                  # Resource pool component
+│   │   │   ├── resource_pool_component.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   ├── interaction/                # Interaction component
+│   │   │   ├── interactable.hpp/.cpp
+│   │   │   └── CMakeLists.txt
+│   │   └── CMakeLists.txt
+│   ├── ai/                             # AI and test utilities
+│   │   ├── test_movement.hpp/.cpp      # Test AI for movement
+│   │   └── CMakeLists.txt
 │   └── CMakeLists.txt
 ├── GodotGame/
 │   ├── main.tscn                 # Main scene with all gameplay systems

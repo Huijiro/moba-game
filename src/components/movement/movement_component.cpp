@@ -11,8 +11,8 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
-#include "health_component.hpp"
-#include "unit.hpp"
+#include "../../core/unit.hpp"
+#include "../health/health_component.hpp"
 
 using godot::Basis;
 using godot::Callable;

@@ -8,9 +8,9 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
-#include "health_component.hpp"
+#include "../../core/unit.hpp"
+#include "../health/health_component.hpp"
 #include "projectile.hpp"
-#include "unit.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;

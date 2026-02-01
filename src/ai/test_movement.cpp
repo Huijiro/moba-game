@@ -1,6 +1,6 @@
 #include "test_movement.hpp"
 
-#include "unit.hpp"
+#include "../core/unit.hpp"
 
 #include <cmath>
 #include <godot_cpp/classes/engine.hpp>

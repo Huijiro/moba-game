@@ -1,9 +1,9 @@
 #include "unit.hpp"
 
-#include "attack_component.hpp"
-#include "health_component.hpp"
-#include "interactable.hpp"
-#include "movement_component.hpp"
+#include "../components/combat/attack_component.hpp"
+#include "../components/health/health_component.hpp"
+#include "../components/interaction/interactable.hpp"
+#include "../components/movement/movement_component.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>

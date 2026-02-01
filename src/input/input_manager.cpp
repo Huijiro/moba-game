@@ -15,8 +15,8 @@
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 
-#include "interactable.hpp"
-#include "unit.hpp"
+#include "../components/interaction/interactable.hpp"
+#include "../core/unit.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;

@@ -5,8 +5,8 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
-#include "input_manager.hpp"
-#include "moba_camera.hpp"
+#include "../camera/moba_camera.hpp"
+#include "../input/input_manager.hpp"
 #include "unit.hpp"
 
 using godot::ClassDB;
