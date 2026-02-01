@@ -205,33 +205,60 @@ void VisualDebugger::_flush_draws() {
   // Clear previous frame
   immediate_mesh->clear_surfaces();
 
-  // Begin new surface
-  immediate_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+  // Begin new surface - use triangles for better line thickness support
+  immediate_mesh->surface_begin(Mesh::PRIMITIVE_TRIANGLES);
 
   // Add all pending draws
   for (const auto& draw : pending_draws) {
     immediate_mesh->surface_set_color(draw.color);
 
-    if (draw.thickness > 1.0f) {
-      // For thicker lines, draw multiple parallel lines
-      int line_count = static_cast<int>(draw.thickness);
+    if (draw.thickness > 0.1f) {
+      // Draw a thick line as a rectangle (two triangles)
       Vector3 direction = (draw.p2 - draw.p1).normalized();
       Vector3 perpendicular =
           Vector3(-direction.z, 0, direction.x).normalized();
 
-      float offset_range = draw.thickness * 0.5f;
-      for (int i = 0; i < line_count; i++) {
-        float offset = -offset_range +
-                       (offset_range * 2.0f * i / std::max(1, line_count - 1));
-        Vector3 offset_vec = perpendicular * offset;
+      float half_thickness = draw.thickness * 0.5f;
+      Vector3 offset = perpendicular * half_thickness;
 
-        immediate_mesh->surface_add_vertex(draw.p1 + offset_vec);
-        immediate_mesh->surface_add_vertex(draw.p2 + offset_vec);
-      }
+      // Four corners of the rectangle
+      Vector3 p1_top = draw.p1 + offset;
+      Vector3 p1_bot = draw.p1 - offset;
+      Vector3 p2_top = draw.p2 + offset;
+      Vector3 p2_bot = draw.p2 - offset;
+
+      // First triangle
+      immediate_mesh->surface_add_vertex(p1_top);
+      immediate_mesh->surface_add_vertex(p1_bot);
+      immediate_mesh->surface_add_vertex(p2_top);
+
+      // Second triangle
+      immediate_mesh->surface_add_vertex(p1_bot);
+      immediate_mesh->surface_add_vertex(p2_bot);
+      immediate_mesh->surface_add_vertex(p2_top);
     } else {
-      // Single line
-      immediate_mesh->surface_add_vertex(draw.p1);
-      immediate_mesh->surface_add_vertex(draw.p2);
+      // Very thin line - draw as single thin rectangle
+      Vector3 direction = (draw.p2 - draw.p1).normalized();
+      Vector3 perpendicular =
+          Vector3(-direction.z, 0, direction.x).normalized();
+
+      float half_thickness = 0.05f;  // Minimum visible thickness
+      Vector3 offset = perpendicular * half_thickness;
+
+      Vector3 p1_top = draw.p1 + offset;
+      Vector3 p1_bot = draw.p1 - offset;
+      Vector3 p2_top = draw.p2 + offset;
+      Vector3 p2_bot = draw.p2 - offset;
+
+      // First triangle
+      immediate_mesh->surface_add_vertex(p1_top);
+      immediate_mesh->surface_add_vertex(p1_bot);
+      immediate_mesh->surface_add_vertex(p2_top);
+
+      // Second triangle
+      immediate_mesh->surface_add_vertex(p1_bot);
+      immediate_mesh->surface_add_vertex(p2_bot);
+      immediate_mesh->surface_add_vertex(p2_top);
     }
   }
 
