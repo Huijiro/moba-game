@@ -58,11 +58,8 @@ void UnitDefinition::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_abilities"),
                        &UnitDefinition::get_abilities);
 
-  // Expose abilities array directly to editor
-  ADD_PROPERTY(
-      PropertyInfo(Variant::ARRAY, "abilities", godot::PROPERTY_HINT_ARRAY_TYPE,
-                   "AbilityDefinition"),
-      "set", "get");
+  // NOTE: abilities array is exposed directly via _get_property_list()
+  // This allows editor to edit array without needing custom setters
 }
 
 void UnitDefinition::set_unit_name(const String& name) {
