@@ -23,18 +23,29 @@ GodotGame/main.tscn
 
 ### Step 5: Test Casting
 
-**Before you can cast abilities:**
-1. **Right-click on the Enemy Unit** in the scene
-   - This sets the Unit's attack target
-   - Your character will walk toward it
+**Different abilities work differently:**
 
-2. **Wait for Unit to be in range** (about 3-5 meters away)
+**For Unit-Target Abilities (Q, E):**
+1. **Right-click on the Enemy Unit**
+   - This sets the attack target
+   - Your character walks toward it
+2. **Wait for range** (about 5 meters)
+3. **Press Q or E** to cast on that unit
 
-3. **Now press ability keys:**
-   - **Q** - Quick Strike (instant, single target)
-   - **W** - Fireball (1 second cast, then fires)
-   - **E** - Energy Beam (2 second channel, then fires)
-   - **R** - Explosion (instant, area damage around you)
+**For Position-Based Abilities (W, R):**
+1. **Just press the key!**
+   - No need to right-click
+   - W: Fireball casts at your position
+   - R: Explosion damages around you
+2. **If enemy is nearby**, they take damage
+
+**Quick casting order:**
+1. **Right-click Enemy** (sets target for Q/E)
+2. **Wait for range**
+3. **Press Q** → Quick Strike on target ✅
+4. **Press W** → Fireball at your position ✅
+5. **Press E** → Energy Beam on target ✅
+6. **Press R** → Explosion around you ✅
 
 ## Expected Console Output
 
@@ -45,26 +56,26 @@ GodotGame/main.tscn
 [Unit] Loaded ability slot 3: Explosion
 [InputManager] Initialized default keybinds
 
-[When you press Q]:
+[When you press Q (after right-clicking enemy)]:
 [AbilityComponent] Began casting ability slot 0
 [DamageEffect] Applied 25 damage to Enemy Unit
 [AbilityComponent] Executed ability slot 0
 
-[When you press W]:
+[When you press W (at any time, targets position)]:
 [AbilityComponent] Began casting ability slot 1
 [At 0.4 seconds, fires]:
-[DamageEffect] Applied 40 damage to Enemy Unit
+[DamageEffect] Applied 40 damage to Enemy Unit (if nearby)
 [AbilityComponent] Executed ability slot 1
 
-[When you press E]:
+[When you press E (after right-clicking enemy)]:
 [AbilityComponent] Began casting ability slot 2
 [After 2 seconds channel completes]:
 [DamageEffect] Applied 50 damage to Enemy Unit
 [AbilityComponent] Executed ability slot 2
 
-[When you press R]:
+[When you press R (at any time, area effect)]:
 [AbilityComponent] Began casting ability slot 3
-[DamageEffect] Applied 35 damage to Enemy Unit
+[DamageEffect] Applied 35 damage to Enemy Unit (if in 8m radius)
 [AbilityComponent] Executed ability slot 3
 ```
 
@@ -145,10 +156,13 @@ GodotGame/main.tscn
 ## Troubleshooting
 
 ### Console shows: "[DamageEffect] Invalid target or ability"
-**Solution:** You must set an attack target before casting
-1. Right-click the Enemy Unit
-2. Your character walks to it
-3. Try casting again
+**Solution:** Depends on the ability:
+- **For Q/E (unit-target):** Right-click the Enemy Unit first
+  1. Your character walks to it
+  2. Try casting again
+- **For W/R (position-based):** They should work without right-clicking
+  1. Press W/R while standing near enemy
+  2. Or they may need configuration - see TARGETING_SYSTEM.md
 
 ### Console shows: "[InputManager] Unit has no AbilityComponent"
 **Solution:** Check Unit scene structure
