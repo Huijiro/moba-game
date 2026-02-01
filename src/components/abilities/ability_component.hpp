@@ -79,6 +79,9 @@ class AbilityComponent : public UnitComponent {
 
   // ========== INTERNAL METHODS ==========
  private:
+  // Get resource pool by ID, or return default if not found
+  ResourcePoolComponent* _get_resource_pool(const godot::String& pool_id);
+
   // Validation: check if ability can be cast
   bool _can_cast(int slot);
 

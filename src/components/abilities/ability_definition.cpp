@@ -38,6 +38,20 @@ void AbilityDefinition::_bind_methods() {
                "set_icon", "get_icon");
 
   // Cost properties
+  ClassDB::bind_method(D_METHOD("set_resource_pool_id", "pool_id"),
+                       &AbilityDefinition::set_resource_pool_id);
+  ClassDB::bind_method(D_METHOD("get_resource_pool_id"),
+                       &AbilityDefinition::get_resource_pool_id);
+  ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_pool_id"),
+               "set_resource_pool_id", "get_resource_pool_id");
+
+  ClassDB::bind_method(D_METHOD("set_resource_cost", "cost"),
+                       &AbilityDefinition::set_resource_cost);
+  ClassDB::bind_method(D_METHOD("get_resource_cost"),
+                       &AbilityDefinition::get_resource_cost);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "resource_cost"),
+               "set_resource_cost", "get_resource_cost");
+
   ClassDB::bind_method(D_METHOD("set_mana_cost", "cost"),
                        &AbilityDefinition::set_mana_cost);
   ClassDB::bind_method(D_METHOD("get_mana_cost"),
@@ -169,12 +183,30 @@ Ref<Texture2D> AbilityDefinition::get_icon() const {
   return icon;
 }
 
+void AbilityDefinition::set_resource_pool_id(const String& pool_id) {
+  resource_pool_id = pool_id;
+}
+
+String AbilityDefinition::get_resource_pool_id() const {
+  return resource_pool_id;
+}
+
+void AbilityDefinition::set_resource_cost(float cost) {
+  resource_cost = cost >= 0.0f ? cost : 0.0f;
+}
+
+float AbilityDefinition::get_resource_cost() const {
+  return resource_cost;
+}
+
 void AbilityDefinition::set_mana_cost(float cost) {
-  mana_cost = cost >= 0.0f ? cost : 0.0f;
+  // Legacy: mana_cost now maps to resource_cost
+  resource_cost = cost >= 0.0f ? cost : 0.0f;
 }
 
 float AbilityDefinition::get_mana_cost() const {
-  return mana_cost;
+  // Legacy: return resource_cost for backwards compatibility
+  return resource_cost;
 }
 
 void AbilityDefinition::set_cooldown(float duration) {

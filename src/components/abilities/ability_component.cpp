@@ -288,6 +288,27 @@ bool AbilityComponent::_can_cast(int slot) {
   return true;
 }
 
+ResourcePoolComponent* AbilityComponent::_get_resource_pool(
+    const String& pool_id) {
+  Unit* owner = get_unit();
+  if (owner == nullptr) {
+    return nullptr;
+  }
+
+  // Try to find a ResourcePoolComponent with matching pool_id
+  for (int i = 0; i < owner->get_child_count(); i++) {
+    Node* child = owner->get_child(i);
+    ResourcePoolComponent* pool = Object::cast_to<ResourcePoolComponent>(child);
+    if (pool != nullptr && pool->get_pool_id() == pool_id) {
+      return pool;
+    }
+  }
+
+  // Fallback: return the default resource pool if found
+  return Object::cast_to<ResourcePoolComponent>(
+      owner->get_component_by_class("ResourcePoolComponent"));
+}
+
 bool AbilityComponent::_can_afford(int slot) {
   if (slot < 0 || slot >= 4) {
     return false;
@@ -298,15 +319,20 @@ bool AbilityComponent::_can_afford(int slot) {
     return false;
   }
 
-  // Check mana cost if we have a resource pool
-  if (resource_pool != nullptr) {
-    float mana_cost = ability->get_mana_cost();
-    if (mana_cost > 0.0f) {
-      // For now, assume pool has "mana" resource
-      // TODO: Make this more flexible for different resource types
-      if (!resource_pool->can_spend(mana_cost)) {
-        return false;
-      }
+  // Check resource cost
+  float resource_cost = ability->get_resource_cost();
+  if (resource_cost > 0.0f) {
+    String pool_id = ability->get_resource_pool_id();
+    ResourcePoolComponent* pool = _get_resource_pool(pool_id);
+    if (pool == nullptr) {
+      UtilityFunctions::print("[AbilityComponent] Warning: No resource pool '" +
+                              pool_id + "' found for ability '" +
+                              ability->get_ability_name() + "'");
+      return false;
+    }
+
+    if (!pool->can_spend(resource_cost)) {
+      return false;
     }
   }
 
@@ -349,11 +375,13 @@ void AbilityComponent::_execute_ability(int slot) {
     return;
   }
 
-  // Spend mana if we have it
-  if (resource_pool != nullptr) {
-    float mana_cost = ability->get_mana_cost();
-    if (mana_cost > 0.0f) {
-      resource_pool->try_spend(mana_cost);
+  // Spend resource if needed
+  float resource_cost = ability->get_resource_cost();
+  if (resource_cost > 0.0f) {
+    String pool_id = ability->get_resource_pool_id();
+    ResourcePoolComponent* pool = _get_resource_pool(pool_id);
+    if (pool != nullptr) {
+      pool->try_spend(resource_cost);
     }
   }
 

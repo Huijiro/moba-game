@@ -37,8 +37,10 @@ class AbilityDefinition : public Resource {
   String description = "";
   Ref<Texture2D> icon = nullptr;
 
-  // Cost
-  float mana_cost = 0.0f;
+  // Cost - can use any resource pool by specifying pool name and amount
+  String resource_pool_id =
+      "default";  // Which resource pool to use (e.g., "mana", "energy")
+  float resource_cost = 0.0f;  // Amount to deduct from resource pool
   float cooldown = 1.0f;
 
   // Casting behavior
@@ -78,6 +80,13 @@ class AbilityDefinition : public Resource {
   Ref<Texture2D> get_icon() const;
 
   // Cost properties
+  void set_resource_pool_id(const String& pool_id);
+  String get_resource_pool_id() const;
+
+  void set_resource_cost(float cost);
+  float get_resource_cost() const;
+
+  // Legacy mana cost (for backwards compatibility)
   void set_mana_cost(float cost);
   float get_mana_cost() const;
 
