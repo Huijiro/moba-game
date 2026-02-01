@@ -68,6 +68,7 @@ class UnitDefinition : public Resource {
 
   // Get all abilities as array
   Array get_abilities() const;
+  void set_abilities(const Array& new_abilities);
 };
 
 #endif  // GDEXTENSION_UNIT_DEFINITION_H

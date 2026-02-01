@@ -57,9 +57,14 @@ void UnitDefinition::_bind_methods() {
                        &UnitDefinition::has_ability);
   ClassDB::bind_method(D_METHOD("get_abilities"),
                        &UnitDefinition::get_abilities);
+  ClassDB::bind_method(D_METHOD("set_abilities", "abilities"),
+                       &UnitDefinition::set_abilities);
 
-  // NOTE: abilities array is exposed directly via _get_property_list()
-  // This allows editor to edit array without needing custom setters
+  // Expose abilities array for editor editing
+  ADD_PROPERTY(
+      PropertyInfo(Variant::ARRAY, "abilities", godot::PROPERTY_HINT_ARRAY_TYPE,
+                   "AbilityDefinition"),
+      "set_abilities", "get_abilities");
 }
 
 void UnitDefinition::set_unit_name(const String& name) {
@@ -122,4 +127,12 @@ bool UnitDefinition::has_ability(int slot) const {
 
 Array UnitDefinition::get_abilities() const {
   return abilities;
+}
+
+void UnitDefinition::set_abilities(const Array& new_abilities) {
+  abilities = new_abilities;
+  // Ensure we always have 4 slots
+  if (abilities.size() != 4) {
+    abilities.resize(4);
+  }
 }
