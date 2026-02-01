@@ -7,6 +7,11 @@
 
 #include "ai/test_movement.hpp"
 #include "camera/moba_camera.hpp"
+#include "components/abilities/ability_component.hpp"
+#include "components/abilities/ability_definition.hpp"
+#include "components/abilities/ability_effect.hpp"
+#include "components/abilities/effects/aoe_damage_effect.hpp"
+#include "components/abilities/effects/damage_effect.hpp"
 #include "components/combat/attack_component.hpp"
 #include "components/combat/projectile.hpp"
 #include "components/health/health_component.hpp"
@@ -37,6 +42,11 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
+  GDREGISTER_CLASS(AbilityEffect)
+  GDREGISTER_CLASS(AbilityDefinition)
+  GDREGISTER_CLASS(DamageEffect)
+  GDREGISTER_CLASS(AoEDamageEffect)
+  GDREGISTER_CLASS(AbilityComponent)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

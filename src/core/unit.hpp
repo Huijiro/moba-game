@@ -24,6 +24,7 @@ class Interactable;
 class HealthComponent;
 class AttackComponent;
 class MovementComponent;
+class AbilityComponent;
 
 class Unit : public CharacterBody3D {
   GDCLASS(Unit, CharacterBody3D)
@@ -59,6 +60,7 @@ class Unit : public CharacterBody3D {
   godot::Node* get_component_by_class(const StringName& class_name) const;
   HealthComponent* get_health_component() const;
   AttackComponent* get_attack_component() const;
+  AbilityComponent* get_ability_component() const;
 
  private:
   void _set_order(OrderType new_order, godot::Object* new_target);
@@ -76,6 +78,7 @@ class Unit : public CharacterBody3D {
   int32_t faction_id = 0;
 
   MovementComponent* movement_component = nullptr;
+  AbilityComponent* ability_component = nullptr;
 };
 
 #endif  // GDEXTENSION_UNIT_H

@@ -1,0 +1,123 @@
+#include "aoe_damage_effect.hpp"
+
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+#include <vector>
+
+#include "../../../core/unit.hpp"
+#include "../../health/health_component.hpp"
+#include "../ability_definition.hpp"
+
+using godot::ClassDB;
+using godot::D_METHOD;
+using godot::Engine;
+using godot::Node;
+using godot::Object;
+using godot::UtilityFunctions;
+
+AoEDamageEffect::AoEDamageEffect() = default;
+
+AoEDamageEffect::~AoEDamageEffect() = default;
+
+void AoEDamageEffect::_bind_methods() {
+  ClassDB::bind_method(D_METHOD("execute", "caster", "target", "ability"),
+                       &AoEDamageEffect::execute);
+}
+
+void AoEDamageEffect::execute(Unit* caster,
+                              Object* target,
+                              const AbilityDefinition* ability) {
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  if (caster == nullptr || ability == nullptr) {
+    UtilityFunctions::print("[AoEDamageEffect] Invalid caster or ability");
+    return;
+  }
+
+  // Determine center of AoE
+  Vector3 aoe_center = Vector3(0, 0, 0);
+
+  // If target is a Unit, use its position
+  if (target != nullptr) {
+    Unit* target_unit = Object::cast_to<Unit>(target);
+    if (target_unit != nullptr && target_unit->is_inside_tree()) {
+      aoe_center = target_unit->get_global_position();
+    }
+  } else {
+    // If no target, use caster position (self-centered AoE)
+    aoe_center = caster->get_global_position();
+  }
+
+  float radius = ability->get_aoe_radius();
+  float damage = ability->get_base_damage();
+
+  _apply_damage_in_radius(caster, aoe_center, radius, damage);
+
+  UtilityFunctions::print("[AoEDamageEffect] Applied " +
+                          godot::String::num(damage) + " damage in radius " +
+                          godot::String::num(radius));
+}
+
+void AoEDamageEffect::_apply_damage_in_radius(Unit* caster,
+                                              const Vector3& center,
+                                              float radius,
+                                              float damage) {
+  if (caster == nullptr || !caster->is_inside_tree()) {
+    return;
+  }
+
+  // Start from caster's parent node
+  Node* start = caster->get_parent();
+  if (start == nullptr) {
+    return;
+  }
+
+  std::vector<Unit*> affected_units;
+  std::vector<Node*> to_process;
+  to_process.push_back(start);
+
+  // Walk the node tree to find all Units within radius
+  while (!to_process.empty()) {
+    Node* current = to_process.back();
+    to_process.pop_back();
+
+    if (current == nullptr) {
+      continue;
+    }
+
+    // Check if this node is a Unit (but not the caster)
+    Unit* unit = Object::cast_to<Unit>(current);
+    if (unit != nullptr && unit != caster && unit->is_inside_tree()) {
+      float distance = center.distance_to(unit->get_global_position());
+      if (distance <= radius) {
+        affected_units.push_back(unit);
+      }
+    }
+
+    // Add children to process queue
+    for (int i = 0; i < current->get_child_count(); i++) {
+      to_process.push_back(current->get_child(i));
+    }
+  }
+
+  // Apply damage to all affected units
+  int hit_count = 0;
+  for (Unit* unit : affected_units) {
+    HealthComponent* health = Object::cast_to<HealthComponent>(
+        unit->get_component_by_class("HealthComponent"));
+
+    if (health != nullptr) {
+      health->apply_damage(damage, caster);
+      hit_count++;
+      UtilityFunctions::print("[AoEDamageEffect] Hit " + unit->get_name() +
+                              " for " + godot::String::num(damage) + " damage");
+    }
+  }
+
+  UtilityFunctions::print("[AoEDamageEffect] Total hits: " +
+                          godot::String::num(hit_count));
+}

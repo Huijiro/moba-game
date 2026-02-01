@@ -1,5 +1,6 @@
 #include "unit.hpp"
 
+#include "../components/abilities/ability_component.hpp"
 #include "../components/combat/attack_component.hpp"
 #include "../components/health/health_component.hpp"
 #include "../components/interaction/interactable.hpp"
@@ -80,6 +81,8 @@ void Unit::_ready() {
   }
   movement_component = Object::cast_to<MovementComponent>(
       get_component_by_class("MovementComponent"));
+  ability_component = Object::cast_to<AbilityComponent>(
+      get_component_by_class("AbilityComponent"));
 }
 
 void Unit::_physics_process(double delta) {
@@ -291,4 +294,9 @@ HealthComponent* Unit::get_health_component() const {
 AttackComponent* Unit::get_attack_component() const {
   Node* component = get_component_by_class("AttackComponent");
   return Object::cast_to<AttackComponent>(component);
+}
+
+AbilityComponent* Unit::get_ability_component() const {
+  Node* component = get_component_by_class("AbilityComponent");
+  return Object::cast_to<AbilityComponent>(component);
 }
