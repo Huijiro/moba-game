@@ -6,6 +6,7 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/vector3.hpp>
+#include <vector>
 
 using godot::Color;
 using godot::ImmediateMesh;
@@ -13,6 +14,17 @@ using godot::MeshInstance3D;
 using godot::Node3D;
 using godot::Ref;
 using godot::Vector3;
+
+enum class DrawType {
+  LINE,
+};
+
+struct PendingDraw {
+  DrawType type;
+  Vector3 p1;
+  Vector3 p2;
+  Color color;
+};
 
 /// Visual debugger using ImmediateMesh for real-time drawing
 /// Draws immediately to viewport without creating persistent objects
@@ -25,6 +37,7 @@ class VisualDebugger : public Node3D {
   bool debug_enabled = true;
   MeshInstance3D* mesh_instance = nullptr;
   Ref<ImmediateMesh> immediate_mesh = nullptr;
+  std::vector<PendingDraw> pending_draws;
 
  public:
   VisualDebugger();
@@ -33,7 +46,7 @@ class VisualDebugger : public Node3D {
   void _ready() override;
   void _process(double delta) override;
 
-  // Draw functions
+  // Draw functions - queue up draws for flushing at end of frame
   void draw_circle_xz(const Vector3& center,
                       float radius,
                       const Color& color = Color(0, 1, 0, 1),
@@ -57,8 +70,7 @@ class VisualDebugger : public Node3D {
  private:
   static VisualDebugger* singleton_instance;
 
-  void begin_rendering();
-  void end_rendering();
+  void _flush_draws();
 };
 
 #endif  // GDEXTENSION_VISUAL_DEBUGGER_H

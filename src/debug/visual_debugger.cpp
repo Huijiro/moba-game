@@ -69,39 +69,21 @@ void VisualDebugger::_process(double delta) {
   if (!debug_enabled || !immediate_mesh.is_valid()) {
     return;
   }
+
+  // Flush pending draws at end of frame
+  _flush_draws();
 }
 
 void VisualDebugger::clear() {
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->clear_surfaces();
-  }
-}
-
-void VisualDebugger::begin_rendering() {
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
-  }
-}
-
-void VisualDebugger::end_rendering() {
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->surface_end();
-  }
+  pending_draws.clear();
 }
 
 void VisualDebugger::draw_circle_xz(const Vector3& center,
                                     float radius,
                                     const Color& color,
                                     int segments) {
-  if (!debug_enabled || !immediate_mesh.is_valid()) {
+  if (!debug_enabled) {
     return;
-  }
-
-  clear();
-  begin_rendering();
-
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->surface_set_color(color);
   }
 
   float angle_step = 2.0f * 3.14159265f / segments;
@@ -119,27 +101,21 @@ void VisualDebugger::draw_circle_xz(const Vector3& center,
     Vector3 p1(x1, center.y, z1);
     Vector3 p2(x2, center.y, z2);
 
-    if (immediate_mesh.is_valid()) {
-      immediate_mesh->surface_add_vertex(p1);
-      immediate_mesh->surface_add_vertex(p2);
-    }
+    // Add line segment to pending draws
+    PendingDraw draw;
+    draw.type = DrawType::LINE;
+    draw.p1 = p1;
+    draw.p2 = p2;
+    draw.color = color;
+    pending_draws.push_back(draw);
   }
-
-  end_rendering();
 }
 
 void VisualDebugger::draw_box(const Vector3& center,
                               const Vector3& size,
                               const Color& color) {
-  if (!debug_enabled || !immediate_mesh.is_valid()) {
+  if (!debug_enabled) {
     return;
-  }
-
-  clear();
-  begin_rendering();
-
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->surface_set_color(color);
   }
 
   // Calculate corners
@@ -163,38 +139,63 @@ void VisualDebugger::draw_box(const Vector3& center,
   };
 
   for (int i = 0; i < 12; i++) {
-    if (immediate_mesh.is_valid()) {
-      immediate_mesh->surface_add_vertex(corners[edges[i][0]]);
-      immediate_mesh->surface_add_vertex(corners[edges[i][1]]);
-    }
+    PendingDraw draw;
+    draw.type = DrawType::LINE;
+    draw.p1 = corners[edges[i][0]];
+    draw.p2 = corners[edges[i][1]];
+    draw.color = color;
+    pending_draws.push_back(draw);
   }
-
-  end_rendering();
 }
 
 void VisualDebugger::draw_line(const Vector3& from,
                                const Vector3& to,
                                const Color& color) {
-  if (!debug_enabled || !immediate_mesh.is_valid()) {
+  if (!debug_enabled) {
     return;
   }
 
-  clear();
-  begin_rendering();
+  PendingDraw draw;
+  draw.type = DrawType::LINE;
+  draw.p1 = from;
+  draw.p2 = to;
+  draw.color = color;
+  pending_draws.push_back(draw);
+}
 
-  if (immediate_mesh.is_valid()) {
-    immediate_mesh->surface_set_color(color);
-    immediate_mesh->surface_add_vertex(from);
-    immediate_mesh->surface_add_vertex(to);
+void VisualDebugger::_flush_draws() {
+  if (!immediate_mesh.is_valid() || pending_draws.empty()) {
+    immediate_mesh->clear_surfaces();
+    return;
   }
 
-  end_rendering();
+  // Clear previous frame
+  immediate_mesh->clear_surfaces();
+
+  // Begin new surface
+  immediate_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+
+  // Add all pending draws
+  for (const auto& draw : pending_draws) {
+    immediate_mesh->surface_set_color(draw.color);
+    immediate_mesh->surface_add_vertex(draw.p1);
+    immediate_mesh->surface_add_vertex(draw.p2);
+  }
+
+  // End surface
+  immediate_mesh->surface_end();
+
+  // Clear for next frame
+  pending_draws.clear();
 }
 
 void VisualDebugger::set_debug_enabled(bool enabled) {
   debug_enabled = enabled;
   if (mesh_instance) {
     mesh_instance->set_visible(enabled);
+  }
+  if (!enabled) {
+    pending_draws.clear();
   }
 }
 
