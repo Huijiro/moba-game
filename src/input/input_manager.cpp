@@ -23,6 +23,7 @@
 #include "../debug/debug_mesh_renderer.hpp"
 #include "../debug/godot_debug_drawer.hpp"
 #include "../debug/skillshot_debug_renderer.hpp"
+#include "../debug/visual_debugger.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -215,36 +216,31 @@ void InputManager::_process(double delta) {
 
   _update_click_marker(delta);
 
-  // Debug: Log targeting area info while aiming ability (console-based
-  // visualization)
+  // Visual debugging: Draw circles for ability range and AoE while aiming
   if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
       camera != nullptr) {
-    // Get mouse position and raycast to ground
-    Vector3 mouse_pos;
-    godot::Object* dummy = nullptr;
-    if (_try_raycast(mouse_pos, dummy)) {
-      auto ability_component = controlled_unit->get_ability_component();
-      if (ability_component != nullptr) {
-        Ref<AbilityDefinition> ability =
-            ability_component->get_ability(awaiting_target_slot);
-        if (ability != nullptr) {
-          // Log debug info at reduced frequency to avoid spam
-          static float log_cooldown = 0.0f;
-          log_cooldown -= delta;
-          if (log_cooldown <= 0.0f) {
-            log_cooldown = 0.2f;  // Log every 0.2 seconds
-
+    VisualDebugger* debugger = VisualDebugger::get_singleton();
+    if (debugger != nullptr && debugger->is_debug_enabled()) {
+      // Get mouse position and raycast to ground
+      Vector3 mouse_pos;
+      godot::Object* dummy = nullptr;
+      if (_try_raycast(mouse_pos, dummy)) {
+        auto ability_component = controlled_unit->get_ability_component();
+        if (ability_component != nullptr) {
+          Ref<AbilityDefinition> ability =
+              ability_component->get_ability(awaiting_target_slot);
+          if (ability != nullptr) {
             Vector3 caster_pos = controlled_unit->get_global_position();
             float range = ability->get_range();
             float aoe_radius = ability->get_aoe_radius();
 
-            UtilityFunctions::print(
-                "[DebugAim] Aiming at (" + godot::String::num(mouse_pos.x) +
-                ", " + godot::String::num(mouse_pos.z) +
-                ") | AoE: " + godot::String::num(aoe_radius) +
-                "m | Range: " + godot::String::num(range) + "m from (" +
-                godot::String::num(caster_pos.x) + ", " +
-                godot::String::num(caster_pos.z) + ")");
+            // Draw AoE radius at cursor position (green)
+            debugger->draw_circle_xz(mouse_pos, aoe_radius,
+                                     godot::Color(0, 1, 0, 1), 32);
+
+            // Draw ability range from caster (blue)
+            debugger->draw_circle_xz(caster_pos, range,
+                                     godot::Color(0, 0, 1, 0.5f), 32);
           }
         }
       }

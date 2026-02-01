@@ -29,6 +29,7 @@
 #include "debug/debug_visuals.hpp"
 #include "debug/godot_debug_drawer.hpp"
 #include "debug/skillshot_debug_renderer.hpp"
+#include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
 #include "visual/projectile_visual.hpp"
 #include "visual/visual_effect.hpp"
@@ -65,6 +66,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(GodotDebugDrawer)
   GDREGISTER_CLASS(DebugMeshRenderer)
   GDREGISTER_CLASS(SkillshotDebugRenderer)
+  GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(VisualEffect)
   GDREGISTER_CLASS(ProjectileVisual)
 }

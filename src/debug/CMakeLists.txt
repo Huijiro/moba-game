@@ -9,4 +9,6 @@ target_sources(
   ./debug_mesh_renderer.cpp
   ./skillshot_debug_renderer.hpp
   ./skillshot_debug_renderer.cpp
+  ./visual_debugger.hpp
+  ./visual_debugger.cpp
 )
