@@ -1,8 +1,10 @@
 #include "input_manager.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
+#include <godot_cpp/classes/input_map.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
 #include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
@@ -445,8 +447,13 @@ void InputManager::_init_default_keybinds() {
     if (ability_component->has_ability(i)) {
       String action_name = String("ui_ability_") + String::num(i + 1);
       keybind_map[action_name] = i;
-      UtilityFunctions::print("[InputManager] Bound " + action_name +
-                              " to ability slot " + String::num(i));
+      String key_name = _get_key_name_for_action(action_name);
+      Ref<AbilityDefinition> ability = ability_component->get_ability(i);
+      String ability_name =
+          ability.is_valid() ? ability->get_ability_name() : "Unknown";
+      UtilityFunctions::print("[InputManager] Ability " + String::num(i + 1) +
+                              " (" + ability_name +
+                              ") bound to key: " + key_name);
     }
   }
 
@@ -506,5 +513,48 @@ void InputManager::_handle_ability_input(const String& key) {
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for position target - click to cast");
+  }
+}
+
+String InputManager::_get_key_name_for_action(const String& action) {
+  // Get the actual key bound to this action from Godot's InputMap
+  godot::InputMap* input_map = godot::InputMap::get_singleton();
+  if (input_map == nullptr) {
+    return "UNBOUND";
+  }
+
+  // Get the list of input events for this action
+  Array events = input_map->action_get_events(action);
+  if (events.size() == 0) {
+    return "UNBOUND";
+  }
+
+  // Get the first event (usually a key press)
+  godot::Ref<godot::InputEventKey> key_event =
+      Object::cast_to<godot::InputEventKey>(events[0]);
+  if (key_event.is_null()) {
+    return "UNBOUND";
+  }
+
+  // Convert keycode to its physical character representation
+  // keycode gives us the key number (81=Q, 87=W, etc)
+  uint32_t keycode = key_event->get_keycode();
+
+  // Map keycodes to character names
+  switch (keycode) {
+    case 81:
+      return "Q";  // KEY_Q
+    case 87:
+      return "W";  // KEY_W
+    case 69:
+      return "E";  // KEY_E
+    case 82:
+      return "R";  // KEY_R
+    case 68:
+      return "D";  // KEY_D
+    case 70:
+      return "F";  // KEY_F
+    default:
+      return String::num(keycode);  // Return keycode if not in standard mapping
   }
 }

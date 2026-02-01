@@ -75,6 +75,9 @@ class InputManager : public Node {
   void _handle_ability_input(const String& key);
   void _init_default_keybinds();
 
+  // Get key name from input action (e.g., "ui_ability_1" -> "Q")
+  String _get_key_name_for_action(const String& action);
+
   // Member variables
   Unit* controlled_unit = nullptr;
   Camera3D* camera = nullptr;
