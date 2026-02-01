@@ -126,17 +126,42 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     _handle_ability_input("ui_ability_r");
   }
 
-  // Check for right mouse button click
+  // Check for mouse button click
   auto mouse_event = Object::cast_to<InputEventMouseButton>(event.ptr());
   if (mouse_event == nullptr) {
     return;
   }
 
-  if (mouse_event->get_button_index() != MOUSE_BUTTON_RIGHT) {
+  if (!mouse_event->is_pressed()) {
     return;
   }
 
-  if (!mouse_event->is_pressed()) {
+  // If waiting for ability target, handle click for ability
+  if (awaiting_target_slot >= 0) {
+    Vector3 click_position;
+    godot::Object* clicked_object = nullptr;
+    if (_try_raycast(click_position, clicked_object)) {
+      auto ability_component = controlled_unit->get_ability_component();
+      if (ability_component != nullptr) {
+        if (is_awaiting_unit_target && clicked_object != nullptr) {
+          // Unit-target ability: cast on clicked unit
+          ability_component->try_cast(awaiting_target_slot, clicked_object);
+        } else {
+          // Position-target ability: cast at clicked position
+          ability_component->try_cast_point(awaiting_target_slot,
+                                            click_position);
+        }
+        awaiting_target_slot = -1;  // Clear targeting mode
+        UtilityFunctions::print("[InputManager] Cast ability at target");
+        get_viewport()->set_input_as_handled();
+        return;
+      }
+    }
+    return;
+  }
+
+  // Normal right-click handling (movement/attack)
+  if (mouse_event->get_button_index() != MOUSE_BUTTON_RIGHT) {
     return;
   }
 
@@ -405,21 +430,33 @@ void InputManager::_handle_ability_input(const String& key) {
     return;  // No ability in this slot
   }
 
-  // Handle based on targeting type
-  // For now:
-  // - UNIT_TARGET abilities use the attack target
-  // - POINT_TARGET/AREA/SELF_CAST abilities cast at caster's position
-  // Future: implement click-based targeting for point abilities
   int targeting_type = ability->get_targeting_type();
 
-  if (targeting_type == 0) {  // UNIT_TARGET
-    // Use attack target if available
-    Unit* target = controlled_unit->get_attack_target();
-    ability_component->try_cast(ability_slot, target);
-  } else {  // POINT_TARGET, AREA, SELF_CAST
-    // Cast at caster's position
-    // TODO: implement click-based targeting for point abilities
+  // DOTA-style ability casting system:
+  // - SELF_CAST: Execute immediately on press
+  // - INSTANT with no target requirement: Execute immediately
+  // - UNIT_TARGET: Require click on unit (enter targeting mode)
+  // - POINT_TARGET/AREA: Require click on location (enter targeting mode)
+
+  if (targeting_type == 3) {  // SELF_CAST
+    // Cast immediately on self
     ability_component->try_cast_point(ability_slot,
                                       controlled_unit->get_global_position());
+    UtilityFunctions::print("[InputManager] Self-cast ability slot " +
+                            String::num(ability_slot));
+  } else if (targeting_type == 0) {  // UNIT_TARGET
+    // Enter targeting mode - wait for unit click
+    awaiting_target_slot = ability_slot;
+    is_awaiting_unit_target = true;
+    UtilityFunctions::print("[InputManager] Ability slot " +
+                            String::num(ability_slot) +
+                            " waiting for unit target - click on target");
+  } else {  // POINT_TARGET (1) or AREA (2)
+    // Enter targeting mode - wait for position click
+    awaiting_target_slot = ability_slot;
+    is_awaiting_unit_target = false;
+    UtilityFunctions::print("[InputManager] Ability slot " +
+                            String::num(ability_slot) +
+                            " waiting for position target - click to cast");
   }
 }

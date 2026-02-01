@@ -92,6 +92,12 @@ class InputManager : public Node {
 
   // Keybinds: Maps key name to ability slot (e.g., "KEY_Q" -> 0)
   Dictionary keybind_map;
+
+  // Ability targeting state
+  int awaiting_target_slot =
+      -1;  // -1 = not waiting, 0-3 = ability slot waiting for target
+  bool is_awaiting_unit_target =
+      false;  // true if waiting for unit click, false if waiting for position
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H
