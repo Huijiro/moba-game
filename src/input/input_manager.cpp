@@ -124,8 +124,30 @@ void InputManager::_input(const Ref<InputEvent>& event) {
   for (int i = 1; i <= 6; i++) {
     String action_name =
         String("ui_ability_") + String::num(i, 0);  // Force integer format
-    if (event->is_action_pressed(godot::StringName(action_name))) {
+    StringName action_sname = godot::StringName(action_name);
+
+    // Check for ability key press
+    if (event->is_action_pressed(action_sname)) {
       _handle_ability_input(action_name);
+      break;  // Only process one ability key per input event
+    }
+
+    // Check for ability key release (for channel ability interruption)
+    if (event->is_action_released(action_sname)) {
+      if (channeling_ability_slot >= 0 &&
+          channeling_action_name == action_name) {
+        // Player released the channel ability key
+        auto ability_component = controlled_unit->get_ability_component();
+        if (ability_component != nullptr) {
+          UtilityFunctions::print(
+              "[InputManager] Channel interrupted on ability slot " +
+              String::num(channeling_ability_slot));
+          // The ability component will handle finishing the channel
+          // For now, we just stop tracking it
+          channeling_ability_slot = -1;
+          channeling_action_name = "";
+        }
+      }
       break;  // Only process one ability key per input event
     }
   }
@@ -147,6 +169,10 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     if (_try_raycast(click_position, clicked_object)) {
       auto ability_component = controlled_unit->get_ability_component();
       if (ability_component != nullptr) {
+        Ref<AbilityDefinition> ability =
+            ability_component->get_ability(awaiting_target_slot);
+        int cast_type = ability.is_valid() ? ability->get_cast_type() : 0;
+
         if (is_awaiting_unit_target && clicked_object != nullptr) {
           // Unit-target ability: cast on clicked unit
           ability_component->try_cast(awaiting_target_slot, clicked_object);
@@ -155,7 +181,20 @@ void InputManager::_input(const Ref<InputEvent>& event) {
           ability_component->try_cast_point(awaiting_target_slot,
                                             click_position);
         }
-        awaiting_target_slot = -1;  // Clear targeting mode
+
+        // Track channel abilities so we can detect key release
+        if (cast_type == 2) {  // CHANNEL
+          channeling_ability_slot = awaiting_target_slot;
+          channeling_action_name =
+              String("ui_ability_") + String::num(awaiting_target_slot + 1, 0);
+          UtilityFunctions::print(
+              "[InputManager] Channel started on ability slot " +
+              String::num(awaiting_target_slot) +
+              " - release key to interrupt");
+        } else {
+          awaiting_target_slot = -1;  // Clear targeting mode
+        }
+
         UtilityFunctions::print("[InputManager] Cast ability at target");
         get_viewport()->set_input_as_handled();
         return;
@@ -501,12 +540,14 @@ void InputManager::_handle_ability_input(const String& key) {
   }
 
   int targeting_type = ability->get_targeting_type();
+  int cast_type = ability->get_cast_type();
 
   // DOTA-style ability casting system:
   // - SELF_CAST: Execute immediately on press
   // - INSTANT with no target requirement: Execute immediately
   // - UNIT_TARGET: Require click on unit (enter targeting mode)
   // - POINT_TARGET/AREA: Require click on location (enter targeting mode)
+  // - CHANNEL: Require click to start channel, release button to stop
 
   if (targeting_type == 3) {  // SELF_CAST
     // Cast immediately on self
@@ -514,6 +555,22 @@ void InputManager::_handle_ability_input(const String& key) {
                                       controlled_unit->get_global_position());
     UtilityFunctions::print("[InputManager] Self-cast ability slot " +
                             String::num(ability_slot));
+  } else if (cast_type == 2) {  // CHANNEL cast type
+    // Channel abilities require a click to start the channel
+    // and key release to interrupt it
+    if (targeting_type == 0) {  // UNIT_TARGET channel
+      awaiting_target_slot = ability_slot;
+      is_awaiting_unit_target = true;
+      UtilityFunctions::print(
+          "[InputManager] Ability slot " + String::num(ability_slot) +
+          " (CHANNEL) waiting for unit target - click to start");
+    } else {  // POINT_TARGET or AREA channel
+      awaiting_target_slot = ability_slot;
+      is_awaiting_unit_target = false;
+      UtilityFunctions::print(
+          "[InputManager] Ability slot " + String::num(ability_slot) +
+          " (CHANNEL) waiting for position target - click to start");
+    }
   } else if (targeting_type == 0) {  // UNIT_TARGET
     // Enter targeting mode - wait for unit click
     awaiting_target_slot = ability_slot;

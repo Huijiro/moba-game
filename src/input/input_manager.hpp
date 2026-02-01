@@ -101,6 +101,12 @@ class InputManager : public Node {
       -1;  // -1 = not waiting, 0-3 = ability slot waiting for target
   bool is_awaiting_unit_target =
       false;  // true if waiting for unit click, false if waiting for position
+
+  // Channel ability support
+  int channeling_ability_slot =
+      -1;  // -1 = not channeling, 0+ = ability slot being channeled
+  String channeling_action_name =
+      "";  // Action name for the channeled ability (used to detect release)
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H
