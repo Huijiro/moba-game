@@ -1,6 +1,7 @@
 #include "input_manager.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/input_event_key.hpp>
 #include <godot_cpp/classes/input_event_mouse_button.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
@@ -15,6 +16,7 @@
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 
+#include "../components/abilities/ability_component.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/unit.hpp"
 
@@ -71,6 +73,14 @@ void InputManager::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "click_indicator_scene",
                             godot::PROPERTY_HINT_RESOURCE_TYPE, "PackedScene"),
                "set_click_indicator_scene", "get_click_indicator_scene");
+
+  // Keybind methods
+  ClassDB::bind_method(D_METHOD("bind_ability_to_key", "key", "ability_slot"),
+                       &InputManager::bind_ability_to_key);
+  ClassDB::bind_method(D_METHOD("unbind_key", "key"),
+                       &InputManager::unbind_key);
+  ClassDB::bind_method(D_METHOD("get_bound_ability", "key"),
+                       &InputManager::get_bound_ability);
 }
 
 void InputManager::_ready() {
@@ -90,6 +100,9 @@ void InputManager::_ready() {
       controlled_unit = Object::cast_to<Unit>(parent);
     }
   }
+
+  // Initialize default keybinds
+  _init_default_keybinds();
 }
 
 void InputManager::_input(const Ref<InputEvent>& event) {
@@ -99,6 +112,18 @@ void InputManager::_input(const Ref<InputEvent>& event) {
 
   if (controlled_unit == nullptr) {
     return;
+  }
+
+  // Check for keyboard input (ability keys Q/W/E/R)
+  // Use Godot's input action system
+  if (event->is_action_pressed("ui_ability_q")) {
+    _handle_ability_input("ui_ability_q");
+  } else if (event->is_action_pressed("ui_ability_w")) {
+    _handle_ability_input("ui_ability_w");
+  } else if (event->is_action_pressed("ui_ability_e")) {
+    _handle_ability_input("ui_ability_e");
+  } else if (event->is_action_pressed("ui_ability_r")) {
+    _handle_ability_input("ui_ability_r");
   }
 
   // Check for right mouse button click
@@ -320,4 +345,61 @@ void InputManager::_update_click_marker(double delta) {
     marker_active = false;
     marker_fade_timer = 0.0f;
   }
+}
+
+void InputManager::bind_ability_to_key(const String& key, int ability_slot) {
+  if (ability_slot < 0 || ability_slot > 3) {
+    UtilityFunctions::print("[InputManager] Invalid ability slot: " +
+                            String::num(ability_slot));
+    return;
+  }
+  keybind_map[key] = ability_slot;
+  UtilityFunctions::print("[InputManager] Bound " + key + " to ability slot " +
+                          String::num(ability_slot));
+}
+
+void InputManager::unbind_key(const String& key) {
+  if (keybind_map.has(key)) {
+    keybind_map.erase(key);
+    UtilityFunctions::print("[InputManager] Unbound " + key);
+  }
+}
+
+int InputManager::get_bound_ability(const String& key) const {
+  if (keybind_map.has(key)) {
+    return keybind_map[key];
+  }
+  return -1;  // Not bound
+}
+
+void InputManager::_init_default_keybinds() {
+  // Set up default keybinds: Q/W/E/R to ability slots 0/1/2/3
+  keybind_map["ui_ability_q"] = 0;  // Q key
+  keybind_map["ui_ability_w"] = 1;  // W key
+  keybind_map["ui_ability_e"] = 2;  // E key
+  keybind_map["ui_ability_r"] = 3;  // R key
+  UtilityFunctions::print("[InputManager] Initialized default keybinds");
+}
+
+void InputManager::_handle_ability_input(const String& key) {
+  if (controlled_unit == nullptr) {
+    return;
+  }
+
+  // Get the ability component from the unit
+  auto ability_component = controlled_unit->get_ability_component();
+  if (ability_component == nullptr) {
+    UtilityFunctions::print("[InputManager] Unit has no AbilityComponent");
+    return;
+  }
+
+  // Look up which ability slot this key is bound to
+  int ability_slot = get_bound_ability(key);
+  if (ability_slot < 0 || ability_slot > 3) {
+    return;  // Key not bound to an ability
+  }
+
+  // Try to cast the ability
+  // For now, use null target (will use attack target or point target later)
+  ability_component->try_cast(ability_slot, nullptr);
 }

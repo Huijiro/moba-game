@@ -19,8 +19,11 @@ class PhysicsDirectSpaceState3D;
 class Node3D;
 }  // namespace godot
 
+class AbilityComponent;
+
 using godot::Camera3D;
 using godot::Color;
+using godot::Dictionary;
 using godot::InputEvent;
 using godot::Node;
 using godot::PackedScene;
@@ -59,11 +62,18 @@ class InputManager : public Node {
   void set_click_indicator_scene(const Ref<PackedScene>& scene);
   Ref<PackedScene> get_click_indicator_scene() const;
 
+  // Keybind management
+  void bind_ability_to_key(const String& key, int ability_slot);
+  void unbind_key(const String& key);
+  int get_bound_ability(const String& key) const;
+
  private:
   // Helper methods
   bool _try_raycast(Vector3& out_position, godot::Object*& out_collider);
   void _show_click_marker(const Vector3& position);
   void _update_click_marker(double delta);
+  void _handle_ability_input(const String& key);
+  void _init_default_keybinds();
 
   // Member variables
   Unit* controlled_unit = nullptr;
@@ -79,6 +89,9 @@ class InputManager : public Node {
   float marker_fade_duration = 2.0f;
   bool marker_active = false;
   Ref<PackedScene> click_indicator_scene = nullptr;
+
+  // Keybinds: Maps key name to ability slot (e.g., "KEY_Q" -> 0)
+  Dictionary keybind_map;
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H
