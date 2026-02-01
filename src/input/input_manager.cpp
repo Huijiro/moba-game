@@ -14,6 +14,7 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
@@ -123,7 +124,7 @@ void InputManager::_input(const Ref<InputEvent>& event) {
   for (int i = 1; i <= 6; i++) {
     String action_name =
         String("ui_ability_") + String::num(i, 0);  // Force integer format
-    if (event->is_action_pressed(action_name)) {
+    if (event->is_action_pressed(godot::StringName(action_name))) {
       _handle_ability_input(action_name);
       break;  // Only process one ability key per input event
     }
