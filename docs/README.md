@@ -27,10 +27,16 @@ Start here to understand and work with the ability system.
   - Support for minions and bosses
 
 - **[03_TESTING.md](ability-system/03_TESTING.md)** - Test and verify abilities
-  - Setup and configuration
-  - Expected behavior reference
-  - Testing checklist
-  - Troubleshooting guide
+   - Setup and configuration
+   - Expected behavior reference
+   - Testing checklist
+   - Troubleshooting guide
+
+- **[04_LIBRARY_RELOAD.md](ability-system/04_LIBRARY_RELOAD.md)** - Rebuild and library reloading
+   - How to rebuild C++ library
+   - Restarting Godot after rebuilds
+   - Troubleshooting "Can't create resource type" errors
+   - When to rebuild vs. editor-only changes
 
 ### 🏗️ Setup & Development
 Documentation for building and development workflow.
@@ -50,7 +56,8 @@ docs/
 │   ├── 00_INDEX.md             (start here)
 │   ├── 01_ADDING_ABILITIES.md  (create skills)
 │   ├── 02_MODIFYING_UNITS.md   (build heroes)
-│   └── 03_TESTING.md           (verify setup)
+│   ├── 03_TESTING.md           (verify setup)
+│   └── 04_LIBRARY_RELOAD.md    (rebuild & reload)
 ├── setup/
 │   └── (build and environment guides)
 └── development/
@@ -61,18 +68,23 @@ docs/
 
 ### For First-Time Users
 
-1. **Learn the System** (5 min)
+1. **Ensure Library is Loaded** (2 min)
+   - See: [ability-system/04_LIBRARY_RELOAD.md](ability-system/04_LIBRARY_RELOAD.md)
+   - Build library: `ninja` from project root
+   - Restart Godot editor to load updated library
+
+2. **Learn the System** (5 min)
    - Read: [ability-system/00_INDEX.md](ability-system/00_INDEX.md)
 
-2. **Create Your First Ability** (15 min)
+3. **Create Your First Ability** (15 min)
    - Follow: [ability-system/01_ADDING_ABILITIES.md](ability-system/01_ADDING_ABILITIES.md)
    - Use the Frost Bolt example as reference
 
-3. **Build a Custom Hero** (10 min)
+4. **Build a Custom Hero** (10 min)
    - Follow: [ability-system/02_MODIFYING_UNITS.md](ability-system/02_MODIFYING_UNITS.md)
    - Combine 4 abilities into a new unit definition
 
-4. **Test Everything** (5 min)
+5. **Test Everything** (5 min)
    - Follow: [ability-system/03_TESTING.md](ability-system/03_TESTING.md)
    - Run in Godot editor and verify functionality
 
@@ -165,6 +177,8 @@ All ability configuration happens in the Godot editor via `.tres` files. The C++
 
 | Task | Guide | Time |
 |------|-------|------|
+| Rebuild library after code changes | [04_LIBRARY_RELOAD.md](ability-system/04_LIBRARY_RELOAD.md) | 2 min |
+| Fix "Can't create resource type" error | [04_LIBRARY_RELOAD.md](ability-system/04_LIBRARY_RELOAD.md) | 1 min |
 | Create a new ability | [01_ADDING_ABILITIES.md](ability-system/01_ADDING_ABILITIES.md) | 10 min |
 | Create a new hero | [02_MODIFYING_UNITS.md](ability-system/02_MODIFYING_UNITS.md) | 10 min |
 | Replace one ability | [02_MODIFYING_UNITS.md](ability-system/02_MODIFYING_UNITS.md) | 2 min |
