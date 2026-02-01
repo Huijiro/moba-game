@@ -15,7 +15,8 @@ using godot::Variant;
 
 UnitDefinition::UnitDefinition() {
   // Initialize ability array with default count of 4 slots
-  abilities.resize(ability_count);
+  // User can resize via inspector "Add Element" button
+  abilities.resize(4);
 }
 
 UnitDefinition::~UnitDefinition() = default;
@@ -49,15 +50,7 @@ void UnitDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_type"), "set_unit_type",
                "get_unit_type");
 
-  // Ability count property
-  ClassDB::bind_method(D_METHOD("set_ability_count", "count"),
-                       &UnitDefinition::set_ability_count);
-  ClassDB::bind_method(D_METHOD("get_ability_count"),
-                       &UnitDefinition::get_ability_count);
-  ADD_PROPERTY(PropertyInfo(Variant::INT, "ability_count"), "set_ability_count",
-               "get_ability_count");
-
-  // Ability slots (Q, W, E, R, D, F - configurable count)
+  // Ability slots (Q, W, E, R, D, F - configurable count via inspector)
   ClassDB::bind_method(D_METHOD("set_ability", "slot", "ability"),
                        &UnitDefinition::set_ability);
   ClassDB::bind_method(D_METHOD("get_ability", "slot"),
@@ -108,20 +101,9 @@ String UnitDefinition::get_unit_type() const {
   return unit_type;
 }
 
-void UnitDefinition::set_ability_count(int count) {
-  ability_count = std::max(0, std::min(count, 6));  // Clamp between 0 and 6
-  if (abilities.size() != ability_count) {
-    abilities.resize(ability_count);
-  }
-}
-
-int UnitDefinition::get_ability_count() const {
-  return ability_count;
-}
-
 void UnitDefinition::set_ability(int slot,
                                  const Ref<AbilityDefinition>& ability) {
-  if (slot < 0 || slot >= ability_count) {
+  if (slot < 0 || slot >= static_cast<int>(abilities.size())) {
     UtilityFunctions::print("[UnitDefinition] Invalid ability slot: " +
                             godot::String::num(slot));
     return;
@@ -130,7 +112,7 @@ void UnitDefinition::set_ability(int slot,
 }
 
 Ref<AbilityDefinition> UnitDefinition::get_ability(int slot) const {
-  if (slot < 0 || slot >= ability_count) {
+  if (slot < 0 || slot >= static_cast<int>(abilities.size())) {
     return nullptr;
   }
   Ref<AbilityDefinition> ability = abilities[slot];
@@ -138,7 +120,7 @@ Ref<AbilityDefinition> UnitDefinition::get_ability(int slot) const {
 }
 
 bool UnitDefinition::has_ability(int slot) const {
-  if (slot < 0 || slot >= ability_count) {
+  if (slot < 0 || slot >= static_cast<int>(abilities.size())) {
     return false;
   }
   Ref<AbilityDefinition> ability = abilities[slot];
@@ -151,8 +133,8 @@ Array UnitDefinition::get_abilities() const {
 
 void UnitDefinition::set_abilities(const Array& new_abilities) {
   abilities = new_abilities;
-  // Ensure array matches ability_count
-  if (abilities.size() != ability_count) {
-    abilities.resize(ability_count);
+  // Ensure array matches static_cast<int>(abilities.size())
+  if (abilities.size() != static_cast<int>(abilities.size())) {
+    abilities.resize(static_cast<int>(abilities.size()));
   }
 }

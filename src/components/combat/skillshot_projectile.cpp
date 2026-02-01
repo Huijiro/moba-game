@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../../core/unit.hpp"
+#include "../../debug/visual_debugger.hpp"
 #include "../../visual/projectile_visual.hpp"
 #include "../abilities/ability_definition.hpp"
 #include "../health/health_component.hpp"
