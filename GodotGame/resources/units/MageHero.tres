@@ -1,8 +1,8 @@
 [gd_resource type="UnitDefinition" format=3]
 [ext_resource type="Resource" path="res://resources/abilities/Frost_Bolt.tres" id="1_q"]
-[ext_resource type="Resource" path="res://resources/abilities/W_Fireball.tres" id="2_w"]
-[ext_resource type="Resource" path="res://resources/abilities/E_Beam.tres" id="3_e"]
-[ext_resource type="Resource" path="res://resources/abilities/R_Explosion.tres" id="4_r"]
+[ext_resource type="Resource" path="res://resources/abilities/Fireball.tres" id="2_w"]
+[ext_resource type="Resource" path="res://resources/abilities/Beam.tres" id="3_e"]
+[ext_resource type="Resource" path="res://resources/abilities/Explosion.tres" id="4_r"]
 
 [resource]
 unit_name = "MageHero"
