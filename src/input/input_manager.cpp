@@ -399,9 +399,27 @@ void InputManager::_handle_ability_input(const String& key) {
     return;  // Key not bound to an ability
   }
 
-  // Try to cast the ability
-  // Use the unit's current attack target if available
-  // This allows abilities to target whatever unit is currently being attacked
-  Unit* target = controlled_unit->get_attack_target();
-  ability_component->try_cast(ability_slot, target);
+  // Get the ability definition to check its targeting type
+  auto ability = ability_component->get_ability(ability_slot);
+  if (!ability.is_valid()) {
+    return;  // No ability in this slot
+  }
+
+  // Handle based on targeting type
+  // For now:
+  // - UNIT_TARGET abilities use the attack target
+  // - POINT_TARGET/AREA/SELF_CAST abilities cast at caster's position
+  // Future: implement click-based targeting for point abilities
+  int targeting_type = ability->get_targeting_type();
+
+  if (targeting_type == 0) {  // UNIT_TARGET
+    // Use attack target if available
+    Unit* target = controlled_unit->get_attack_target();
+    ability_component->try_cast(ability_slot, target);
+  } else {  // POINT_TARGET, AREA, SELF_CAST
+    // Cast at caster's position
+    // TODO: implement click-based targeting for point abilities
+    ability_component->try_cast_point(ability_slot,
+                                      controlled_unit->get_global_position());
+  }
 }
