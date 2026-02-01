@@ -13,6 +13,10 @@ ninja
 ✅ Restart Godot completely (close and reopen)
 - This forces Godot to load the updated library
 
+✅ Input keys are pre-configured:
+- Q/W/E/R keys are already mapped in `project.godot`
+- No need to manually add input actions
+
 ## Quick Setup (5 minutes)
 
 ### Step 1: Open the Scene
@@ -79,10 +83,13 @@ ninja
 - Play the scene - abilities should load in `_ready()`
 - Check console output for "[Unit] Loaded ability slot" messages
 
-### Q/W/E/R keys don't work
+### Q/W/E/R keys don't work or show "InputMap action doesn't exist" errors
+- ✅ Input keys are pre-configured in `project.godot` (ui_ability_q/w/e/r)
+- If errors still appear: reload the project (File → Reload Project)
 - Check that InputManager is in the scene tree
 - Verify the InputManager has a camera reference
-- Check Godot console for input debug messages
+- Check that controlled_unit is set or auto-discovered
+- Check Godot console for input debug messages like "[InputManager] Initialized default keybinds"
 
 ### Character doesn't move
 - Click on the ground in the game viewport
