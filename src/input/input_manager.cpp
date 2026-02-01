@@ -596,10 +596,12 @@ void InputManager::_handle_ability_input(const String& key) {
       if (cast_type == 2) {  // CHANNEL
         // Channels always require targeting click
         _enter_ability_targeting_mode(ability_slot, targeting_type);
-      } else if (targeting_type ==
-                 3) {  // SELF_CAST (covered above but for completeness)
+      } else if (targeting_type == 4) {  // SELF_CAST
         ability_component->try_cast_point(
             ability_slot, controlled_unit->get_global_position());
+      } else if (targeting_type == 3) {  // SKILLSHOT
+        // Skillshots require direction targeting - wait for click
+        _enter_ability_targeting_mode(ability_slot, targeting_type);
       } else if (cast_type == 0) {  // INSTANT cast with no targeting needs
         // For instant casts, try to cast immediately on unit if available
         ability_component->try_cast(ability_slot, controlled_unit);
@@ -640,7 +642,11 @@ void InputManager::_enter_ability_targeting_mode(int ability_slot,
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for unit target - click on target");
-  } else {  // POINT_TARGET (1) or AREA (2)
+  } else if (targeting_type == 3) {  // SKILLSHOT
+    UtilityFunctions::print("[InputManager] Ability slot " +
+                            String::num(ability_slot) +
+                            " waiting for skillshot direction - click to aim");
+  } else {  // POINT_TARGET (1), AREA (2), or other position-based
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for position target - click to cast");
