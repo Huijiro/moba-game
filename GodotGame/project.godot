@@ -22,7 +22,7 @@ config/icon="res://icon.svg"
 [gameplay]
 
 abilities/channel_requires_stop_command_only=true
-abilities/casting_mode=0
+abilities/casting_mode=1
 
 [input]
 
