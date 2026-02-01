@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "../../core/unit.hpp"
-#include "../../debug/skillshot_debug_renderer.hpp"
 #include "../../visual/projectile_visual.hpp"
 #include "../abilities/ability_definition.hpp"
 #include "../health/health_component.hpp"
@@ -76,18 +75,6 @@ void SkillshotProjectile::_physics_process(double delta) {
     projectile_visual->on_travel(new_pos, travel_distance);
   }
 
-  // Debug: Draw projectile indicator
-  SkillshotDebugRenderer* debug_renderer =
-      SkillshotDebugRenderer::get_singleton();
-  if (debug_renderer != nullptr) {
-    debug_renderer->show_projectile_indicator(new_pos, hit_radius, 0.05f);
-
-    // Draw path line every few frames (not every frame to avoid spam)
-    if (static_cast<int>(travel_distance * 10) % 5 == 0) {
-      debug_renderer->show_projectile_trail(current_pos, new_pos, 0.2f, 0.1f);
-    }
-  }
-
   // Check if we've exceeded max distance
   if (travel_distance >= max_distance) {
     UtilityFunctions::print("[SkillshotProjectile] Reached max distance " +
@@ -146,13 +133,6 @@ void SkillshotProjectile::_detonate() {
                           godot::String::num(explosion_center.x) + ", " +
                           godot::String::num(explosion_center.z) +
                           ") with radius " + godot::String::num(aoe_radius));
-
-  // Debug: Draw AoE explosion radius
-  SkillshotDebugRenderer* debug_renderer =
-      SkillshotDebugRenderer::get_singleton();
-  if (debug_renderer != nullptr) {
-    debug_renderer->show_aoe_explosion(explosion_center, aoe_radius, 0.5f);
-  }
 
   _find_and_damage_units();
   queue_free();

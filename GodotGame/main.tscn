@@ -43,6 +43,4 @@ transform = Transform3D(1, 0, 0, 0, 0.6984527, 0.71565616, 0, -0.71565616, 0.698
 [node name="Enemy Unit" parent="." unique_id=2014711902 instance=ExtResource("4_1bvp3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.9191284, 0.05000019, -0.16266823)
 
-[node name="DebugMeshRenderer" type="DebugMeshRenderer" parent="." unique_id=2047291578]
-
 [node name="VisualDebugger" type="VisualDebugger" parent="." unique_id=2047291579]

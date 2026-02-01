@@ -20,9 +20,6 @@
 #include "../components/abilities/ability_definition.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/unit.hpp"
-#include "../debug/debug_mesh_renderer.hpp"
-#include "../debug/godot_debug_drawer.hpp"
-#include "../debug/skillshot_debug_renderer.hpp"
 #include "../debug/visual_debugger.hpp"
 
 using godot::ClassDB;
