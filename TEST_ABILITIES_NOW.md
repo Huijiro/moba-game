@@ -21,31 +21,36 @@ GodotGame/main.tscn
 ### Step 4: Play
 - Press F5 or click Play
 
-### Step 5: Test Casting
+### Step 5: Test DOTA-Style Casting
 
-**Different abilities work differently:**
+**The system works like DOTA 2 - press ability, then click target:**
 
 **For Unit-Target Abilities (Q, E):**
-1. **Right-click on the Enemy Unit**
-   - This sets the attack target
-   - Your character walks toward it
-2. **Wait for range** (about 5 meters)
-3. **Press Q or E** to cast on that unit
+1. **Press Q** (or E)
+2. Console shows: `waiting for unit target - click on target`
+3. **Click on the Enemy Unit**
+4. Quick Strike (or Energy Beam) executes ✅
 
-**For Position-Based Abilities (W, R):**
-1. **Just press the key!**
-   - No need to right-click
-   - W: Fireball casts at your position
-   - R: Explosion damages around you
-2. **If enemy is nearby**, they take damage
+**For Position-Target Abilities (W, R):**
+1. **Press W** (or R)
+2. Console shows: `waiting for position target - click to cast`
+3. **Click on ground location** (near enemy is good)
+4. Fireball (or Explosion) executes ✅
 
-**Quick casting order:**
-1. **Right-click Enemy** (sets target for Q/E)
-2. **Wait for range**
-3. **Press Q** → Quick Strike on target ✅
-4. **Press W** → Fireball at your position ✅
-5. **Press E** → Energy Beam on target ✅
-6. **Press R** → Explosion around you ✅
+**Quick test sequence:**
+```
+1. Press Q → Click Enemy → Quick Strike ✅
+2. Press W → Click ground → Fireball ✅
+3. Press E → Click Enemy → Energy Beam ✅
+4. Press R → Click ground → Explosion ✅
+```
+
+**No need to:**
+- Pre-select targets
+- Right-click anything first
+- Use attack mode
+- Just press key + click location/unit!
+
 
 ## Expected Console Output
 
@@ -56,27 +61,39 @@ GodotGame/main.tscn
 [Unit] Loaded ability slot 3: Explosion
 [InputManager] Initialized default keybinds
 
-[When you press Q (after right-clicking enemy)]:
+[When you press Q]:
+[InputManager] Ability slot 0 waiting for unit target - click on target
+[Then click on Enemy Unit]:
 [AbilityComponent] Began casting ability slot 0
 [DamageEffect] Applied 25 damage to Enemy Unit
 [AbilityComponent] Executed ability slot 0
+[InputManager] Cast ability at target
 
-[When you press W (at any time, targets position)]:
+[When you press W]:
+[InputManager] Ability slot 1 waiting for position target - click to cast
+[Then click on ground]:
 [AbilityComponent] Began casting ability slot 1
 [At 0.4 seconds, fires]:
 [DamageEffect] Applied 40 damage to Enemy Unit (if nearby)
 [AbilityComponent] Executed ability slot 1
+[InputManager] Cast ability at target
 
-[When you press E (after right-clicking enemy)]:
+[When you press E]:
+[InputManager] Ability slot 2 waiting for unit target - click on target
+[Then click on Enemy Unit]:
 [AbilityComponent] Began casting ability slot 2
 [After 2 seconds channel completes]:
 [DamageEffect] Applied 50 damage to Enemy Unit
 [AbilityComponent] Executed ability slot 2
+[InputManager] Cast ability at target
 
-[When you press R (at any time, area effect)]:
+[When you press R]:
+[InputManager] Ability slot 3 waiting for position target - click to cast
+[Then click on ground]:
 [AbilityComponent] Began casting ability slot 3
 [DamageEffect] Applied 35 damage to Enemy Unit (if in 8m radius)
 [AbilityComponent] Executed ability slot 3
+[InputManager] Cast ability at target
 ```
 
 ## What Should Happen
@@ -156,13 +173,11 @@ GodotGame/main.tscn
 ## Troubleshooting
 
 ### Console shows: "[DamageEffect] Invalid target or ability"
-**Solution:** Depends on the ability:
-- **For Q/E (unit-target):** Right-click the Enemy Unit first
-  1. Your character walks to it
-  2. Try casting again
-- **For W/R (position-based):** They should work without right-clicking
-  1. Press W/R while standing near enemy
-  2. Or they may need configuration - see TARGETING_SYSTEM.md
+**Solution:** You forgot to click after pressing the key!
+- Press Q/E/W/R first (enters targeting mode)
+- Console shows "waiting for target"
+- Then click on unit (Q/E) or ground (W/R)
+- Don't right-click, left-click on the target!
 
 ### Console shows: "[InputManager] Unit has no AbilityComponent"
 **Solution:** Check Unit scene structure
