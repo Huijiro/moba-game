@@ -105,6 +105,28 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "aoe_radius"), "set_aoe_radius",
                "get_aoe_radius");
 
+  // Skillshot properties
+  ClassDB::bind_method(D_METHOD("set_skillshot_speed", "speed"),
+                       &AbilityDefinition::set_skillshot_speed);
+  ClassDB::bind_method(D_METHOD("get_skillshot_speed"),
+                       &AbilityDefinition::get_skillshot_speed);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skillshot_speed"),
+               "set_skillshot_speed", "get_skillshot_speed");
+
+  ClassDB::bind_method(D_METHOD("set_skillshot_max_distance", "distance"),
+                       &AbilityDefinition::set_skillshot_max_distance);
+  ClassDB::bind_method(D_METHOD("get_skillshot_max_distance"),
+                       &AbilityDefinition::get_skillshot_max_distance);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skillshot_max_distance"),
+               "set_skillshot_max_distance", "get_skillshot_max_distance");
+
+  ClassDB::bind_method(D_METHOD("set_skillshot_hit_radius", "radius"),
+                       &AbilityDefinition::set_skillshot_hit_radius);
+  ClassDB::bind_method(D_METHOD("get_skillshot_hit_radius"),
+                       &AbilityDefinition::get_skillshot_hit_radius);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skillshot_hit_radius"),
+               "set_skillshot_hit_radius", "get_skillshot_hit_radius");
+
   // Damage property
   ClassDB::bind_method(D_METHOD("set_base_damage", "damage"),
                        &AbilityDefinition::set_base_damage);
@@ -217,6 +239,30 @@ void AbilityDefinition::set_aoe_radius(float radius) {
 
 float AbilityDefinition::get_aoe_radius() const {
   return aoe_radius;
+}
+
+void AbilityDefinition::set_skillshot_speed(float speed) {
+  skillshot_speed = speed >= 0.0f ? speed : 30.0f;
+}
+
+float AbilityDefinition::get_skillshot_speed() const {
+  return skillshot_speed;
+}
+
+void AbilityDefinition::set_skillshot_max_distance(float distance) {
+  skillshot_max_distance = distance >= 0.0f ? distance : 20.0f;
+}
+
+float AbilityDefinition::get_skillshot_max_distance() const {
+  return skillshot_max_distance;
+}
+
+void AbilityDefinition::set_skillshot_hit_radius(float radius) {
+  skillshot_hit_radius = radius >= 0.0f ? radius : 0.5f;
+}
+
+float AbilityDefinition::get_skillshot_hit_radius() const {
+  return skillshot_hit_radius;
 }
 
 void AbilityDefinition::set_base_damage(float damage) {

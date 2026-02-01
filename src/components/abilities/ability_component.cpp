@@ -360,8 +360,16 @@ void AbilityComponent::_execute_ability(int slot) {
   // Get the effect and execute it
   Ref<AbilityEffect> effect = ability->get_effect();
   if (effect != nullptr) {
-    // Execute the effect directly (RefCounted, so safe to reuse)
-    effect->execute(owner, casting_target, ability.ptr());
+    // For position-based abilities (POINT_TARGET, AREA), use execute_at_point
+    // For unit-targeted abilities, use execute with the target
+    int targeting_type = ability->get_targeting_type();
+    if (targeting_type == 1 || targeting_type == 2) {  // POINT_TARGET or AREA
+      // Use position-based execution centered at click location
+      effect->execute_at_point(owner, casting_point, ability.ptr());
+    } else {
+      // Use target-based execution
+      effect->execute(owner, casting_target, ability.ptr());
+    }
   }
 
   // Apply cooldown

@@ -52,6 +52,11 @@ class AbilityDefinition : public Resource {
   float range = 0.0f;
   float aoe_radius = 0.0f;
 
+  // Skillshot-specific properties
+  float skillshot_speed = 30.0f;         // Projectile travel speed
+  float skillshot_max_distance = 20.0f;  // Max range before detonation
+  float skillshot_hit_radius = 0.5f;     // Collision detection radius
+
   // Damage
   float base_damage = 0.0f;
 
@@ -101,6 +106,16 @@ class AbilityDefinition : public Resource {
 
   void set_aoe_radius(float radius);
   float get_aoe_radius() const;
+
+  // Skillshot properties
+  void set_skillshot_speed(float speed);
+  float get_skillshot_speed() const;
+
+  void set_skillshot_max_distance(float distance);
+  float get_skillshot_max_distance() const;
+
+  void set_skillshot_hit_radius(float radius);
+  float get_skillshot_hit_radius() const;
 
   // Damage property
   void set_base_damage(float damage);

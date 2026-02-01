@@ -5,4 +5,6 @@ target_sources(
   ./damage_effect.cpp
   ./aoe_damage_effect.hpp
   ./aoe_damage_effect.cpp
+  ./skillshot_effect.hpp
+  ./skillshot_effect.cpp
 )

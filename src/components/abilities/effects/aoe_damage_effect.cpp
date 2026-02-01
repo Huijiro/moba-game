@@ -39,17 +39,21 @@ void AoEDamageEffect::execute(Unit* caster,
   }
 
   // Determine center of AoE
-  Vector3 aoe_center = Vector3(0, 0, 0);
+  Vector3 aoe_center = caster->get_global_position();  // Default to caster
 
   // If target is a Unit, use its position
   if (target != nullptr) {
     Unit* target_unit = Object::cast_to<Unit>(target);
     if (target_unit != nullptr && target_unit->is_inside_tree()) {
       aoe_center = target_unit->get_global_position();
+      UtilityFunctions::print("[AoEDamageEffect] Centering AoE on target unit");
     }
   } else {
-    // If no target, use caster position (self-centered AoE)
-    aoe_center = caster->get_global_position();
+    // For point-target abilities, AoE should damage nearby units around center
+    // If target is null, use caster position
+    // (Position-based abilities will pass Unit objects or be handled specially)
+    UtilityFunctions::print(
+        "[AoEDamageEffect] Centering AoE on caster position");
   }
 
   float radius = ability->get_aoe_radius();
@@ -59,6 +63,31 @@ void AoEDamageEffect::execute(Unit* caster,
 
   UtilityFunctions::print("[AoEDamageEffect] Applied " +
                           godot::String::num(damage) + " damage in radius " +
+                          godot::String::num(radius));
+}
+
+void AoEDamageEffect::execute_at_point(Unit* caster,
+                                       const Vector3& point,
+                                       const AbilityDefinition* ability) {
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  if (caster == nullptr || ability == nullptr) {
+    UtilityFunctions::print("[AoEDamageEffect] Invalid caster or ability");
+    return;
+  }
+
+  float radius = ability->get_aoe_radius();
+  float damage = ability->get_base_damage();
+
+  // Apply damage centered at the clicked point (not caster position)
+  _apply_damage_in_radius(caster, point, radius, damage);
+
+  UtilityFunctions::print("[AoEDamageEffect] Applied " +
+                          godot::String::num(damage) + " damage at point (" +
+                          godot::String::num(point.x) + ", " +
+                          godot::String::num(point.z) + ") with radius " +
                           godot::String::num(radius));
 }
 

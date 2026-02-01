@@ -50,6 +50,14 @@ class AbilityEffect : public Resource {
                        Object* target,
                        const AbilityDefinition* ability);
 
+  // Optional: Position-based execution for POINT_TARGET and AREA abilities
+  // Subclasses can override this for position-aware effects (AoE at click
+  // location) Default implementation calls execute() with null target
+  // (caster-centered)
+  virtual void execute_at_point(Unit* caster,
+                                const Vector3& point,
+                                const AbilityDefinition* ability);
+
   // Helper method to query all units within a sphere
   // Used by AoE abilities to find affected targets
   // Returns array of Unit pointers

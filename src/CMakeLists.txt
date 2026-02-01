@@ -12,6 +12,8 @@ add_subdirectory(input)
 add_subdirectory(camera)
 add_subdirectory(components)
 add_subdirectory(ai)
+add_subdirectory(debug)
+add_subdirectory(visual)
 
 # Expose src directory for includes
 target_include_directories(${PROJECT_NAME} PRIVATE "src")

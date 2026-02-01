@@ -19,6 +19,7 @@
 #include "../components/abilities/ability_component.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/unit.hpp"
+#include "../debug/skillshot_debug_renderer.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;

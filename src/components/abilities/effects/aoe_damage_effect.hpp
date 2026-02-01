@@ -26,6 +26,12 @@ class AoEDamageEffect : public AbilityEffect {
                Object* target,
                const AbilityDefinition* ability) override;
 
+  // Position-based execution for point-target abilities
+  // Damages all units around the specified point
+  void execute_at_point(Unit* caster,
+                        const Vector3& point,
+                        const AbilityDefinition* ability) override;
+
  private:
   // Helper: Find all units in a sphere and apply damage
   void _apply_damage_in_radius(Unit* caster,

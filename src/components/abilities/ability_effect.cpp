@@ -32,6 +32,14 @@ void AbilityEffect::execute(Unit* caster,
       "[AbilityEffect] Base effect executed with no implementation");
 }
 
+void AbilityEffect::execute_at_point(Unit* caster,
+                                     const Vector3& point,
+                                     const AbilityDefinition* ability) {
+  // Default implementation: call execute() with null target (caster-centered)
+  // Subclasses override this for position-aware effects
+  execute(caster, nullptr, ability);
+}
+
 Array AbilityEffect::query_units_in_sphere(const Vector3& center,
                                            float radius,
                                            Unit* exclude_unit) const {

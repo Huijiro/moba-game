@@ -14,8 +14,10 @@
 #include "components/abilities/ability_effect.hpp"
 #include "components/abilities/effects/aoe_damage_effect.hpp"
 #include "components/abilities/effects/damage_effect.hpp"
+#include "components/abilities/effects/skillshot_effect.hpp"
 #include "components/combat/attack_component.hpp"
 #include "components/combat/projectile.hpp"
+#include "components/combat/skillshot_projectile.hpp"
 #include "components/health/health_component.hpp"
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
@@ -23,7 +25,12 @@
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
+#include "debug/debug_visuals.hpp"
+#include "debug/godot_debug_drawer.hpp"
+#include "debug/skillshot_debug_renderer.hpp"
 #include "input/input_manager.hpp"
+#include "visual/projectile_visual.hpp"
+#include "visual/visual_effect.hpp"
 
 using namespace godot;
 
@@ -44,13 +51,20 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
+  GDREGISTER_CLASS(SkillshotProjectile)
   GDREGISTER_CLASS(AbilityEffect)
   GDREGISTER_CLASS(AbilityDefinition)
   GDREGISTER_CLASS(DamageEffect)
   GDREGISTER_CLASS(AoEDamageEffect)
+  GDREGISTER_CLASS(SkillshotEffect)
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(UnitDefinition)
   GDREGISTER_CLASS(UnitDefinitionManager)
+  GDREGISTER_CLASS(DebugVisuals)
+  GDREGISTER_CLASS(GodotDebugDrawer)
+  GDREGISTER_CLASS(SkillshotDebugRenderer)
+  GDREGISTER_CLASS(VisualEffect)
+  GDREGISTER_CLASS(ProjectileVisual)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {
