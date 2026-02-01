@@ -4,7 +4,7 @@
 [resource]
 ability_name = "Explosion"
 description = "Instant AoE ability dealing 35 damage to all units in 8m radius"
-mana_cost = 80.0
+mana_cost = 0.0
 cooldown = 12.0
 cast_type = 0
 cast_time = 0.0

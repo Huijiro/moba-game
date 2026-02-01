@@ -4,7 +4,7 @@
 [resource]
 ability_name = "Energy Beam"
 description = "Channel beam dealing 50 damage, must hold button to maintain"
-mana_cost = 30.0
+mana_cost = 0.0
 cooldown = 6.0
 cast_type = 2
 cast_time = 0.0

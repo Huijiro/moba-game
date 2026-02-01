@@ -1,12 +1,12 @@
-[gd_resource type="UnitDefinition" format=3]
-[ext_resource type="Resource" path="res://resources/abilities/Q_Instant_Strike.tres" id="1_q"]
-[ext_resource type="Resource" path="res://resources/abilities/W_Fireball.tres" id="2_w"]
-[ext_resource type="Resource" path="res://resources/abilities/E_Beam.tres" id="3_e"]
-[ext_resource type="Resource" path="res://resources/abilities/R_Explosion.tres" id="4_r"]
+[gd_resource type="UnitDefinition" format=3 uid="uid://iowlh21twm67"]
+
+[ext_resource type="AbilityDefinition" path="res://resources/abilities/Q_Instant_Strike.tres" id="1_q"]
+[ext_resource type="AbilityDefinition" path="res://resources/abilities/W_Fireball.tres" id="2_w"]
+[ext_resource type="AbilityDefinition" path="res://resources/abilities/E_Beam.tres" id="3_e"]
+[ext_resource type="AbilityDefinition" path="res://resources/abilities/R_Explosion.tres" id="4_r"]
 
 [resource]
 unit_name = "TestHero"
 unit_id = 1
 description = "Test hero with all 4 ability types"
-unit_type = "hero"
 abilities = [ExtResource("1_q"), ExtResource("2_w"), ExtResource("3_e"), ExtResource("4_r")]

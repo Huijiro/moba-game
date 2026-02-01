@@ -4,7 +4,7 @@
 [resource]
 ability_name = "Frost Bolt"
 description = "Launch a frost bolt dealing 35 damage and slowing target by 30%"
-mana_cost = 40.0
+mana_cost = 0.0
 cooldown = 5.0
 cast_type = 1
 cast_time = 0.7
