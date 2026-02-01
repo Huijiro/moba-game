@@ -48,6 +48,8 @@ class AbilityDefinition : public Resource {
   float cast_time = 0.0f;   // Duration before ability executes
   float cast_point = 0.4f;  // When in cast time (0.0-1.0) the ability fires
   float channel_duration = 0.0f;  // For CHANNEL type abilities
+  float channel_tick_interval =
+      0.0f;  // Time between damage ticks (0.0 = no ticks)
 
   // Targeting
   int targeting_type = static_cast<int>(TargetingType::SELF_CAST);
@@ -105,6 +107,9 @@ class AbilityDefinition : public Resource {
 
   void set_channel_duration(float duration);
   float get_channel_duration() const;
+
+  void set_channel_tick_interval(float interval);
+  float get_channel_tick_interval() const;
 
   // Targeting properties
   void set_targeting_type(int type);

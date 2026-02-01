@@ -97,6 +97,13 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "channel_duration"),
                "set_channel_duration", "get_channel_duration");
 
+  ClassDB::bind_method(D_METHOD("set_channel_tick_interval", "interval"),
+                       &AbilityDefinition::set_channel_tick_interval);
+  ClassDB::bind_method(D_METHOD("get_channel_tick_interval"),
+                       &AbilityDefinition::get_channel_tick_interval);
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "channel_tick_interval"),
+               "set_channel_tick_interval", "get_channel_tick_interval");
+
   // Targeting properties
   ClassDB::bind_method(D_METHOD("set_targeting_type", "type"),
                        &AbilityDefinition::set_targeting_type);
@@ -247,6 +254,14 @@ void AbilityDefinition::set_channel_duration(float duration) {
 
 float AbilityDefinition::get_channel_duration() const {
   return channel_duration;
+}
+
+void AbilityDefinition::set_channel_tick_interval(float interval) {
+  channel_tick_interval = interval >= 0.0f ? interval : 0.0f;
+}
+
+float AbilityDefinition::get_channel_tick_interval() const {
+  return channel_tick_interval;
 }
 
 void AbilityDefinition::set_targeting_type(int type) {

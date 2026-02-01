@@ -73,6 +73,9 @@ void AbilityComponent::_bind_methods() {
   ADD_SIGNAL(godot::MethodInfo("cast_failed",
                                PropertyInfo(Variant::INT, "slot"),
                                PropertyInfo(Variant::STRING, "reason")));
+  ADD_SIGNAL(godot::MethodInfo("ability_channel_tick",
+                               PropertyInfo(Variant::INT, "slot"),
+                               PropertyInfo(Variant::OBJECT, "target")));
 }
 
 void AbilityComponent::_ready() {
@@ -135,6 +138,34 @@ void AbilityComponent::_physics_process(double delta) {
     // Get cast point timing
     float cast_duration = 0.0f;
     int cast_type = ability->get_cast_type();
+    int targeting_type = ability->get_targeting_type();
+
+    // Check range for channel abilities with unit targets
+    if (cast_type == static_cast<int>(CastType::CHANNEL) &&
+        targeting_type == static_cast<int>(TargetingType::UNIT_TARGET) &&
+        casting_target != nullptr) {
+      Unit* caster = get_unit();
+      Unit* target_unit = Object::cast_to<Unit>(casting_target);
+      if (target_unit != nullptr && target_unit->is_inside_tree()) {
+        float distance = caster->get_global_position().distance_to(
+            target_unit->get_global_position());
+        float range = ability->get_range();
+        if (range > 0.0f && distance > range) {
+          // Target out of range - interrupt channel
+          UtilityFunctions::print(
+              "[AbilityComponent] Channel interrupted: target out of range (" +
+              String::num(distance, 1) + "m > " + String::num(range, 1) + "m)");
+          _finish_casting();
+          return;
+        }
+      } else {
+        // Target no longer exists or not in tree - interrupt channel
+        UtilityFunctions::print(
+            "[AbilityComponent] Channel interrupted: target no longer valid");
+        _finish_casting();
+        return;
+      }
+    }
 
     if (cast_type == static_cast<int>(CastType::CAST_TIME)) {
       cast_duration = ability->get_cast_time();
@@ -152,6 +183,12 @@ void AbilityComponent::_physics_process(double delta) {
         emit_signal("ability_cast_point_reached", casting_slot, casting_target);
         _execute_ability(casting_slot);
         casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+
+        // Initialize tick timer for channel abilities
+        if (cast_type == static_cast<int>(CastType::CHANNEL)) {
+          float tick_interval = ability->get_channel_tick_interval();
+          next_tick_time = (tick_interval > 0.0f) ? tick_interval : 999999.0f;
+        }
       }
     } else {
       // Instant cast - execute immediately
@@ -159,6 +196,18 @@ void AbilityComponent::_physics_process(double delta) {
         emit_signal("ability_cast_point_reached", casting_slot, casting_target);
         _execute_ability(casting_slot);
         casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+      }
+    }
+
+    // Handle channel ticking (periodic damage)
+    if (cast_type == static_cast<int>(CastType::CHANNEL) &&
+        casting_state == static_cast<int>(CastState::ON_COOLDOWN)) {
+      float tick_interval = ability->get_channel_tick_interval();
+      if (tick_interval > 0.0f && casting_timer >= next_tick_time) {
+        // Fire a tick of damage
+        emit_signal("ability_channel_tick", casting_slot, casting_target);
+        _execute_ability(casting_slot);
+        next_tick_time += tick_interval;
       }
     }
 

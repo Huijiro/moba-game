@@ -48,6 +48,9 @@ class AbilityComponent : public UnitComponent {
   float casting_timer = 0.0f;
   int casting_state = static_cast<int>(CastState::IDLE);
 
+  // Channel ticking (for periodic damage abilities)
+  float next_tick_time = 0.0f;  // When the next tick should occur
+
   // Resource pool reference (for mana checks)
   ResourcePoolComponent* resource_pool = nullptr;
 
