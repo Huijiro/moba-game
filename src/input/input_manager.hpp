@@ -13,6 +13,8 @@
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include "../common/casting_mode.hpp"
+
 namespace godot {
 class Object;
 class PhysicsDirectSpaceState3D;
@@ -80,6 +82,7 @@ class InputManager : public Node {
   void _show_click_marker(const Vector3& position);
   void _update_click_marker(double delta);
   void _handle_ability_input(const String& key);
+  void _enter_ability_targeting_mode(int ability_slot, int targeting_type);
   void _handle_stop_command();
   void _cancel_targeting();
   void _init_default_keybinds();
@@ -114,6 +117,12 @@ class InputManager : public Node {
       -1;  // -1 = not waiting, 0-3 = ability slot waiting for target
   bool is_awaiting_unit_target =
       false;  // true if waiting for unit click, false if waiting for position
+
+  // Indicator casting state
+  int indicator_ability_slot =
+      -1;  // -1 = not charging, 0-3 = ability slot being charged
+  bool indicator_charging = false;
+  double indicator_charge_time = 0.0;
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H

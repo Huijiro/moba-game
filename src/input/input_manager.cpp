@@ -22,6 +22,7 @@
 #include "../components/abilities/ability_component.hpp"
 #include "../components/abilities/ability_definition.hpp"
 #include "../components/interaction/interactable.hpp"
+#include "../core/game_settings.hpp"
 #include "../core/unit.hpp"
 #include "../debug/visual_debugger.hpp"
 
@@ -575,47 +576,71 @@ void InputManager::_handle_ability_input(const String& key) {
 
   int targeting_type = ability->get_targeting_type();
   int cast_type = ability->get_cast_type();
+  CastingMode casting_mode = GameSettings::get_casting_mode_enum();
 
-  // DOTA-style ability casting system:
-  // - SELF_CAST: Execute immediately on press
-  // - INSTANT with no target requirement: Execute immediately
-  // - UNIT_TARGET: Require click on unit (enter targeting mode)
-  // - POINT_TARGET/AREA: Require click on location (enter targeting mode)
-  // - CHANNEL: Require click to start channel, release button to stop
-
+  // SELF_CAST always goes immediately
   if (targeting_type == 3) {  // SELF_CAST
     // Cast immediately on self
     ability_component->try_cast_point(ability_slot,
                                       controlled_unit->get_global_position());
     UtilityFunctions::print("[InputManager] Self-cast ability slot " +
                             String::num(ability_slot));
-  } else if (cast_type == 2) {  // CHANNEL cast type
-    // Channel abilities require a click to start the channel
-    // and key release to interrupt it
-    if (targeting_type == 0) {  // UNIT_TARGET channel
-      awaiting_target_slot = ability_slot;
-      is_awaiting_unit_target = true;
-      UtilityFunctions::print(
-          "[InputManager] Ability slot " + String::num(ability_slot) +
-          " (CHANNEL) waiting for unit target - click to start");
-    } else {  // POINT_TARGET or AREA channel
-      awaiting_target_slot = ability_slot;
-      is_awaiting_unit_target = false;
-      UtilityFunctions::print(
-          "[InputManager] Ability slot " + String::num(ability_slot) +
-          " (CHANNEL) waiting for position target - click to start");
+    return;
+  }
+
+  // Handle based on casting mode
+  switch (casting_mode) {
+    case CastingMode::INSTANT: {
+      // Instant cast mode - cast immediately if applicable, otherwise wait for
+      // target
+      if (cast_type == 2) {  // CHANNEL
+        // Channels always require targeting click
+        _enter_ability_targeting_mode(ability_slot, targeting_type);
+      } else if (targeting_type ==
+                 3) {  // SELF_CAST (covered above but for completeness)
+        ability_component->try_cast_point(
+            ability_slot, controlled_unit->get_global_position());
+      } else if (cast_type == 0) {  // INSTANT cast with no targeting needs
+        // For instant casts, try to cast immediately on unit if available
+        ability_component->try_cast(ability_slot, controlled_unit);
+        UtilityFunctions::print("[InputManager] Instant cast ability slot " +
+                                String::num(ability_slot));
+      } else {
+        // Wait for target click
+        _enter_ability_targeting_mode(ability_slot, targeting_type);
+      }
+      break;
     }
-  } else if (targeting_type == 0) {  // UNIT_TARGET
-    // Enter targeting mode - wait for unit click
-    awaiting_target_slot = ability_slot;
-    is_awaiting_unit_target = true;
+
+    case CastingMode::CLICK_TO_CAST: {
+      // Click to cast mode - always wait for target click
+      _enter_ability_targeting_mode(ability_slot, targeting_type);
+      break;
+    }
+
+    case CastingMode::INDICATOR: {
+      // Indicator cast mode - start charging
+      indicator_ability_slot = ability_slot;
+      indicator_charging = true;
+      indicator_charge_time = 0.0;
+      UtilityFunctions::print(
+          "[InputManager] Indicator charging for ability slot " +
+          String::num(ability_slot) + " - release to cast");
+      break;
+    }
+  }
+}
+
+void InputManager::_enter_ability_targeting_mode(int ability_slot,
+                                                 int targeting_type) {
+  awaiting_target_slot = ability_slot;
+  is_awaiting_unit_target = (targeting_type == 0);  // UNIT_TARGET requires unit
+
+  if (targeting_type == 0) {  // UNIT_TARGET
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for unit target - click on target");
   } else {  // POINT_TARGET (1) or AREA (2)
-    // Enter targeting mode - wait for position click
-    awaiting_target_slot = ability_slot;
-    is_awaiting_unit_target = false;
     UtilityFunctions::print("[InputManager] Ability slot " +
                             String::num(ability_slot) +
                             " waiting for position target - click to cast");
