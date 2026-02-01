@@ -121,7 +121,8 @@ void InputManager::_input(const Ref<InputEvent>& event) {
   // Check for keyboard input (ability slots 1-6)
   // Support up to 6 ability slots via ui_ability_1 through ui_ability_6 actions
   for (int i = 1; i <= 6; i++) {
-    String action_name = String("ui_ability_") + String::num(i);
+    String action_name =
+        String("ui_ability_") + String::num(i, 0);  // Force integer format
     if (event->is_action_pressed(action_name)) {
       _handle_ability_input(action_name);
       break;  // Only process one ability key per input event
