@@ -151,6 +151,8 @@ void InputManager::_input(const Ref<InputEvent>& event) {
 
     // Check for ability key press
     if (event->is_action_pressed(action_sname)) {
+      // Cancel any existing targeting state when pressing a new ability key
+      _cancel_targeting();
       _handle_ability_input(action_name);
       break;  // Only process one ability key per input event
     }
@@ -217,6 +219,9 @@ void InputManager::_input(const Ref<InputEvent>& event) {
   if (!is_move_action) {
     return;
   }
+
+  // Cancel any existing targeting state when attempting movement/attack
+  _cancel_targeting();
 
   Vector3 click_position;
   godot::Object* clicked_object = nullptr;
@@ -651,6 +656,17 @@ void InputManager::_handle_stop_command() {
 
   if (!did_stop_anything) {
     UtilityFunctions::print("[InputManager] Stop command: Nothing to stop");
+  }
+}
+
+void InputManager::_cancel_targeting() {
+  // Cancel the "ready to cast" state when player takes any action
+  if (awaiting_target_slot >= 0) {
+    UtilityFunctions::print(
+        "[InputManager] Cancelled targeting mode for ability " +
+        String::num(awaiting_target_slot) + " (action taken)");
+    awaiting_target_slot = -1;
+    is_awaiting_unit_target = false;
   }
 }
 

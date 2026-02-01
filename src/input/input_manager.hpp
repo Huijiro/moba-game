@@ -81,9 +81,10 @@ class InputManager : public Node {
   void _update_click_marker(double delta);
   void _handle_ability_input(const String& key);
   void _handle_stop_command();
+  void _cancel_targeting();
   void _init_default_keybinds();
 
-  // Get key name from input action (e.g., "ui_ability_1" -> "Q")
+  // Get key name from input action (e.g., "game_ability_1" -> "Q")
   String _get_key_name_for_action(const String& action);
 
   // Member variables
