@@ -1,12 +1,12 @@
 #ifndef GDEXTENSION_ABILITY_EFFECT_H
 #define GDEXTENSION_ABILITY_EFFECT_H
 
-#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
 using godot::Array;
-using godot::RefCounted;
+using godot::Resource;
 using godot::Vector3;
 
 class Unit;
@@ -31,8 +31,8 @@ class AbilityDefinition;
 /// 4. Use as .tres resource in AbilityDefinition
 ///
 /// Example: See GodotGame/resources/abilities/*Effect.tres
-class AbilityEffect : public RefCounted {
-  GDCLASS(AbilityEffect, RefCounted)
+class AbilityEffect : public Resource {
+  GDCLASS(AbilityEffect, Resource)
 
  protected:
   static void _bind_methods();

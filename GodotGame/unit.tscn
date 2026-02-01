@@ -1,5 +1,4 @@
 [gd_scene format=3 uid="uid://bfetb0lq8t6ji"]
-[ext_resource type="Resource" path="res://resources/units/TestHero.tres" id="1_testunit"]
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_ig7tw"]
 
@@ -12,7 +11,6 @@ albedo_color = Color(1, 0, 0, 1)
 material = SubResource("StandardMaterial3D_k4y1u")
 
 [node name="Unit" type="Unit" unique_id=1290899300]
-unit_definition = ExtResource("1_testunit")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=609497395]
 debug_enabled = true
