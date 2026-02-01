@@ -81,6 +81,18 @@ void GodotDebugDrawer::_bind_methods() {
                "set_draw_unit_targets", "is_draw_unit_targets");
 }
 
+void GodotDebugDrawer::_ready() {
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  // Register as singleton
+  if (singleton_instance == nullptr) {
+    singleton_instance = this;
+    UtilityFunctions::print("[GodotDebugDrawer] Initialized as singleton");
+  }
+}
+
 void GodotDebugDrawer::_physics_process(double delta) {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;

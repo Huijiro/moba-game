@@ -27,6 +27,7 @@ class GodotDebugDrawer : public Node3D {
   GodotDebugDrawer();
   ~GodotDebugDrawer();
 
+  void _ready() override;
   void _physics_process(double delta) override;
 
   // Debug drawing methods using Godot's built-in tools

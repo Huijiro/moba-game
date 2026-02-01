@@ -17,8 +17,10 @@
 #include <godot_cpp/variant/vector2.hpp>
 
 #include "../components/abilities/ability_component.hpp"
+#include "../components/abilities/ability_definition.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/unit.hpp"
+#include "../debug/godot_debug_drawer.hpp"
 #include "../debug/skillshot_debug_renderer.hpp"
 
 using godot::ClassDB;
@@ -211,6 +213,34 @@ void InputManager::_process(double delta) {
   }
 
   _update_click_marker(delta);
+
+  // Debug: Draw targeting area while aiming ability
+  if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
+      camera != nullptr) {
+    GodotDebugDrawer* drawer = GodotDebugDrawer::get_singleton();
+    if (drawer != nullptr && drawer->is_debug_enabled()) {
+      // Get mouse position and raycast to ground
+      Vector3 mouse_pos;
+      godot::Object* dummy = nullptr;
+      if (_try_raycast(mouse_pos, dummy)) {
+        auto ability_component = controlled_unit->get_ability_component();
+        if (ability_component != nullptr) {
+          Ref<AbilityDefinition> ability =
+              ability_component->get_ability(awaiting_target_slot);
+          if (ability != nullptr) {
+            // Draw the targeting area
+            drawer->draw_ability_area(mouse_pos, ability->get_aoe_radius());
+
+            // Draw ability range from caster
+            if (drawer->is_draw_ability_ranges()) {
+              drawer->draw_ability_range(controlled_unit->get_global_position(),
+                                         ability->get_range());
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 void InputManager::set_controlled_unit(Unit* unit) {
