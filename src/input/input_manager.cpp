@@ -491,6 +491,15 @@ void InputManager::_handle_ability_input(const String& key) {
     return;  // No ability in this slot
   }
 
+  // Check if ability is on cooldown before allowing cast attempt
+  if (ability_component->is_on_cooldown(ability_slot)) {
+    float remaining = ability_component->get_cooldown_remaining(ability_slot);
+    UtilityFunctions::print("[InputManager] Ability slot " +
+                            String::num(ability_slot) + " is on cooldown (" +
+                            String::num(remaining, 2) + "s remaining)");
+    return;  // Don't enter targeting mode if on cooldown
+  }
+
   int targeting_type = ability->get_targeting_type();
 
   // DOTA-style ability casting system:
