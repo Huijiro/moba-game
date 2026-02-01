@@ -215,28 +215,36 @@ void InputManager::_process(double delta) {
 
   _update_click_marker(delta);
 
-  // Debug: Draw targeting area while aiming ability
+  // Debug: Log targeting area info while aiming ability (console-based
+  // visualization)
   if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
       camera != nullptr) {
-    DebugMeshRenderer* renderer = DebugMeshRenderer::get_singleton();
-    if (renderer != nullptr && renderer->is_debug_enabled()) {
-      // Get mouse position and raycast to ground
-      Vector3 mouse_pos;
-      godot::Object* dummy = nullptr;
-      if (_try_raycast(mouse_pos, dummy)) {
-        auto ability_component = controlled_unit->get_ability_component();
-        if (ability_component != nullptr) {
-          Ref<AbilityDefinition> ability =
-              ability_component->get_ability(awaiting_target_slot);
-          if (ability != nullptr) {
-            // Draw the targeting area (green circle at cursor)
-            renderer->draw_circle(mouse_pos, ability->get_aoe_radius(),
-                                  Color(0, 1, 0, 0.4f), 0.05f);
+    // Get mouse position and raycast to ground
+    Vector3 mouse_pos;
+    godot::Object* dummy = nullptr;
+    if (_try_raycast(mouse_pos, dummy)) {
+      auto ability_component = controlled_unit->get_ability_component();
+      if (ability_component != nullptr) {
+        Ref<AbilityDefinition> ability =
+            ability_component->get_ability(awaiting_target_slot);
+        if (ability != nullptr) {
+          // Log debug info at reduced frequency to avoid spam
+          static float log_cooldown = 0.0f;
+          log_cooldown -= delta;
+          if (log_cooldown <= 0.0f) {
+            log_cooldown = 0.2f;  // Log every 0.2 seconds
 
-            // Draw ability range from caster (blue circle)
-            renderer->draw_circle(controlled_unit->get_global_position(),
-                                  ability->get_range(), Color(0, 0.5f, 1, 0.3f),
-                                  0.05f);
+            Vector3 caster_pos = controlled_unit->get_global_position();
+            float range = ability->get_range();
+            float aoe_radius = ability->get_aoe_radius();
+
+            UtilityFunctions::print(
+                "[DebugAim] Aiming at (" + godot::String::num(mouse_pos.x) +
+                ", " + godot::String::num(mouse_pos.z) +
+                ") | AoE: " + godot::String::num(aoe_radius) +
+                "m | Range: " + godot::String::num(range) + "m from (" +
+                godot::String::num(caster_pos.x) + ", " +
+                godot::String::num(caster_pos.z) + ")");
           }
         }
       }
