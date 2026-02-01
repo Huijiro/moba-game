@@ -3,9 +3,9 @@
 
 [resource]
 ability_name = "Quick Strike"
-description = "Instantly deal 25 damage to target unit"
+description = "Instantly deal 30 damage to target unit"
 mana_cost = 0.0
-cooldown = 5.0
+cooldown = 4.0
 cast_type = 0
 cast_time = 0.0
 cast_point = 0.0
@@ -13,5 +13,5 @@ channel_duration = 0.0
 targeting_type = 0
 range = 5.0
 aoe_radius = 0.0
-base_damage = 25.0
+base_damage = 30.0
 effect = ExtResource("1_damage")

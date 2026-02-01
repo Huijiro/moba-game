@@ -3,9 +3,9 @@
 
 [resource]
 ability_name = "Explosion"
-description = "Instant AoE ability dealing 35 damage to all units in 8m radius"
+description = "Instant AoE ability dealing 60 damage to all units in 8m radius around caster"
 mana_cost = 0.0
-cooldown = 12.0
+cooldown = 10.0
 cast_type = 0
 cast_time = 0.0
 cast_point = 0.0
@@ -13,5 +13,5 @@ channel_duration = 0.0
 targeting_type = 2
 range = 0.0
 aoe_radius = 8.0
-base_damage = 35.0
+base_damage = 60.0
 effect = ExtResource("1_aoe")
