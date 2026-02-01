@@ -58,23 +58,11 @@ void UnitDefinition::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_abilities"),
                        &UnitDefinition::get_abilities);
 
-  // Create individual properties for each ability slot
+  // Expose abilities array directly to editor
   ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_q",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_w",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_e",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_r",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
+      PropertyInfo(Variant::ARRAY, "abilities", godot::PROPERTY_HINT_ARRAY_TYPE,
+                   "AbilityDefinition"),
+      "set", "get");
 }
 
 void UnitDefinition::set_unit_name(const String& name) {

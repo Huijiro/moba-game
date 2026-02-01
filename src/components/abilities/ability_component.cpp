@@ -49,24 +49,9 @@ void AbilityComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_cast_state", "slot"),
                        &AbilityComponent::get_cast_state);
 
-  // ========== PROPERTIES ==========
-  // Create properties for each ability slot
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_q",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_w",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_e",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::OBJECT, "ability_r",
-                   godot::PROPERTY_HINT_RESOURCE_TYPE, "AbilityDefinition"),
-      "set_ability", "get_ability");
+  // NOTE: Abilities are set automatically from UnitDefinition in Unit._ready()
+  // No ADD_PROPERTY needed here since set_ability() takes 2 parameters (slot,
+  // ability) and Godot properties only support 1-parameter setters
 
   // ========== SIGNALS ==========
   ADD_SIGNAL(godot::MethodInfo("ability_cast_started",
