@@ -181,40 +181,56 @@ void AbilityDefinition::_get_property_list(
   // Call parent implementation first
   Resource::_get_property_list(r_list);
 
-  // Add conditional properties based on ability type
-  _add_conditional_properties(r_list);
-}
+  // Remove conditional properties that shouldn't be visible
+  auto it = r_list->front();
+  while (it) {
+    const String prop_name = it->get().name;
+    auto next_it = it->next();
+    bool should_hide = false;
 
-void AbilityDefinition::_add_conditional_properties(
-    godot::List<PropertyInfo>* r_list) const {
-  // Cast Time properties - only show if cast_type == CAST_TIME (0)
-  if (cast_type == static_cast<int>(CastType::CAST_TIME)) {
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "cast_time"));
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "cast_point"));
-  }
+    // Hide cast_time/cast_point if not CAST_TIME
+    if (cast_type != static_cast<int>(CastType::CAST_TIME)) {
+      if (prop_name == "cast_time" || prop_name == "cast_point") {
+        should_hide = true;
+      }
+    }
 
-  // Channel properties - only show if cast_type == CHANNEL (2)
-  if (cast_type == static_cast<int>(CastType::CHANNEL)) {
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "channel_duration"));
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "channel_tick_interval"));
-  }
+    // Hide channel properties if not CHANNEL
+    if (cast_type != static_cast<int>(CastType::CHANNEL)) {
+      if (prop_name == "channel_duration" ||
+          prop_name == "channel_tick_interval") {
+        should_hide = true;
+      }
+    }
 
-  // Range - show for most targeting types (NOT SELF_CAST)
-  if (targeting_type != static_cast<int>(TargetingType::SELF_CAST)) {
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "range"));
-  }
+    // Hide range if SELF_CAST
+    if (targeting_type == static_cast<int>(TargetingType::SELF_CAST)) {
+      if (prop_name == "range") {
+        should_hide = true;
+      }
+    }
 
-  // AoE radius - show for AREA and POINT_TARGET
-  if (targeting_type == static_cast<int>(TargetingType::AREA) ||
-      targeting_type == static_cast<int>(TargetingType::POINT_TARGET)) {
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "aoe_radius"));
-  }
+    // Hide aoe_radius if not AREA/POINT_TARGET
+    if (targeting_type != static_cast<int>(TargetingType::AREA) &&
+        targeting_type != static_cast<int>(TargetingType::POINT_TARGET)) {
+      if (prop_name == "aoe_radius") {
+        should_hide = true;
+      }
+    }
 
-  // Skillshot properties - only show if targeting_type == SKILLSHOT (3)
-  if (targeting_type == static_cast<int>(TargetingType::SKILLSHOT)) {
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_speed"));
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_max_distance"));
-    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_hit_radius"));
+    // Hide skillshot properties if not SKILLSHOT
+    if (targeting_type != static_cast<int>(TargetingType::SKILLSHOT)) {
+      if (prop_name == "skillshot_speed" ||
+          prop_name == "skillshot_max_distance" ||
+          prop_name == "skillshot_hit_radius") {
+        should_hide = true;
+      }
+    }
+
+    if (should_hide) {
+      r_list->erase(it);
+    }
+    it = next_it;
   }
 }
 

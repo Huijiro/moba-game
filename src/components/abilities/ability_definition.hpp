@@ -37,7 +37,6 @@ class AbilityDefinition : public Resource {
  protected:
   static void _bind_methods();
   void _get_property_list(godot::List<PropertyInfo>* r_list) const;
-  void _add_conditional_properties(godot::List<PropertyInfo>* r_list) const;
 
   // Display information
   String ability_name = "Ability";
