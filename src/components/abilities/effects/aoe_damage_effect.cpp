@@ -3,14 +3,17 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/variant/color.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <vector>
 
 #include "../../../core/unit.hpp"
+#include "../../../debug/visual_debugger.hpp"
 #include "../../health/health_component.hpp"
 #include "../ability_definition.hpp"
 
 using godot::ClassDB;
+using godot::Color;
 using godot::D_METHOD;
 using godot::Engine;
 using godot::Node;
@@ -61,6 +64,13 @@ void AoEDamageEffect::execute(Unit* caster,
 
   _apply_damage_in_radius(caster, aoe_center, radius, damage);
 
+  // Debug visualization: Draw AoE circle
+  VisualDebugger* debugger = VisualDebugger::get_singleton();
+  if (debugger != nullptr && debugger->is_debug_enabled()) {
+    // Draw yellow circle for AoE area
+    debugger->draw_circle_xz(aoe_center, radius, Color(1, 1, 0, 0.5f));
+  }
+
   UtilityFunctions::print("[AoEDamageEffect] Applied " +
                           godot::String::num(damage) + " damage in radius " +
                           godot::String::num(radius));
@@ -83,6 +93,13 @@ void AoEDamageEffect::execute_at_point(Unit* caster,
 
   // Apply damage centered at the clicked point (not caster position)
   _apply_damage_in_radius(caster, point, radius, damage);
+
+  // Debug visualization: Draw AoE circle
+  VisualDebugger* debugger = VisualDebugger::get_singleton();
+  if (debugger != nullptr && debugger->is_debug_enabled()) {
+    // Draw yellow circle for AoE area
+    debugger->draw_circle_xz(point, radius, Color(1, 1, 0, 0.5f));
+  }
 
   UtilityFunctions::print("[AoEDamageEffect] Applied " +
                           godot::String::num(damage) + " damage at point (" +
