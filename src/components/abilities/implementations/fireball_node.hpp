@@ -6,16 +6,19 @@
 using godot::String;
 
 class Unit;
+class SkillshotProjectile;
 
-/// Fireball - Area-of-effect instant damage ability
-/// Projectile/instant ability that damages all units in a radius
-/// Targets a point in the world and applies damage to all units in AoE
+/// Fireball - Skillshot projectile ability
+/// Launches a fireball that travels from caster towards the clicked position
+/// Detonates on impact or max distance, dealing AoE damage to all units in
+/// radius
 ///
 /// Properties:
 /// - Instant cast (no windup)
-/// - Targets an area (all units within aoe_radius)
-/// - Applies base_damage to all units in the area
-/// - Useful for group damage and zoning
+/// - Skillshot targeting (fires from caster towards cursor)
+/// - Spawns a projectile that travels until it hits a unit or max distance
+/// - Applies base_damage to all units in explosion radius
+/// - Useful for group damage and requires player aim
 class FireballNode : public AbilityNode {
   GDCLASS(FireballNode, AbilityNode)
 
@@ -35,15 +38,9 @@ class FireballNode : public AbilityNode {
 
   float calculate_damage(Unit* caster, Unit* target = nullptr) const override;
 
-  // Helper method to find all units in area
-  godot::Array query_units_in_area(const godot::Vector3& center) const;
-
- private:
-  // Recursive helper to search scene tree for units within radius
-  void _search_units_in_tree(godot::Node* node,
-                             const godot::Vector3& center,
-                             float radius_sq,
-                             godot::Array& result) const;
+  // Helper method to spawn projectile
+  SkillshotProjectile* _spawn_projectile(Unit* caster,
+                                         const godot::Vector3& target_position);
 };
 
 #endif  // GDEXTENSION_FIREBALL_NODE_H
