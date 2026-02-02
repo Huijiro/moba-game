@@ -21,6 +21,7 @@
 
 #include "../components/abilities/ability_component.hpp"
 #include "../components/abilities/ability_definition.hpp"
+#include "../components/abilities/ability_node.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/game_settings.hpp"
 #include "../core/unit.hpp"
@@ -182,9 +183,9 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     if (_try_raycast(click_position, clicked_object)) {
       auto ability_component = controlled_unit->get_ability_component();
       if (ability_component != nullptr) {
-        Ref<AbilityDefinition> ability =
+        AbilityNode* ability =
             ability_component->get_ability(awaiting_target_slot);
-        int cast_type = ability.is_valid() ? ability->get_cast_type() : 0;
+        int cast_type = ability != nullptr ? ability->get_cast_type() : 0;
 
         if (is_awaiting_unit_target && clicked_object != nullptr) {
           // Unit-target ability: cast on clicked unit
@@ -281,7 +282,7 @@ void InputManager::_process(double delta) {
       if (_try_raycast(mouse_pos, dummy)) {
         auto ability_component = controlled_unit->get_ability_component();
         if (ability_component != nullptr) {
-          Ref<AbilityDefinition> ability =
+          AbilityNode* ability =
               ability_component->get_ability(awaiting_target_slot);
           if (ability != nullptr) {
             Vector3 caster_pos = controlled_unit->get_global_position();
@@ -528,9 +529,9 @@ void InputManager::_init_default_keybinds() {
           String::num(i + 1, 0);  // Force integer format (no decimals)
       keybind_map[action_name] = i;
       String key_name = _get_key_name_for_action(action_name);
-      Ref<AbilityDefinition> ability = ability_component->get_ability(i);
+      AbilityNode* ability = ability_component->get_ability(i);
       String ability_name =
-          ability.is_valid() ? ability->get_ability_name() : "Unknown";
+          ability != nullptr ? ability->get_ability_name() : "Unknown";
       UtilityFunctions::print("[InputManager] Ability " +
                               String::num(i + 1, 0) + " (" + ability_name +
                               ") bound to key: " + key_name);
@@ -561,7 +562,7 @@ void InputManager::_handle_ability_input(const String& key) {
 
   // Get the ability definition to check its targeting type
   auto ability = ability_component->get_ability(ability_slot);
-  if (!ability.is_valid()) {
+  if (ability == nullptr) {
     return;  // No ability in this slot
   }
 

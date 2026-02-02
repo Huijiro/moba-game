@@ -11,9 +11,15 @@
 #include "components/abilities/ability_component.hpp"
 #include "components/abilities/ability_definition.hpp"
 #include "components/abilities/ability_effect.hpp"
+#include "components/abilities/ability_node.hpp"
 #include "components/abilities/effects/aoe_damage_effect.hpp"
 #include "components/abilities/effects/damage_effect.hpp"
 #include "components/abilities/effects/skillshot_effect.hpp"
+#include "components/abilities/implementations/beam_node.hpp"
+#include "components/abilities/implementations/explosion_node.hpp"
+#include "components/abilities/implementations/fireball_node.hpp"
+#include "components/abilities/implementations/frost_bolt_node.hpp"
+#include "components/abilities/implementations/instant_strike_node.hpp"
 #include "components/combat/attack_component.hpp"
 #include "components/combat/projectile.hpp"
 #include "components/combat/skillshot_projectile.hpp"
@@ -51,6 +57,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(SkillshotProjectile)
   GDREGISTER_CLASS(AbilityEffect)
   GDREGISTER_CLASS(AbilityDefinition)
+  GDREGISTER_CLASS(AbilityNode)
+  GDREGISTER_CLASS(BeamNode)
+  GDREGISTER_CLASS(ExplosionNode)
+  GDREGISTER_CLASS(InstantStrikeNode)
+  GDREGISTER_CLASS(FrostBoltNode)
+  GDREGISTER_CLASS(FireballNode)
   GDREGISTER_CLASS(DamageEffect)
   GDREGISTER_CLASS(AoEDamageEffect)
   GDREGISTER_CLASS(SkillshotEffect)

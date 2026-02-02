@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -9,13 +10,15 @@
 #include "../../core/unit.hpp"
 #include "../../debug/visual_debugger.hpp"
 #include "../resources/resource_pool_component.hpp"
-#include "ability_definition.hpp"
-#include "ability_effect.hpp"
+#include "ability_node.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
+using godot::Object;
+using godot::PackedScene;
 using godot::PropertyInfo;
+using godot::Ref;
 using godot::String;
 using godot::UtilityFunctions;
 using godot::Variant;
@@ -26,8 +29,8 @@ AbilityComponent::~AbilityComponent() = default;
 
 void AbilityComponent::_bind_methods() {
   // ========== ABILITY SLOT METHODS ==========
-  ClassDB::bind_method(D_METHOD("set_ability", "slot", "ability"),
-                       &AbilityComponent::set_ability);
+  ClassDB::bind_method(D_METHOD("set_ability_scene", "slot", "scene"),
+                       &AbilityComponent::set_ability_scene);
   ClassDB::bind_method(D_METHOD("get_ability", "slot"),
                        &AbilityComponent::get_ability);
   ClassDB::bind_method(D_METHOD("has_ability", "slot"),
@@ -38,6 +41,10 @@ void AbilityComponent::_bind_methods() {
                        &AbilityComponent::set_ability_count);
 
   // ========== ARRAY-BASED INTERFACE ==========
+  ClassDB::bind_method(D_METHOD("set_ability_scenes", "scenes"),
+                       &AbilityComponent::set_ability_scenes);
+  ClassDB::bind_method(D_METHOD("get_ability_scenes"),
+                       &AbilityComponent::get_ability_scenes);
   ClassDB::bind_method(D_METHOD("set_abilities", "abilities"),
                        &AbilityComponent::set_abilities);
   ClassDB::bind_method(D_METHOD("get_abilities"),
@@ -61,16 +68,9 @@ void AbilityComponent::_bind_methods() {
                        &AbilityComponent::get_cast_state);
 
   // ========== PROPERTIES ==========
-  ADD_PROPERTY(PropertyInfo(Variant::INT, "ability_count",
-                            godot::PROPERTY_HINT_RANGE, "0,6"),
-               "set_ability_count", "get_ability_count");
-  ADD_PROPERTY(
-      PropertyInfo(Variant::ARRAY, "abilities", godot::PROPERTY_HINT_ARRAY_TYPE,
-                   "AbilityDefinition"),
-      "set_abilities", "get_abilities");
-
-  // NOTE: Individual ability slots can be set via set_ability() method
-  // Abilities are configured directly on the component in the editor
+  ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ability_scenes",
+                            godot::PROPERTY_HINT_ARRAY_TYPE, "PackedScene"),
+               "set_ability_scenes", "get_ability_scenes");
 
   // ========== SIGNALS ==========
   ADD_SIGNAL(godot::MethodInfo("ability_cast_started",
@@ -116,10 +116,9 @@ void AbilityComponent::_ready() {
         "tracking");
   }
 
-  // Initialize ability slots from unit definition
-  // Default to 4 slots if not specified, will be configured by Unit
-  if (ability_slots.empty()) {
-    set_ability_count(4);
+  // Initialize cooldown timers - size based on ability_scenes array
+  if (cooldown_timers.size() != static_cast<size_t>(ability_scenes.size())) {
+    cooldown_timers.resize(ability_scenes.size(), 0.0f);
   }
 }
 
@@ -140,8 +139,8 @@ void AbilityComponent::_physics_process(double delta) {
 
   // Handle casting state machine
   if (casting_slot >= 0 &&
-      casting_slot < static_cast<int>(ability_slots.size())) {
-    Ref<AbilityDefinition> ability = ability_slots[casting_slot];
+      casting_slot < static_cast<int>(ability_scenes.size())) {
+    AbilityNode* ability = get_ability(casting_slot);
     if (ability == nullptr) {
       _finish_casting();
       return;
@@ -245,66 +244,70 @@ void AbilityComponent::_physics_process(double delta) {
 
 // ========== ABILITY SLOT MANAGEMENT ==========
 
-void AbilityComponent::set_ability(int slot,
-                                   const Ref<AbilityDefinition>& ability) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+void AbilityComponent::set_ability_scene(int slot,
+                                         const Ref<PackedScene>& scene) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     UtilityFunctions::print("[AbilityComponent] Invalid slot: " +
                             String::num(slot));
     return;
   }
-  ability_slots[slot] = ability;
+  ability_scenes[slot] = scene;
+  // Ensure cooldown timers array is sized correctly
+  if (cooldown_timers.size() != static_cast<size_t>(ability_scenes.size())) {
+    cooldown_timers.resize(ability_scenes.size(), 0.0f);
+  }
 }
 
-Ref<AbilityDefinition> AbilityComponent::get_ability(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+AbilityNode* AbilityComponent::get_ability(int slot) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return nullptr;
   }
-  return ability_slots[slot];
+  Variant scene_variant = ability_scenes[slot];
+  if (scene_variant.get_type() != Variant::OBJECT) {
+    return nullptr;
+  }
+  return Object::cast_to<AbilityNode>(scene_variant);
 }
 
 bool AbilityComponent::has_ability(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return false;
   }
-  return ability_slots[slot] != nullptr;
+  return get_ability(slot) != nullptr;
 }
 
 int AbilityComponent::get_ability_count() const {
-  return static_cast<int>(ability_slots.size());
+  return static_cast<int>(ability_scenes.size());
 }
 
 void AbilityComponent::set_ability_count(int count) {
   count = std::max(0, std::min(count, 6));  // Clamp between 0 and 6
-  if (static_cast<int>(ability_slots.size()) != count) {
-    ability_slots.resize(count);
+  if (static_cast<int>(ability_scenes.size()) != count) {
+    ability_scenes.resize(count);
     cooldown_timers.resize(count, 0.0f);
     UtilityFunctions::print("[AbilityComponent] Resized to " +
                             String::num(count) + " ability slots");
   }
 }
 
-void AbilityComponent::set_abilities(const godot::Array& abilities) {
-  // Update ability_count based on array size
-  set_ability_count(abilities.size());
+void AbilityComponent::set_ability_scenes(const godot::Array& scenes) {
+  ability_scenes = scenes;
+  // Resize cooldown timers to match
+  cooldown_timers.resize(ability_scenes.size(), 0.0f);
+  UtilityFunctions::print("[AbilityComponent] Set " +
+                          String::num(scenes.size()) + " ability scenes");
+}
 
-  // Populate ability slots from array
-  for (int i = 0; i < abilities.size(); i++) {
-    Variant elem = abilities[i];
-    if (elem.get_type() == Variant::OBJECT) {
-      Ref<AbilityDefinition> ability = elem;
-      ability_slots[i] = ability;
-    } else {
-      ability_slots[i] = Ref<AbilityDefinition>();
-    }
-  }
+godot::Array AbilityComponent::get_ability_scenes() const {
+  return ability_scenes;
+}
+
+void AbilityComponent::set_abilities(const godot::Array& abilities) {
+  set_ability_scenes(abilities);
 }
 
 godot::Array AbilityComponent::get_abilities() const {
-  godot::Array result;
-  for (const auto& ability : ability_slots) {
-    result.append(ability);
-  }
-  return result;
+  return get_ability_scenes();
 }
 
 // ========== ABILITY CASTING ==========
@@ -362,24 +365,29 @@ void AbilityComponent::interrupt_casting() {
 }
 
 bool AbilityComponent::is_on_cooldown(int slot) const {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(cooldown_timers.size())) {
     return false;
   }
   return cooldown_timers[slot] > 0.0f;
 }
 
 float AbilityComponent::get_cooldown_remaining(int slot) const {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(cooldown_timers.size())) {
     return 0.0f;
   }
   return cooldown_timers[slot];
 }
 
 float AbilityComponent::get_cooldown_duration(int slot) const {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return 0.0f;
   }
-  Ref<AbilityDefinition> ability = ability_slots[slot];
+  // Can't call get_ability on const method, access directly
+  Variant scene_variant = ability_scenes[slot];
+  if (scene_variant.get_type() != Variant::OBJECT) {
+    return 0.0f;
+  }
+  AbilityNode* ability = Object::cast_to<AbilityNode>(scene_variant);
   if (ability == nullptr) {
     return 0.0f;
   }
@@ -387,7 +395,7 @@ float AbilityComponent::get_cooldown_duration(int slot) const {
 }
 
 int AbilityComponent::get_cast_state(int slot) const {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return static_cast<int>(CastState::IDLE);
   }
   if (slot == casting_slot) {
@@ -402,7 +410,7 @@ int AbilityComponent::get_cast_state(int slot) const {
 // ========== INTERNAL METHODS ==========
 
 bool AbilityComponent::_can_cast(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return false;
   }
 
@@ -412,7 +420,7 @@ bool AbilityComponent::_can_cast(int slot) {
   }
 
   // Check if ability exists
-  if (ability_slots[slot] == nullptr) {
+  if (get_ability(slot) == nullptr) {
     return false;
   }
 
@@ -433,7 +441,7 @@ ResourcePoolComponent* AbilityComponent::_get_resource_pool(
 
   // Try to find a ResourcePoolComponent with matching pool_id
   for (int i = 0; i < owner->get_child_count(); i++) {
-    Node* child = owner->get_child(i);
+    godot::Node* child = owner->get_child(i);
     ResourcePoolComponent* pool = Object::cast_to<ResourcePoolComponent>(child);
     if (pool != nullptr && pool->get_pool_id() == pool_id) {
       return pool;
@@ -446,11 +454,7 @@ ResourcePoolComponent* AbilityComponent::_get_resource_pool(
 }
 
 bool AbilityComponent::_can_afford(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
-    return false;
-  }
-
-  Ref<AbilityDefinition> ability = ability_slots[slot];
+  AbilityNode* ability = get_ability(slot);
   if (ability == nullptr) {
     return false;
   }
@@ -476,11 +480,11 @@ bool AbilityComponent::_can_afford(int slot) {
 }
 
 void AbilityComponent::_begin_cast(int slot, Object* target) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return;
   }
 
-  Ref<AbilityDefinition> ability = ability_slots[slot];
+  AbilityNode* ability = get_ability(slot);
   if (ability == nullptr) {
     return;
   }
@@ -497,11 +501,11 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
 }
 
 void AbilityComponent::_execute_ability(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return;
   }
 
-  Ref<AbilityDefinition> ability = ability_slots[slot];
+  AbilityNode* ability = get_ability(slot);
   if (ability == nullptr) {
     return;
   }
@@ -521,21 +525,9 @@ void AbilityComponent::_execute_ability(int slot) {
     }
   }
 
-  // Get the effect and execute it
-  Ref<AbilityEffect> effect = ability->get_effect();
-  if (effect != nullptr) {
-    // For position-based abilities (POINT_TARGET, AREA, SKILLSHOT), use
-    // execute_at_point For unit-targeted abilities, use execute with the target
-    int targeting_type = ability->get_targeting_type();
-    if (targeting_type == 1 || targeting_type == 2 ||
-        targeting_type == 3) {  // POINT_TARGET, AREA, or SKILLSHOT
-      // Use position-based execution centered at click location
-      effect->execute_at_point(owner, casting_point, ability.ptr());
-    } else {
-      // Use target-based execution
-      effect->execute(owner, casting_target, ability.ptr());
-    }
-  }
+  // Execute the ability
+  Unit* target_unit = Object::cast_to<Unit>(casting_target);
+  ability->execute(owner, target_unit, casting_point);
 
   // Apply cooldown
   _apply_cooldown(slot);
@@ -547,11 +539,11 @@ void AbilityComponent::_execute_ability(int slot) {
 }
 
 void AbilityComponent::_apply_cooldown(int slot) {
-  if (slot < 0 || slot >= static_cast<int>(ability_slots.size())) {
+  if (slot < 0 || slot >= static_cast<int>(cooldown_timers.size())) {
     return;
   }
 
-  Ref<AbilityDefinition> ability = ability_slots[slot];
+  AbilityNode* ability = get_ability(slot);
   if (ability == nullptr) {
     return;
   }

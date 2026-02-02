@@ -1,14 +1,17 @@
 #ifndef GDEXTENSION_ABILITY_COMPONENT_H
 #define GDEXTENSION_ABILITY_COMPONENT_H
 
+#include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/ref.hpp>
 #include <vector>
 
 #include "../unit_component.hpp"
 #include "ability_definition.hpp"
+#include "ability_node.hpp"
 #include "ability_types.hpp"
 
 using godot::Object;
+using godot::PackedScene;
 using godot::Ref;
 using godot::Vector3;
 
@@ -35,15 +38,13 @@ class AbilityComponent : public UnitComponent {
  protected:
   static void _bind_methods();
 
-  // Ability slots (configurable, typically 4-6: Q, W, E, R, D, F)
-  // Can be edited directly in the Godot inspector
-  std::vector<Ref<AbilityDefinition>> ability_slots;
+  // Ability slots - stored as Godot Array for proper editor integration
+  // Godot handles add/remove buttons automatically
+  // Array elements are AbilityNode pointers stored as Variants
+  godot::Array ability_scenes;
 
   // Cooldown tracking per ability slot
   std::vector<float> cooldown_timers;
-
-  // Godot-exposed array of abilities (synchronized with ability_slots)
-  godot::Array abilities_array;
 
   // Casting state
   int casting_slot = -1;
@@ -66,15 +67,19 @@ class AbilityComponent : public UnitComponent {
   void _ready() override;
 
   // ========== ABILITY SLOT MANAGEMENT ==========
-  void set_ability(int slot, const Ref<AbilityDefinition>& ability);
-  Ref<AbilityDefinition> get_ability(int slot);
+  void set_ability_scene(int slot, const Ref<PackedScene>& scene);
+  AbilityNode* get_ability(int slot);
   bool has_ability(int slot);
 
   int get_ability_count() const;
   void set_ability_count(int count);
 
-  // Array-based interface for editor exposure
-  void set_abilities(const godot::Array& abilities);
+  // Array-based interface for editor exposure (PackedScene array)
+  void set_ability_scenes(const godot::Array& scenes);
+  godot::Array get_ability_scenes() const;
+
+  // Legacy compatibility - also bind as set_abilities/get_abilities
+  void set_abilities(const godot::Array& scenes);
   godot::Array get_abilities() const;
 
   // ========== ABILITY CASTING (Main Entry Points) ==========
