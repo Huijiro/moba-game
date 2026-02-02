@@ -4,14 +4,19 @@
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/resource.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
+#include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/templates/list.hpp>
 
 #include "ability_effect.hpp"
 #include "ability_types.hpp"
 
+using godot::Dictionary;
+using godot::PropertyInfo;
 using godot::Ref;
 using godot::Resource;
 using godot::String;
 using godot::Texture2D;
+using godot::TypedArray;
 
 /// Resource-based ability definition - save as .tres files in editor
 /// Contains all the stats and configuration for an ability
@@ -31,6 +36,8 @@ class AbilityDefinition : public Resource {
 
  protected:
   static void _bind_methods();
+  void _get_property_list(godot::List<PropertyInfo>* r_list) const;
+  void _add_conditional_properties(godot::List<PropertyInfo>* r_list) const;
 
   // Display information
   String ability_name = "Ability";

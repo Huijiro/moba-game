@@ -176,6 +176,48 @@ void AbilityDefinition::_bind_methods() {
       "set_effect", "get_effect");
 }
 
+void AbilityDefinition::_get_property_list(
+    godot::List<PropertyInfo>* r_list) const {
+  // Call parent implementation first
+  Resource::_get_property_list(r_list);
+
+  // Add conditional properties based on ability type
+  _add_conditional_properties(r_list);
+}
+
+void AbilityDefinition::_add_conditional_properties(
+    godot::List<PropertyInfo>* r_list) const {
+  // Cast Time properties - only show if cast_type == CAST_TIME (0)
+  if (cast_type == static_cast<int>(CastType::CAST_TIME)) {
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "cast_time"));
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "cast_point"));
+  }
+
+  // Channel properties - only show if cast_type == CHANNEL (2)
+  if (cast_type == static_cast<int>(CastType::CHANNEL)) {
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "channel_duration"));
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "channel_tick_interval"));
+  }
+
+  // Range - show for most targeting types (NOT SELF_CAST)
+  if (targeting_type != static_cast<int>(TargetingType::SELF_CAST)) {
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "range"));
+  }
+
+  // AoE radius - show for AREA and POINT_TARGET
+  if (targeting_type == static_cast<int>(TargetingType::AREA) ||
+      targeting_type == static_cast<int>(TargetingType::POINT_TARGET)) {
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "aoe_radius"));
+  }
+
+  // Skillshot properties - only show if targeting_type == SKILLSHOT (3)
+  if (targeting_type == static_cast<int>(TargetingType::SKILLSHOT)) {
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_speed"));
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_max_distance"));
+    r_list->push_back(PropertyInfo(Variant::FLOAT, "skillshot_hit_radius"));
+  }
+}
+
 void AbilityDefinition::set_ability_name(const String& name) {
   ability_name = name;
 }
