@@ -176,62 +176,54 @@ void AbilityDefinition::_bind_methods() {
       "set_effect", "get_effect");
 }
 
-void AbilityDefinition::_get_property_list(
-    godot::List<PropertyInfo>* r_list) const {
-  // Call parent implementation first
-  Resource::_get_property_list(r_list);
+bool AbilityDefinition::_validate_property(PropertyInfo& p_property) const {
+  const String& prop_name = p_property.name;
 
-  // Remove conditional properties that shouldn't be visible
-  auto it = r_list->front();
-  while (it) {
-    const String prop_name = it->get().name;
-    auto next_it = it->next();
-    bool should_hide = false;
-
-    // Hide cast_time/cast_point if not CAST_TIME
-    if (cast_type != static_cast<int>(CastType::CAST_TIME)) {
-      if (prop_name == "cast_time" || prop_name == "cast_point") {
-        should_hide = true;
-      }
+  // Hide cast_time/cast_point if not CAST_TIME
+  if (cast_type != static_cast<int>(CastType::CAST_TIME)) {
+    if (prop_name == "cast_time" || prop_name == "cast_point") {
+      p_property.usage = godot::PROPERTY_USAGE_NONE;
+      return false;
     }
-
-    // Hide channel properties if not CHANNEL
-    if (cast_type != static_cast<int>(CastType::CHANNEL)) {
-      if (prop_name == "channel_duration" ||
-          prop_name == "channel_tick_interval") {
-        should_hide = true;
-      }
-    }
-
-    // Hide range if SELF_CAST
-    if (targeting_type == static_cast<int>(TargetingType::SELF_CAST)) {
-      if (prop_name == "range") {
-        should_hide = true;
-      }
-    }
-
-    // Hide aoe_radius if not AREA/POINT_TARGET
-    if (targeting_type != static_cast<int>(TargetingType::AREA) &&
-        targeting_type != static_cast<int>(TargetingType::POINT_TARGET)) {
-      if (prop_name == "aoe_radius") {
-        should_hide = true;
-      }
-    }
-
-    // Hide skillshot properties if not SKILLSHOT
-    if (targeting_type != static_cast<int>(TargetingType::SKILLSHOT)) {
-      if (prop_name == "skillshot_speed" ||
-          prop_name == "skillshot_max_distance" ||
-          prop_name == "skillshot_hit_radius") {
-        should_hide = true;
-      }
-    }
-
-    if (should_hide) {
-      r_list->erase(it);
-    }
-    it = next_it;
   }
+
+  // Hide channel properties if not CHANNEL
+  if (cast_type != static_cast<int>(CastType::CHANNEL)) {
+    if (prop_name == "channel_duration" ||
+        prop_name == "channel_tick_interval") {
+      p_property.usage = godot::PROPERTY_USAGE_NONE;
+      return false;
+    }
+  }
+
+  // Hide range if SELF_CAST
+  if (targeting_type == static_cast<int>(TargetingType::SELF_CAST)) {
+    if (prop_name == "range") {
+      p_property.usage = godot::PROPERTY_USAGE_NONE;
+      return false;
+    }
+  }
+
+  // Hide aoe_radius if not AREA/POINT_TARGET
+  if (targeting_type != static_cast<int>(TargetingType::AREA) &&
+      targeting_type != static_cast<int>(TargetingType::POINT_TARGET)) {
+    if (prop_name == "aoe_radius") {
+      p_property.usage = godot::PROPERTY_USAGE_NONE;
+      return false;
+    }
+  }
+
+  // Hide skillshot properties if not SKILLSHOT
+  if (targeting_type != static_cast<int>(TargetingType::SKILLSHOT)) {
+    if (prop_name == "skillshot_speed" ||
+        prop_name == "skillshot_max_distance" ||
+        prop_name == "skillshot_hit_radius") {
+      p_property.usage = godot::PROPERTY_USAGE_NONE;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void AbilityDefinition::set_ability_name(const String& name) {
