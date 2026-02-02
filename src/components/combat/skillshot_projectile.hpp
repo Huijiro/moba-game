@@ -35,7 +35,6 @@ class SkillshotProjectile : public Node3D {
 
   Vector3 direction = Vector3(0, 0, -1);  // Direction of travel
 
-  const AbilityDefinition* ability_def = nullptr;
   ProjectileVisual* projectile_visual =
       nullptr;  // Optional visual representation
 
@@ -51,15 +50,16 @@ class SkillshotProjectile : public Node3D {
 
   void _physics_process(double delta) override;
 
-  /// Setup projectile with caster, direction, and ability parameters
+  /// Setup projectile with caster, direction, and projectile parameters
+  /// All ability-specific data is passed as individual parameters
+  /// Does not depend on AbilityDefinition - works with any ability type
   void setup(Unit* caster_unit,
              const Vector3& travel_direction,
              float damage_amount,
              float travel_speed,
              float max_range,
              float explosion_radius,
-             float collision_radius,
-             const AbilityDefinition* ability);
+             float collision_radius);
 
   void set_speed(float s);
   float get_speed() const;

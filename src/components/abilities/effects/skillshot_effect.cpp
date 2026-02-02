@@ -87,7 +87,7 @@ void SkillshotEffect::execute(Unit* caster,
   caster->add_child(projectile);
   projectile->setup(caster, direction, ability->get_base_damage(),
                     projectile_speed, projectile_max_distance, explosion_radius,
-                    projectile_hit_radius, ability);
+                    projectile_hit_radius);
 
   UtilityFunctions::print("[SkillshotEffect] Spawned skillshot projectile");
 }
@@ -123,7 +123,7 @@ void SkillshotEffect::execute_at_point(Unit* caster,
   caster->add_child(projectile);
   projectile->setup(caster, direction, ability->get_base_damage(),
                     projectile_speed, projectile_max_distance, explosion_radius,
-                    projectile_hit_radius, ability);
+                    projectile_hit_radius);
 
   UtilityFunctions::print("[SkillshotEffect] Spawned skillshot projectile");
 }

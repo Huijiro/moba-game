@@ -10,7 +10,6 @@
 #include "../../core/unit.hpp"
 #include "../../debug/visual_debugger.hpp"
 #include "../../visual/projectile_visual.hpp"
-#include "../abilities/ability_definition.hpp"
 #include "../health/health_component.hpp"
 
 using godot::ClassDB;
@@ -219,15 +218,13 @@ void SkillshotProjectile::setup(Unit* caster_unit,
                                 float travel_speed,
                                 float max_range,
                                 float explosion_radius,
-                                float collision_radius,
-                                const AbilityDefinition* ability) {
+                                float collision_radius) {
   caster = caster_unit;
   damage = damage_amount;
   speed = travel_speed;
   max_distance = max_range;
   aoe_radius = explosion_radius;
   hit_radius = collision_radius;
-  ability_def = ability;
 
   // Normalize direction
   float dir_length = travel_direction.length();
