@@ -580,7 +580,7 @@ void InputManager::_handle_ability_input(const String& key) {
   CastingMode casting_mode = GameSettings::get_casting_mode_enum();
 
   // SELF_CAST always goes immediately
-  if (targeting_type == 3) {  // SELF_CAST
+  if (targeting_type == 4) {  // SELF_CAST
     // Cast immediately on self
     ability_component->try_cast_point(ability_slot,
                                       controlled_unit->get_global_position());
@@ -589,36 +589,34 @@ void InputManager::_handle_ability_input(const String& key) {
     return;
   }
 
+  // SKILLSHOT abilities always require click-to-cast targeting
+  if (targeting_type == 3) {  // SKILLSHOT
+    _enter_ability_targeting_mode(ability_slot, targeting_type);
+    return;
+  }
+
   // Handle based on casting mode
   switch (casting_mode) {
     case CastingMode::INSTANT: {
       // Instant cast mode - cast using current cursor position/target
-      if (targeting_type == 4) {  // SELF_CAST - always instant on self
-        ability_component->try_cast_point(
-            ability_slot, controlled_unit->get_global_position());
-        UtilityFunctions::print("[InputManager] Self-cast ability slot " +
-                                String::num(ability_slot));
-      } else {
-        // Use current cursor position for targeting
-        Vector3 cursor_position;
-        godot::Object* cursor_target = nullptr;
-        if (_try_raycast(cursor_position, cursor_target)) {
-          // Cast immediately using cursor position/target
-          if (targeting_type == 0 && cursor_target != nullptr) {
-            // UNIT_TARGET - use target if available
-            ability_component->try_cast(ability_slot, cursor_target);
-            UtilityFunctions::print(
-                "[InputManager] Instant cast on unit target");
-          } else {
-            // SKILLSHOT, POINT_TARGET, AREA - use position
-            ability_component->try_cast_point(ability_slot, cursor_position);
-            UtilityFunctions::print(
-                "[InputManager] Instant cast at cursor position");
-          }
+      // Use current cursor position for targeting
+      Vector3 cursor_position;
+      godot::Object* cursor_target = nullptr;
+      if (_try_raycast(cursor_position, cursor_target)) {
+        // Cast immediately using cursor position/target
+        if (targeting_type == 0 && cursor_target != nullptr) {
+          // UNIT_TARGET - use target if available
+          ability_component->try_cast(ability_slot, cursor_target);
+          UtilityFunctions::print("[InputManager] Instant cast on unit target");
         } else {
-          // No valid cursor position - fall back to targeting mode
-          _enter_ability_targeting_mode(ability_slot, targeting_type);
+          // POINT_TARGET, AREA - use position
+          ability_component->try_cast_point(ability_slot, cursor_position);
+          UtilityFunctions::print(
+              "[InputManager] Instant cast at cursor position");
         }
+      } else {
+        // No valid cursor position - fall back to targeting mode
+        _enter_ability_targeting_mode(ability_slot, targeting_type);
       }
       break;
     }

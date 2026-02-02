@@ -1,3 +1,7 @@
-[gd_scene format=3 uid="uid://cgx5ib9owkcb3"]
+[gd_scene format=3 uid="uid://cgx5icaowkcb3"]
 
 [node name="Fireball" type="FireballNode" unique_id=526675319]
+targeting_type = 3
+skillshot_speed = 30.0
+skillshot_max_distance = 20.0
+skillshot_hit_radius = 0.5
