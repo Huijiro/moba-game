@@ -527,6 +527,21 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
     return;
   }
 
+  Unit* owner = get_unit();
+  if (owner == nullptr) {
+    return;
+  }
+
+  // Validate the ability can execute on this target
+  Unit* target_unit = Object::cast_to<Unit>(target);
+  if (!ability->can_execute_on_target(owner, target_unit)) {
+    UtilityFunctions::print(
+        "[AbilityComponent] Ability validation failed for slot " +
+        String::num(slot));
+    emit_signal("cast_failed", slot, "invalid_target");
+    return;
+  }
+
   casting_slot = slot;
   casting_target = target;
   casting_timer = 0.0f;
