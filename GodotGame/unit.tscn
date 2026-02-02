@@ -16,6 +16,7 @@ albedo_color = Color(1, 0, 0, 1)
 material = SubResource("StandardMaterial3D_k4y1u")
 
 [node name="Unit" type="Unit" unique_id=1290899300]
+unit_name = "Hero"
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=609497395]
 debug_enabled = true
@@ -39,6 +40,7 @@ mesh = SubResource("CylinderMesh_btf8p")
 [node name="HealthComponent" type="HealthComponent" parent="." unique_id=1706903160]
 
 [node name="ResourcePoolComponent" type="ResourcePoolComponent" parent="." unique_id=-1278476815]
+pool_id = &"mana"
 
 [node name="AbilityComponent" type="AbilityComponent" parent="." unique_id=-1438327904]
 ability_count = 4

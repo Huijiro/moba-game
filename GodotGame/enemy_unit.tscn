@@ -1,16 +1,17 @@
-[gd_scene load_steps=3 format=3 uid="uid://bmmrao3h54lm8"]
+[gd_scene format=3 uid="uid://bmmrao3h54lm8"]
 
 [ext_resource type="PackedScene" uid="uid://bfetb0lq8t6ji" path="res://unit.tscn" id="1_2bn7p"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2bn7p"]
 albedo_color = Color(1, 0, 0, 1)
 
-[node name="Unit" instance=ExtResource("1_2bn7p")]
+[node name="Unit" unique_id=383470352 instance=ExtResource("1_2bn7p")]
 faction_id = 1
+unit_name = "Enemy Hero"
 
-[node name="MeshInstance3D" parent="." index="1"]
+[node name="MeshInstance3D" parent="." index="1" unique_id=562687237]
 surface_material_override/0 = SubResource("StandardMaterial3D_2bn7p")
 
-[node name="TestMovement" type="TestMovement" parent="." index="4"]
+[node name="TestMovement" type="TestMovement" parent="." index="4" unique_id=620530207]
 interval_seconds = 1.0
 wander_radius = 10.0

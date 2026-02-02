@@ -15,7 +15,9 @@ AbilityDefinition::AbilityDefinition() = default;
 AbilityDefinition::~AbilityDefinition() = default;
 
 void AbilityDefinition::_bind_methods() {
-  // Display properties
+  // ========== BASIC INFO ==========
+  ADD_GROUP("Basic Info", "");
+
   ClassDB::bind_method(D_METHOD("set_ability_name", "name"),
                        &AbilityDefinition::set_ability_name);
   ClassDB::bind_method(D_METHOD("get_ability_name"),
@@ -37,7 +39,9 @@ void AbilityDefinition::_bind_methods() {
                             godot::PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"),
                "set_icon", "get_icon");
 
-  // Cost properties
+  // ========== COST & COOLDOWN ==========
+  ADD_GROUP("Cost & Cooldown", "");
+
   ClassDB::bind_method(D_METHOD("set_resource_pool_id", "pool_id"),
                        &AbilityDefinition::set_resource_pool_id);
   ClassDB::bind_method(D_METHOD("get_resource_pool_id"),
@@ -66,7 +70,9 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cooldown"), "set_cooldown",
                "get_cooldown");
 
-  // Casting properties
+  // ========== CASTING BEHAVIOR ==========
+  ADD_GROUP("Casting Behavior", "");
+
   ClassDB::bind_method(D_METHOD("set_cast_type", "type"),
                        &AbilityDefinition::set_cast_type);
   ClassDB::bind_method(D_METHOD("get_cast_type"),
@@ -104,7 +110,9 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "channel_tick_interval"),
                "set_channel_tick_interval", "get_channel_tick_interval");
 
-  // Targeting properties
+  // ========== TARGETING ==========
+  ADD_GROUP("Targeting", "");
+
   ClassDB::bind_method(D_METHOD("set_targeting_type", "type"),
                        &AbilityDefinition::set_targeting_type);
   ClassDB::bind_method(D_METHOD("get_targeting_type"),
@@ -126,7 +134,9 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "aoe_radius"), "set_aoe_radius",
                "get_aoe_radius");
 
-  // Skillshot properties
+  // ========== SKILLSHOT ==========
+  ADD_GROUP("Skillshot", "");
+
   ClassDB::bind_method(D_METHOD("set_skillshot_speed", "speed"),
                        &AbilityDefinition::set_skillshot_speed);
   ClassDB::bind_method(D_METHOD("get_skillshot_speed"),
