@@ -219,12 +219,14 @@ void SkillshotProjectile::setup(Unit* caster_unit,
                                 float travel_speed,
                                 float max_range,
                                 float explosion_radius,
+                                float collision_radius,
                                 const AbilityDefinition* ability) {
   caster = caster_unit;
   damage = damage_amount;
   speed = travel_speed;
   max_distance = max_range;
   aoe_radius = explosion_radius;
+  hit_radius = collision_radius;
   ability_def = ability;
 
   // Normalize direction

@@ -118,11 +118,9 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
                     20.0f,                              // Speed
                     get_range(),                        // Max distance (range)
                     0.0f,    // No explosion radius (single target hit)
+                    0.5f,    // Hit radius (collision detection)
                     nullptr  // Ability definition (nullptr for now)
   );
-
-  // Set the collision radius for unit detection
-  projectile->set_hit_radius(0.5f);
 
   return projectile;
 }

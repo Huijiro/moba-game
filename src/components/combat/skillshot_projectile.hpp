@@ -58,6 +58,7 @@ class SkillshotProjectile : public Node3D {
              float travel_speed,
              float max_range,
              float explosion_radius,
+             float collision_radius,
              const AbilityDefinition* ability);
 
   void set_speed(float s);
