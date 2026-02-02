@@ -187,18 +187,24 @@ void InputManager::_input(const Ref<InputEvent>& event) {
             ability_component->get_ability(awaiting_target_slot);
         int cast_type = ability != nullptr ? ability->get_cast_type() : 0;
 
-        if (is_awaiting_unit_target && clicked_object != nullptr) {
-          // Unit-target ability: cast on clicked unit
-          ability_component->try_cast(awaiting_target_slot, clicked_object);
+        if (is_awaiting_unit_target) {
+          // Unit-target ability: only cast if valid target clicked
+          if (clicked_object != nullptr) {
+            ability_component->try_cast(awaiting_target_slot, clicked_object);
+            awaiting_target_slot = -1;
+          } else {
+            // No target clicked - stay in targeting mode
+            UtilityFunctions::print(
+                "[InputManager] No valid target. Click on a unit.");
+            return;
+          }
         } else {
-          // Position-target ability: cast at clicked position
+          // Position-target or skillshot ability: cast at clicked position
           ability_component->try_cast_point(awaiting_target_slot,
                                             click_position);
+          // Clear targeting mode
+          awaiting_target_slot = -1;
         }
-
-        // Clear targeting mode - channel abilities will continue until stop
-        // command
-        awaiting_target_slot = -1;
 
         // Log appropriate message based on ability type
         if (cast_type == 2) {  // CHANNEL
