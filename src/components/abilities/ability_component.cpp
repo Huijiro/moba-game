@@ -291,7 +291,45 @@ void AbilityComponent::set_ability_count(int count) {
 }
 
 void AbilityComponent::set_ability_scenes(const godot::Array& scenes) {
-  ability_scenes = scenes;
+  // Instantiate all PackedScene references into AbilityNode instances
+  godot::Array instantiated_abilities;
+  for (int i = 0; i < scenes.size(); i++) {
+    Variant scene_variant = scenes[i];
+    if (scene_variant.get_type() == Variant::OBJECT) {
+      Ref<PackedScene> scene_ref = scene_variant;
+      if (scene_ref.is_valid()) {
+        // Instantiate the scene to get the AbilityNode
+        Object* instance = scene_ref->instantiate();
+        if (instance != nullptr) {
+          AbilityNode* ability = Object::cast_to<AbilityNode>(instance);
+          if (ability != nullptr) {
+            instantiated_abilities.append(ability);
+            UtilityFunctions::print("[AbilityComponent] Instantiated ability " +
+                                    String::num(i) + ": " +
+                                    ability->get_ability_name());
+          } else {
+            UtilityFunctions::print(
+                "[AbilityComponent] Warning: Scene at slot " + String::num(i) +
+                " does not contain AbilityNode");
+            // Try to free as Node
+            godot::Node* node_instance = Object::cast_to<godot::Node>(instance);
+            if (node_instance != nullptr) {
+              node_instance->queue_free();
+            }
+            instantiated_abilities.append(Variant());
+          }
+        } else {
+          instantiated_abilities.append(Variant());
+        }
+      } else {
+        instantiated_abilities.append(Variant());
+      }
+    } else {
+      instantiated_abilities.append(Variant());
+    }
+  }
+
+  ability_scenes = instantiated_abilities;
   // Resize cooldown timers to match
   cooldown_timers.resize(ability_scenes.size(), 0.0f);
   UtilityFunctions::print("[AbilityComponent] Set " +

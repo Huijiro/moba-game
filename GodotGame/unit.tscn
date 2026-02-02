@@ -1,5 +1,10 @@
 [gd_scene format=3 uid="uid://bfetb0lq8t6ji"]
 
+[ext_resource type="PackedScene" uid="uid://cfml5thydml2a" path="res://skills/instant_strike/instant_strike.tscn" id="1_5wnup"]
+[ext_resource type="PackedScene" uid="uid://cgx5icaowkcb3" path="res://skills/fireball/fireball.tscn" id="2_1sk4h"]
+[ext_resource type="PackedScene" uid="uid://cgx5icaowkcb4" path="res://skills/beam/beam.tscn" id="3_baxm0"]
+[ext_resource type="PackedScene" uid="uid://cgx5icaowkcb5" path="res://skills/explosion/explosion.tscn" id="4_of1k5"]
+
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_ig7tw"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0xm2m"]
@@ -38,6 +43,6 @@ mesh = SubResource("CylinderMesh_btf8p")
 pool_id = &"mana"
 
 [node name="AbilityComponent" type="AbilityComponent" parent="." unique_id=-1438327904]
-ability_count = 1
+ability_scenes = [ExtResource("1_5wnup"), ExtResource("2_1sk4h"), ExtResource("3_baxm0"), ExtResource("4_of1k5")]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1231263238]

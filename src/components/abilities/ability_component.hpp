@@ -39,8 +39,8 @@ class AbilityComponent : public UnitComponent {
   static void _bind_methods();
 
   // Ability slots - stored as Godot Array for proper editor integration
-  // Godot handles add/remove buttons automatically
-  // Array elements are AbilityNode pointers stored as Variants
+  // Editor stores PackedScene references, but at runtime they're instantiated
+  // Array elements are AbilityNode instances stored as Variants
   godot::Array ability_scenes;
 
   // Cooldown tracking per ability slot
