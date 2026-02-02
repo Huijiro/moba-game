@@ -47,6 +47,11 @@ void Unit::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::INT, "faction_id"), "set_faction_id",
                "get_faction_id");
 
+  ClassDB::bind_method(D_METHOD("set_unit_name", "name"), &Unit::set_unit_name);
+  ClassDB::bind_method(D_METHOD("get_unit_name"), &Unit::get_unit_name);
+  ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_name"), "set_unit_name",
+               "get_unit_name");
+
   // Unit definition setup
   ADD_SIGNAL(MethodInfo("order_changed",
                         PropertyInfo(Variant::INT, "previous_order"),
@@ -144,4 +149,12 @@ AttackComponent* Unit::get_attack_component() const {
 AbilityComponent* Unit::get_ability_component() const {
   Node* component = get_component_by_class("AbilityComponent");
   return Object::cast_to<AbilityComponent>(component);
+}
+
+void Unit::set_unit_name(const String& name) {
+  unit_name = name;
+}
+
+String Unit::get_unit_name() const {
+  return unit_name;
 }

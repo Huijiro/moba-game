@@ -77,8 +77,13 @@ class Unit : public CharacterBody3D {
   void set_faction_id(int32_t new_faction_id);
   int32_t get_faction_id() const;
 
+  // Display name (for UI/debug purposes, not unique)
+  void set_unit_name(const String& name);
+  String get_unit_name() const;
+
  private:
   int32_t faction_id = 0;
+  String unit_name = "Unit";
 };
 
 #endif  // GDEXTENSION_UNIT_H
