@@ -17,12 +17,11 @@ using godot::Vector3;
 FireballNode::FireballNode() {
   // Set sensible defaults for fireball
   set_ability_name("Fireball");
-  set_description("Launch a fireball projectile that explodes on impact");
+  set_description("Launch a fireball projectile that hits on collision");
   set_cast_type(static_cast<int>(CastType::INSTANT));
   set_targeting_type(static_cast<int>(TargetingType::SKILLSHOT));
   set_base_damage(50.0f);
   set_range(20.0f);
-  set_aoe_radius(5.0f);
   set_cooldown(7.0f);
 }
 
@@ -118,9 +117,12 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
                     calculate_damage(caster, nullptr),  // Damage amount
                     20.0f,                              // Speed
                     get_range(),                        // Max distance (range)
-                    get_aoe_radius(),                   // Explosion radius
+                    0.0f,    // No explosion radius (single target hit)
                     nullptr  // Ability definition (nullptr for now)
   );
+
+  // Set the collision radius for unit detection
+  projectile->set_hit_radius(0.5f);
 
   return projectile;
 }
