@@ -1,6 +1,7 @@
 #include "health_component.hpp"
 
 #include <algorithm>
+#include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
@@ -64,6 +65,8 @@ void HealthComponent::set_current_health(float value) {
   emit_signal("health_changed", current_health, max_health);
 
   if (current_health <= 0.0f) {
+    is_dead_flag = true;
+    _disable_collision();
     emit_signal("died", nullptr);
   }
 }
@@ -101,6 +104,9 @@ bool HealthComponent::apply_damage(float amount, godot::Object* source) {
     } else {
       UtilityFunctions::print("[HealthComponent] Unit died!");
     }
+
+    is_dead_flag = true;
+    _disable_collision();
     emit_signal("died", source);
     return true;  // Unit died
   }
@@ -119,4 +125,27 @@ void HealthComponent::heal(float amount) {
 
 bool HealthComponent::is_dead() const {
   return current_health <= 0.0f;
+}
+
+void HealthComponent::_disable_collision() {
+  if (owner_unit == nullptr || !owner_unit->is_inside_tree()) {
+    return;
+  }
+
+  // Find and disable all CollisionShape3D children of the owner
+  for (int i = 0; i < owner_unit->get_child_count(); i++) {
+    godot::Node* child = owner_unit->get_child(i);
+    godot::CollisionShape3D* collision =
+        godot::Object::cast_to<godot::CollisionShape3D>(child);
+    if (collision != nullptr) {
+      collision->set_disabled(true);
+    }
+  }
+
+  // Also disable the CharacterBody3D collision layers
+  owner_unit->set_collision_layer(0);
+  owner_unit->set_collision_mask(0);
+
+  UtilityFunctions::print("[HealthComponent] Disabled collision for " +
+                          owner_unit->get_name());
 }

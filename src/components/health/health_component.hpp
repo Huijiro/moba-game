@@ -11,6 +11,7 @@ class HealthComponent : public UnitComponent {
 
   float max_health = 100.0f;
   float current_health = 100.0f;
+  bool is_dead_flag = false;
 
  public:
   HealthComponent();
@@ -26,6 +27,10 @@ class HealthComponent : public UnitComponent {
   bool apply_damage(float amount, godot::Object* source = nullptr);
   void heal(float amount);
   bool is_dead() const;
+
+ private:
+  // Disable collision shapes when unit dies
+  void _disable_collision();
 };
 
 #endif  // GDEXTENSION_HEALTH_COMPONENT_H
