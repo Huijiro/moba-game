@@ -285,7 +285,10 @@ float AbilityDefinition::get_cooldown() const {
 }
 
 void AbilityDefinition::set_cast_type(int type) {
-  cast_type = type;
+  if (cast_type != type) {
+    cast_type = type;
+    notify_property_list_changed();
+  }
 }
 
 int AbilityDefinition::get_cast_type() const {
@@ -325,7 +328,10 @@ float AbilityDefinition::get_channel_tick_interval() const {
 }
 
 void AbilityDefinition::set_targeting_type(int type) {
-  targeting_type = type;
+  if (targeting_type != type) {
+    targeting_type = type;
+    notify_property_list_changed();
+  }
 }
 
 int AbilityDefinition::get_targeting_type() const {
