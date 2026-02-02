@@ -421,7 +421,22 @@ bool InputManager::_try_raycast(Vector3& out_position,
   }
 
   out_position = result["position"];
-  out_collider = result["collider"];
+  Object* collider = result["collider"];
+
+  // Try to get the Unit that owns this collider
+  // If we hit a CollisionShape, traverse up to find the Unit
+  Node* node = Object::cast_to<Node>(collider);
+  while (node != nullptr) {
+    Unit* unit = Object::cast_to<Unit>(node);
+    if (unit != nullptr) {
+      out_collider = unit;
+      return true;
+    }
+    node = node->get_parent();
+  }
+
+  // If not part of a Unit, return the collider as-is
+  out_collider = collider;
   return true;
 }
 
