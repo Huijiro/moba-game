@@ -158,7 +158,9 @@ void AbilityDefinition::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skillshot_hit_radius"),
                "set_skillshot_hit_radius", "get_skillshot_hit_radius");
 
-  // Damage property
+  // ========== DAMAGE & EFFECT ==========
+  ADD_GROUP("Damage & Effect", "");
+
   ClassDB::bind_method(D_METHOD("set_base_damage", "damage"),
                        &AbilityDefinition::set_base_damage);
   ClassDB::bind_method(D_METHOD("get_base_damage"),
