@@ -595,17 +595,10 @@ void InputManager::_handle_ability_input(const String& key) {
     return;
   }
 
-  // SKILLSHOT abilities always require click-to-cast targeting
-  if (targeting_type == 3) {  // SKILLSHOT
-    _enter_ability_targeting_mode(ability_slot, targeting_type);
-    return;
-  }
-
   // Handle based on casting mode
   switch (casting_mode) {
     case CastingMode::INSTANT: {
-      // Instant cast mode - cast using current cursor position/target
-      // Use current cursor position for targeting
+      // Instant cast mode - cast all abilities at current cursor position
       Vector3 cursor_position;
       godot::Object* cursor_target = nullptr;
       if (_try_raycast(cursor_position, cursor_target)) {
@@ -615,14 +608,15 @@ void InputManager::_handle_ability_input(const String& key) {
           ability_component->try_cast(ability_slot, cursor_target);
           UtilityFunctions::print("[InputManager] Instant cast on unit target");
         } else {
-          // POINT_TARGET, AREA - use position
+          // SKILLSHOT, POINT_TARGET, AREA - use position
           ability_component->try_cast_point(ability_slot, cursor_position);
           UtilityFunctions::print(
               "[InputManager] Instant cast at cursor position");
         }
       } else {
-        // No valid cursor position - fall back to targeting mode
-        _enter_ability_targeting_mode(ability_slot, targeting_type);
+        // No valid cursor position
+        UtilityFunctions::print(
+            "[InputManager] Cannot cast - no valid target position");
       }
       break;
     }
