@@ -9,6 +9,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../health/health_component.hpp"
@@ -28,10 +29,13 @@ AttackComponent::AttackComponent() = default;
 AttackComponent::~AttackComponent() = default;
 
 void AttackComponent::_bind_methods() {
-  // Signal handler
-  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "order_type",
-                                "position_param", "target_param"),
-                       &AttackComponent::_on_unit_order_changed);
+  // Signal handlers
+  ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
+                       &AttackComponent::_on_attack_requested);
+  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
+                       &AttackComponent::_on_chase_requested);
+  ClassDB::bind_method(D_METHOD("_on_stop_requested"),
+                       &AttackComponent::_on_stop_requested);
 
   // Bind all methods first
   ClassDB::bind_method(D_METHOD("set_base_attack_time", "bat"),
@@ -139,9 +143,11 @@ void AttackComponent::_ready() {
     return;
   }
 
-  // Connect to the Unit's order_changed signal
-  owner->connect("order_changed",
-                 godot::Callable(this, "_on_unit_order_changed"));
+  // Connect to the Unit's attack-related signals
+  owner->connect(attack_requested,
+                 godot::Callable(this, "_on_attack_requested"));
+  owner->connect(chase_requested, godot::Callable(this, "_on_chase_requested"));
+  owner->connect(stop_requested, godot::Callable(this, "_on_stop_requested"));
 }
 
 void AttackComponent::_physics_process(double delta) {
@@ -162,11 +168,8 @@ void AttackComponent::_physics_process(double delta) {
     if (attack_windup_timer >= attack_point) {
       if (current_attack_target != nullptr &&
           current_attack_target->is_inside_tree()) {
-        HealthComponent* target_health = Object::cast_to<HealthComponent>(
-            current_attack_target->get_component_by_class("HealthComponent"));
-
-        if (target_health != nullptr && !target_health->is_dead()) {
-          // Fire the attack
+        // Fire the attack if target is still valid
+        if (current_attack_target->is_inside_tree()) {
           if (delivery_type == AttackDelivery::MELEE) {
             _fire_melee(current_attack_target);
           } else if (delivery_type == AttackDelivery::PROJECTILE) {
@@ -187,15 +190,6 @@ void AttackComponent::_physics_process(double delta) {
   // Handle active attack target
   if (active_attack_target != nullptr &&
       active_attack_target->is_inside_tree()) {
-    HealthComponent* target_health = Object::cast_to<HealthComponent>(
-        active_attack_target->get_component_by_class("HealthComponent"));
-
-    if (target_health == nullptr || target_health->is_dead()) {
-      // Target is dead, clear the order
-      active_attack_target = nullptr;
-      return;
-    }
-
     // Check distance to target
     Unit* owner = get_unit();
     if (owner != nullptr) {
@@ -208,8 +202,9 @@ void AttackComponent::_physics_process(double delta) {
           try_fire_at(active_attack_target, delta);
         }
       } else {
-        // Out of range: issue chase order to move toward target
-        owner->issue_chase_order(active_attack_target);
+        // Out of range: emit chase request to move toward target
+        owner->relay(chase_requested, active_attack_target,
+                     active_attack_target->get_global_position());
       }
     }
   }
@@ -334,14 +329,8 @@ void AttackComponent::_fire_melee(Unit* target) {
     return;
   }
 
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    UtilityFunctions::push_error(
-        "[AttackComponent] Target missing HealthComponent");
-    return;
-  }
+  // Relay damage event through target unit
+  target->relay("take_damage", attack_damage, owner_unit);
 
   if (owner_unit != nullptr) {
     DBG_INFO("AttackComponent",
@@ -349,7 +338,6 @@ void AttackComponent::_fire_melee(Unit* target) {
                  " for " + String::num(attack_damage) + " damage (MELEE)");
   }
 
-  target_health->apply_damage(attack_damage, owner_unit);
   emit_signal("attack_hit", target, attack_damage);
 }
 
@@ -395,27 +383,32 @@ void AttackComponent::_fire_projectile(Unit* target) {
   emit_signal("attack_hit", target, attack_damage);
 }
 
-void AttackComponent::_on_unit_order_changed(int order_type,
-                                             const Vector3& position_param,
-                                             Object* target_param) {
-  // Handle different order types
-  // OrderType::ATTACK = 2
-  // OrderType::CHASE = 3
-  if (order_type == 2 || order_type == 3) {
-    // Both ATTACK and CHASE orders can have a target
-    Unit* target_unit = Object::cast_to<Unit>(target_param);
-    if (target_unit != nullptr) {
-      // Set the active attack target
-      active_attack_target = target_unit;
-      // Try to fire at the target if in range
-      // The _physics_process will handle cooldown timing and repeat attacks
-      try_fire_at(target_unit, 0.0);
-    }
-  } else {
-    // Clear attack order when order changes to something else (MOVE, INTERACT,
-    // NONE)
-    active_attack_target = nullptr;
+void AttackComponent::_on_attack_requested(godot::Object* target,
+                                           const Vector3& position) {
+  // Handle attack request
+  Unit* target_unit = Object::cast_to<Unit>(target);
+  if (target_unit != nullptr) {
+    // Set the active attack target
+    active_attack_target = target_unit;
+    // Try to fire at the target if in range
+    // The _physics_process will handle cooldown timing and repeat attacks
+    try_fire_at(target_unit, 0.0);
   }
+}
+
+void AttackComponent::_on_chase_requested(godot::Object* target,
+                                          const Vector3& position) {
+  // Handle chase request - just update the active target for attack component
+  Unit* target_unit = Object::cast_to<Unit>(target);
+  if (target_unit != nullptr) {
+    // Keep the target so we can attempt attacks when in range
+    active_attack_target = target_unit;
+  }
+}
+
+void AttackComponent::_on_stop_requested() {
+  // Clear attack order when stopping
+  active_attack_target = nullptr;
 }
 
 void AttackComponent::register_debug_labels(LabelRegistry* registry) {

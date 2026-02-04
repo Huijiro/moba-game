@@ -5,8 +5,8 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../core/unit.hpp"
-#include "../health/health_component.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../health/health_component.hpp"
 
 using godot::Node;
 using godot::Object;
@@ -20,14 +20,8 @@ float AbilityAPI::apply_damage(Unit* target, float damage, Unit* source) {
     return 0.0f;
   }
 
-  HealthComponent* health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (health == nullptr) {
-    return 0.0f;
-  }
-
-  health->apply_damage(damage, source);
+  // Apply damage via relay signal
+  target->relay("take_damage", damage, source);
   return damage;
 }
 

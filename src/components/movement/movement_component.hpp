@@ -5,8 +5,6 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
-#include "../../common/unit_order.hpp"
-
 using godot::NavigationAgent3D;
 using godot::PackedStringArray;
 using godot::Vector3;
@@ -26,14 +24,16 @@ class MovementComponent : public NavigationAgent3D {
   bool is_ready = false;
   int32_t frame_count = 0;
   Vector3 desired_location = Vector3(0, 0, 0);
+  float current_target_distance = 0.0f;
 
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
-  void _apply_navigation_target_distance(OrderType order);
   void _on_owner_unit_died(godot::Object* source);
-  void _on_unit_order_changed(int order_type,
-                              const Vector3& position_param,
-                              godot::Object* target_param);
+  void _on_move_requested(const Vector3& position);
+  void _on_attack_requested(godot::Object* target, const Vector3& position);
+  void _on_chase_requested(godot::Object* target, const Vector3& position);
+  void _on_stop_requested();
+  void _on_interact_requested(godot::Object* target, const Vector3& position);
 
  public:
   MovementComponent();
@@ -54,9 +54,7 @@ class MovementComponent : public NavigationAgent3D {
 
   // Core movement processing
   // Returns horizontal velocity (Y component is always 0)
-  Vector3 process_movement(double delta,
-                           const Vector3& target_location,
-                           OrderType order);
+  Vector3 process_movement(double delta, const Vector3& target_location);
 
   // Utility
   bool is_at_destination() const;

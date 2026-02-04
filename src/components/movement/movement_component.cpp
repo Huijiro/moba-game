@@ -13,6 +13,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_utils.hpp"
 #include "../health/health_component.hpp"
@@ -62,9 +63,16 @@ void MovementComponent::_bind_methods() {
   // Bind signal callback methods
   ClassDB::bind_method(D_METHOD("_on_owner_unit_died", "source"),
                        &MovementComponent::_on_owner_unit_died);
-  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "order_type",
-                                "position_param", "target_param"),
-                       &MovementComponent::_on_unit_order_changed);
+  ClassDB::bind_method(D_METHOD("_on_move_requested", "position"),
+                       &MovementComponent::_on_move_requested);
+  ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
+                       &MovementComponent::_on_attack_requested);
+  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
+                       &MovementComponent::_on_chase_requested);
+  ClassDB::bind_method(D_METHOD("_on_stop_requested"),
+                       &MovementComponent::_on_stop_requested);
+  ClassDB::bind_method(D_METHOD("_on_interact_requested", "target", "position"),
+                       &MovementComponent::_on_interact_requested);
 }
 
 void MovementComponent::_ready() {
@@ -73,16 +81,31 @@ void MovementComponent::_ready() {
 
   Unit* owner = get_owner_unit();
   if (owner != nullptr) {
-    // Connect to health component death signal
-    HealthComponent* health_comp = owner->get_health_component();
-    if (health_comp != nullptr) {
-      health_comp->connect(StringName("died"),
-                           Callable(this, StringName("_on_owner_unit_died")));
+    // Connect to health component death signal if it exists
+    // Iterate through siblings to find HealthComponent
+    for (int i = 0; i < owner->get_child_count(); ++i) {
+      Node* child = owner->get_child(i);
+      if (child == nullptr)
+        continue;
+      HealthComponent* health_comp = Object::cast_to<HealthComponent>(child);
+      if (health_comp != nullptr) {
+        health_comp->connect(StringName("died"),
+                             Callable(this, StringName("_on_owner_unit_died")));
+        break;
+      }
     }
 
-    // Connect to Unit's order_changed signal to listen for movement orders
-    owner->connect(StringName("order_changed"),
-                   Callable(this, StringName("_on_unit_order_changed")));
+    // Connect to Unit's movement-related signals
+    owner->connect(move_requested,
+                   Callable(this, StringName("_on_move_requested")));
+    owner->connect(attack_requested,
+                   Callable(this, StringName("_on_attack_requested")));
+    owner->connect(chase_requested,
+                   Callable(this, StringName("_on_chase_requested")));
+    owner->connect(stop_requested,
+                   Callable(this, StringName("_on_stop_requested")));
+    owner->connect(interact_requested,
+                   Callable(this, StringName("_on_interact_requested")));
   }
 }
 
@@ -98,10 +121,7 @@ void MovementComponent::_physics_process(double delta) {
   }
 
   // Get movement velocity from our logic
-  // Note: Use MOVE as default order - Unit will set desired_location based on
-  // actual order
-  Vector3 movement_velocity =
-      process_movement(delta, desired_location, OrderType::MOVE);
+  Vector3 movement_velocity = process_movement(delta, desired_location);
 
   // Apply gravity and move
   Vector3 velocity = movement_velocity;
@@ -127,8 +147,7 @@ float MovementComponent::get_rotation_speed() const {
 }
 
 Vector3 MovementComponent::process_movement(double delta,
-                                            const Vector3& target_location,
-                                            OrderType order) {
+                                            const Vector3& target_location) {
   // Safety checks
   Unit* owner = get_owner_unit();
   if (owner == nullptr || !owner->is_inside_tree()) {
@@ -136,11 +155,8 @@ Vector3 MovementComponent::process_movement(double delta,
   }
 
   // If owner unit is dead, don't move
-  // Check if owner is valid and check its health status
-  HealthComponent* health_comp = owner->get_health_component();
-  if (health_comp != nullptr && health_comp->is_dead()) {
-    return Vector3(0, 0, 0);
-  }
+  // Death is handled via the "died" signal - when received, component queues
+  // itself for deletion
 
   // Ensure this component (which IS the NavigationAgent3D) is in tree before
   // using it
@@ -162,11 +178,11 @@ Vector3 MovementComponent::process_movement(double delta,
       return Vector3(0, 0, 0);
     }
     is_ready = true;
-    _apply_navigation_target_distance(order);
+    set_target_desired_distance(current_target_distance);
   }
 
-  // Update target distance based on order type
-  _apply_navigation_target_distance(order);
+  // Update target distance based on stored value (set by signal handlers)
+  set_target_desired_distance(current_target_distance);
 
   // Update navigation target position
   Vector3 current_target = get_target_position();
@@ -234,33 +250,6 @@ void MovementComponent::_face_horizontal_direction(const Vector3& direction) {
   owner->set_transform(Transform3D(new_basis, owner->get_transform().origin));
 }
 
-void MovementComponent::_apply_navigation_target_distance(OrderType order) {
-  if (!is_ready || !is_inside_tree()) {
-    return;
-  }
-
-  switch (order) {
-    case OrderType::ATTACK: {
-      Unit* owner = get_owner_unit();
-      if (owner != nullptr && owner->is_inside_tree()) {
-        // Get attack range from unit's attack component
-        float attack_range = 2.5f;  // default
-        // Note: We can't directly access AttackComponent here to avoid circular
-        // dependency, but the Unit will handle attack range logic in its own
-        // physics_process. This just sets a reasonable default.
-        set_target_desired_distance(attack_range);
-      }
-      break;
-    }
-    case OrderType::MOVE:
-    case OrderType::INTERACT:
-    case OrderType::NONE:
-    default:
-      set_target_desired_distance(0.0f);
-      break;
-  }
-}
-
 void MovementComponent::set_desired_location(const Vector3& location) {
   desired_location = location;
 }
@@ -296,32 +285,38 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
   }
 }
 
-void MovementComponent::_on_unit_order_changed(int order_type,
-                                               const Vector3& position_param,
-                                               godot::Object* target_param) {
-  // Listen to order changes and update desired location based on order type
-  OrderType order = static_cast<OrderType>(order_type);
+void MovementComponent::_on_move_requested(const Vector3& position) {
+  // Set destination directly from position parameter
+  set_desired_location(position);
+  current_target_distance = 0.0f;
+}
 
-  switch (order) {
-    case OrderType::MOVE:
-      // Set destination directly from position parameter
-      set_desired_location(position_param);
-      break;
-    case OrderType::ATTACK:
-    case OrderType::CHASE:
-      // For attack/chase orders, move to target's position
-      // Position parameter contains the target's current position
-      set_desired_location(position_param);
-      break;
-    case OrderType::INTERACT:
-      // For interact orders, move to target position
-      set_desired_location(position_param);
-      break;
-    case OrderType::NONE:
-      // Stop order - don't change desired location, just let existing
-      // movement finish. Other components can handle cleanup if needed.
-      break;
-  }
+void MovementComponent::_on_attack_requested(godot::Object* target,
+                                             const Vector3& position) {
+  // For attack orders, move to target's position with attack range
+  set_desired_location(position);
+  // Default attack range - components should specify their exact range
+  current_target_distance = 2.5f;
+}
+
+void MovementComponent::_on_chase_requested(godot::Object* target,
+                                            const Vector3& position) {
+  // For chase orders, move to target's position
+  set_desired_location(position);
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_stop_requested() {
+  // Stop order - don't change desired location, just let existing
+  // movement finish. Other components can handle cleanup if needed.
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_interact_requested(godot::Object* target,
+                                               const Vector3& position) {
+  // For interact orders, move to target position
+  set_desired_location(position);
+  current_target_distance = 0.0f;
 }
 
 void MovementComponent::register_debug_labels(LabelRegistry* registry) {

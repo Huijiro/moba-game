@@ -91,10 +91,10 @@ class AttackComponent : public UnitComponent {
   void _fire_melee(Unit* target);
   void _fire_projectile(Unit* target);
 
-  // Signal handler for Unit's order_changed signal
-  void _on_unit_order_changed(int order_type,
-                              const Vector3& position_param,
-                              Object* target_param);
+  // Signal handlers for Unit's movement request signals
+  void _on_attack_requested(godot::Object* target, const Vector3& position);
+  void _on_chase_requested(godot::Object* target, const Vector3& position);
+  void _on_stop_requested();
 };
 
 #endif  // GDEXTENSION_ATTACK_COMPONENT_H
