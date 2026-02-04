@@ -74,8 +74,11 @@ void Unit::_ready() {
 void Unit::issue_move_order(const Vector3& position) {
   // Emit signal for components to listen to
   // MovementComponent will handle setting desired_location
-  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+  emit_signal("order_changed", static_cast<int>(current_order),
               static_cast<int>(OrderType::MOVE), nullptr);
+
+  current_order = OrderType::MOVE;
+  order_target = nullptr;
 
   MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
       get_component_by_class("MovementComponent"));
@@ -86,8 +89,11 @@ void Unit::issue_move_order(const Vector3& position) {
 
 void Unit::issue_attack_order(Unit* target) {
   // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+  emit_signal("order_changed", static_cast<int>(current_order),
               static_cast<int>(OrderType::ATTACK), target);
+
+  current_order = OrderType::ATTACK;
+  order_target = target;
 
   // Set target location for movement
   MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
@@ -99,8 +105,11 @@ void Unit::issue_attack_order(Unit* target) {
 
 void Unit::issue_chase_order(Unit* target) {
   // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+  emit_signal("order_changed", static_cast<int>(current_order),
               static_cast<int>(OrderType::CHASE), target);
+
+  current_order = OrderType::CHASE;
+  order_target = target;
 
   // Set target location for movement
   MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
@@ -112,8 +121,11 @@ void Unit::issue_chase_order(Unit* target) {
 
 void Unit::issue_interact_order(Interactable* target) {
   // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+  emit_signal("order_changed", static_cast<int>(current_order),
               static_cast<int>(OrderType::INTERACT), target);
+
+  current_order = OrderType::INTERACT;
+  order_target = nullptr;
 
   // Set target location for movement
   MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
@@ -124,8 +136,11 @@ void Unit::issue_interact_order(Interactable* target) {
 }
 
 void Unit::stop_order() {
-  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+  emit_signal("order_changed", static_cast<int>(current_order),
               static_cast<int>(OrderType::NONE), nullptr);
+
+  current_order = OrderType::NONE;
+  order_target = nullptr;
 
   // Stop horizontal movement but keep vertical velocity (gravity)
   set_velocity(Vector3(0, get_velocity().y, 0));
@@ -176,6 +191,10 @@ String Unit::get_unit_name() const {
   return unit_name;
 }
 
+OrderType Unit::get_current_order() const {
+  return current_order;
+}
+
 void Unit::register_all_debug_labels(LabelRegistry* registry) {
   if (!registry) {
     return;
@@ -184,6 +203,32 @@ void Unit::register_all_debug_labels(LabelRegistry* registry) {
   // Register unit's own state
   registry->register_property("Unit", "name", unit_name);
   registry->register_property("Unit", "faction", String::num(faction_id));
+
+  // Register current order
+  String order_str;
+  switch (current_order) {
+    case OrderType::NONE:
+      order_str = "NONE";
+      break;
+    case OrderType::MOVE:
+      order_str = "MOVE";
+      break;
+    case OrderType::ATTACK:
+      order_str = "ATTACK";
+      break;
+    case OrderType::CHASE:
+      order_str = "CHASE";
+      break;
+    case OrderType::INTERACT:
+      order_str = "INTERACT";
+      break;
+  }
+  registry->register_property("Unit", "order", order_str);
+
+  if (order_target) {
+    registry->register_property("Unit", "target",
+                                order_target->get_unit_name());
+  }
 
   // Iterate all children and call register_debug_labels on any UnitComponents
   for (int i = 0; i < get_child_count(); ++i) {

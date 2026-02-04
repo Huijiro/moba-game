@@ -86,9 +86,14 @@ class Unit : public CharacterBody3D {
   // Debug label registration - called by LabelComponent
   void register_all_debug_labels(LabelRegistry* registry);
 
+  // Get current order (for debug/UI purposes)
+  OrderType get_current_order() const;
+
  private:
   int32_t faction_id = 0;
   String unit_name = "Unit";
+  OrderType current_order = OrderType::NONE;
+  Unit* order_target = nullptr;
 };
 
 #endif  // GDEXTENSION_UNIT_H
