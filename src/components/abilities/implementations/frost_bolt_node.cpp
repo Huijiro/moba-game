@@ -39,22 +39,22 @@ void FrostBoltNode::_bind_methods() {
                        &FrostBoltNode::calculate_damage);
 }
 
-void FrostBoltNode::execute(Unit* caster,
+bool FrostBoltNode::execute(Unit* caster,
                             Unit* target,
                             godot::Vector3 position) {
   if (caster == nullptr) {
     DBG_ERROR("FrostBolt", "No caster provided");
-    return;
+    return false;
   }
 
   if (target == nullptr) {
     DBG_ERROR("FrostBolt", "No target provided");
-    return;
+    return false;
   }
 
   if (!target->is_inside_tree()) {
     DBG_ERROR("FrostBolt", "Target is not in tree");
-    return;
+    return false;
   }
 
   // Calculate damage
@@ -69,6 +69,7 @@ void FrostBoltNode::execute(Unit* caster,
   // TODO: Apply slow effect to target
   // For now, just damage. Slow effect can be added with a status effect system
   // later.
+  return true;
 }
 
 bool FrostBoltNode::can_execute_on_target(Unit* caster, Unit* target) const {

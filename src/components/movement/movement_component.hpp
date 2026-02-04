@@ -26,6 +26,9 @@ class MovementComponent : public NavigationAgent3D {
   Vector3 desired_location = Vector3(0, 0, 0);
   float current_target_distance = 0.0f;
 
+  // Chase tracking - when set, continuously move toward this unit
+  Unit* chase_target = nullptr;
+
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
   void _on_owner_unit_died(godot::Object* source);

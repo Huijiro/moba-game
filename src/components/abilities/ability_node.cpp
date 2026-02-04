@@ -382,8 +382,10 @@ void AbilityNode::_reset() {
   // Default: no-op. Subclasses override to reset state for next cast.
 }
 
-void AbilityNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
+bool AbilityNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
   // Default: no-op. Subclasses implement actual ability logic.
+  // Return true to indicate successful execution.
+  return true;
 }
 
 bool AbilityNode::can_execute_on_target(Unit* caster, Unit* target) const {

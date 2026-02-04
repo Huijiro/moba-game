@@ -94,7 +94,6 @@ class AttackComponent : public UnitComponent {
   // Signal handlers for Unit's movement request signals
   void _on_move_requested(const Vector3& position);
   void _on_attack_requested(godot::Object* target, const Vector3& position);
-  void _on_chase_requested(godot::Object* target, const Vector3& position);
   void _on_stop_requested();
 };
 

@@ -34,8 +34,6 @@ void AttackComponent::_bind_methods() {
                        &AttackComponent::_on_move_requested);
   ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
                        &AttackComponent::_on_attack_requested);
-  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
-                       &AttackComponent::_on_chase_requested);
   ClassDB::bind_method(D_METHOD("_on_stop_requested"),
                        &AttackComponent::_on_stop_requested);
 
@@ -156,7 +154,6 @@ void AttackComponent::_ready() {
   owner->connect(move_requested, godot::Callable(this, "_on_move_requested"));
   owner->connect(attack_requested,
                  godot::Callable(this, "_on_attack_requested"));
-  owner->connect(chase_requested, godot::Callable(this, "_on_chase_requested"));
   owner->connect(stop_requested, godot::Callable(this, "_on_stop_requested"));
 }
 
@@ -212,8 +209,9 @@ void AttackComponent::_physics_process(double delta) {
           try_fire_at(active_attack_target, delta);
         }
       } else {
-        // Out of range: emit chase request to move toward target
-        owner->relay(chase_requested, active_attack_target,
+        // Out of range: emit attack request to move toward target within attack
+        // range
+        owner->relay(attack_requested, active_attack_target,
                      active_attack_target->get_global_position());
       }
     }
@@ -403,16 +401,6 @@ void AttackComponent::_on_attack_requested(godot::Object* target,
     // Try to fire at the target if in range
     // The _physics_process will handle cooldown timing and repeat attacks
     try_fire_at(target_unit, 0.0);
-  }
-}
-
-void AttackComponent::_on_chase_requested(godot::Object* target,
-                                          const Vector3& position) {
-  // Handle chase request - just update the active target for attack component
-  Unit* target_unit = Object::cast_to<Unit>(target);
-  if (target_unit != nullptr) {
-    // Keep the target so we can attempt attacks when in range
-    active_attack_target = target_unit;
   }
 }
 

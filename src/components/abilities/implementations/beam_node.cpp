@@ -38,20 +38,20 @@ void BeamNode::_bind_methods() {
                        &BeamNode::calculate_damage);
 }
 
-void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
+bool BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
   if (caster == nullptr) {
     DBG_INFO("Beam", "No caster provided");
-    return;
+    return false;
   }
 
   if (target == nullptr) {
     DBG_INFO("Beam", "No target provided");
-    return;
+    return false;
   }
 
   if (!target->is_inside_tree()) {
     DBG_INFO("Beam", "Target is not in tree");
-    return;
+    return false;
   }
 
   // For channel abilities, this executes ONE TICK of the channel
@@ -65,6 +65,7 @@ void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
 
   DBG_INFO("Beam", String(caster->get_name()) + " hit " + target->get_name() +
                        " for " + String::num(tick_damage) + " damage (tick)");
+  return true;
 }
 
 bool BeamNode::can_execute_on_target(Unit* caster, Unit* target) const {

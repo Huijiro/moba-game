@@ -46,10 +46,10 @@ void ExplosionNode::_bind_methods() {
                        &ExplosionNode::query_units_in_area);
 }
 
-void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
+bool ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
   if (caster == nullptr) {
     DBG_ERROR("Explosion", "No caster provided");
-    return;
+    return false;
   }
 
   // For self-cast abilities, the impact point is the caster's position
@@ -60,7 +60,7 @@ void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
 
   if (units_in_area.is_empty()) {
     DBG_WARN("Explosion", "No units found in explosion area");
-    return;
+    return false;
   }
 
   // Apply damage to all units in area
@@ -87,6 +87,7 @@ void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
 
   DBG_INFO("Explosion", String(caster->get_name()) + " detonated, hit " +
                             String::num(hit_count) + " units");
+  return true;
 }
 
 bool ExplosionNode::can_execute_on_target(Unit* caster, Unit* target) const {

@@ -25,7 +25,7 @@ class InstantStrikeNode : public AbilityNode {
   ~InstantStrikeNode();
 
   // Virtual method implementations
-  void execute(Unit* caster,
+  bool execute(Unit* caster,
                Unit* target,
                godot::Vector3 position = godot::Vector3()) override;
 

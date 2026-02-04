@@ -127,6 +127,11 @@ void MovementComponent::_physics_process(double delta) {
     return;
   }
 
+  // Update desired location if actively chasing a target
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  }
+
   // Get movement velocity from our logic
   Vector3 movement_velocity = process_movement(delta, desired_location);
 
@@ -293,35 +298,49 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
 }
 
 void MovementComponent::_on_move_requested(const Vector3& position) {
-  // Set destination directly from position parameter
+  // Static movement - no chase target
+  chase_target = nullptr;
   set_desired_location(position);
   current_target_distance = 0.0f;
 }
 
 void MovementComponent::_on_attack_requested(godot::Object* target,
                                              const Vector3& position) {
-  // For attack orders, move to target's position with attack range
-  set_desired_location(position);
-  // Default attack range - components should specify their exact range
+  // Attack movement - chase target within attack range
+  // Store target and maintain attack range distance
+  chase_target = Object::cast_to<Unit>(target);
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
   current_target_distance = 2.5f;
 }
 
 void MovementComponent::_on_chase_requested(godot::Object* target,
                                             const Vector3& position) {
-  // For chase orders, move to target's position
-  set_desired_location(position);
+  // Chase orders - follow target with no distance constraint
+  chase_target = Object::cast_to<Unit>(target);
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
   current_target_distance = 0.0f;
 }
 
 void MovementComponent::_on_stop_requested() {
-  // Stop order - don't change desired location, just let existing
-  // movement finish. Other components can handle cleanup if needed.
+  // Stop order - clear chase and stop movement
+  chase_target = nullptr;
   current_target_distance = 0.0f;
 }
 
 void MovementComponent::_on_interact_requested(godot::Object* target,
                                                const Vector3& position) {
-  // For interact orders, move to target position
+  // Interact movement - move to target position
+  chase_target = nullptr;
   set_desired_location(position);
   current_target_distance = 0.0f;
 }

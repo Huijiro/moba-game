@@ -133,7 +133,9 @@ class AbilityNode : public Node {
 
   // Virtual methods for subclasses to override
   virtual void _reset();
-  virtual void execute(Unit* caster,
+  // Execute the ability - returns true if executed, false if deferred (e.g.,
+  // chasing)
+  virtual bool execute(Unit* caster,
                        Unit* target,
                        godot::Vector3 position = godot::Vector3());
   virtual bool can_execute_on_target(Unit* caster, Unit* target) const;

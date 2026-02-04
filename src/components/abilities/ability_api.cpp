@@ -167,6 +167,49 @@ float AbilityAPI::distance_between(Unit* unit_a, Unit* unit_b) {
       unit_b->get_global_position());
 }
 
+bool AbilityAPI::move_to_ability_range(Unit* caster,
+                                       Unit* target,
+                                       float ability_range) {
+  if (caster == nullptr || target == nullptr || !target->is_inside_tree()) {
+    return false;
+  }
+
+  float distance = distance_between(caster, target);
+
+  // Already in range
+  if (distance <= ability_range) {
+    return true;
+  }
+
+  // Not in range - issue movement order to move towards target
+  caster->relay(get_move_requested(), target->get_global_position());
+
+  return false;
+}
+
+bool AbilityAPI::chase_and_prepare_execution(Unit* caster,
+                                             Unit* target,
+                                             float ability_range) {
+  if (caster == nullptr || target == nullptr || !target->is_inside_tree()) {
+    return false;
+  }
+
+  float distance = distance_between(caster, target);
+
+  // Already in range - ready to execute
+  if (distance <= ability_range) {
+    return true;
+  }
+
+  // Not in range - initiate chase using chase_requested signal
+  // Pass target object so movement can continuously follow it
+  caster->relay(get_chase_requested(), target, target->get_global_position());
+
+  // Return false to indicate we're chasing, not executing
+  // Caller should return early without executing the ability
+  return false;
+}
+
 void AbilityAPI::_search_units_recursive(Node* node,
                                          const Vector3& center,
                                          float radius_sq,

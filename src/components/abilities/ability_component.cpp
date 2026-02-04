@@ -617,14 +617,19 @@ void AbilityComponent::_execute_ability(int slot) {
 
   // Execute the ability
   Unit* target_unit = Object::cast_to<Unit>(casting_target);
-  ability->execute(owner, target_unit, casting_point);
+  bool executed = ability->execute(owner, target_unit, casting_point);
 
-  // Apply cooldown
-  _apply_cooldown(slot);
-
-  emit_signal("ability_executed", slot, casting_target);
-
-  DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
+  // Only apply cooldown if ability actually executed (not deferred)
+  if (executed) {
+    _apply_cooldown(slot);
+    emit_signal("ability_executed", slot, casting_target);
+    DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
+  } else {
+    // Ability deferred (e.g., chasing) - reset casting state to try again
+    casting_state = static_cast<int>(CastState::IDLE);
+    casting_timer = 0.0f;
+    DBG_INFO("AbilityComponent", "Ability deferred (waiting for range)");
+  }
 }
 
 void AbilityComponent::_apply_cooldown(int slot) {
