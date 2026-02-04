@@ -30,6 +30,8 @@ AttackComponent::~AttackComponent() = default;
 
 void AttackComponent::_bind_methods() {
   // Signal handlers
+  ClassDB::bind_method(D_METHOD("_on_move_requested", "position"),
+                       &AttackComponent::_on_move_requested);
   ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
                        &AttackComponent::_on_attack_requested);
   ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
@@ -144,11 +146,14 @@ void AttackComponent::_ready() {
   }
 
   // Register signals that this component uses
+  owner->register_signal(move_requested);
   owner->register_signal(attack_requested);
   owner->register_signal(chase_requested);
   owner->register_signal(stop_requested);
 
-  // Connect to the Unit's attack-related signals
+  // Connect to the Unit's movement-related signals
+  // move_requested cancels any active attack
+  owner->connect(move_requested, godot::Callable(this, "_on_move_requested"));
   owner->connect(attack_requested,
                  godot::Callable(this, "_on_attack_requested"));
   owner->connect(chase_requested, godot::Callable(this, "_on_chase_requested"));
@@ -409,6 +414,12 @@ void AttackComponent::_on_chase_requested(godot::Object* target,
     // Keep the target so we can attempt attacks when in range
     active_attack_target = target_unit;
   }
+}
+
+void AttackComponent::_on_move_requested(const Vector3& position) {
+  // Cancel any active attack when player issues a move command
+  // Movement takes priority over attacking
+  active_attack_target = nullptr;
 }
 
 void AttackComponent::_on_stop_requested() {
