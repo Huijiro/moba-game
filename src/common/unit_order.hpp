@@ -5,6 +5,7 @@ enum class OrderType {
   NONE,
   MOVE,
   ATTACK,
+  CHASE,  // Chase a target (move toward them without attacking)
   INTERACT,
 };
 

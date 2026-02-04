@@ -1,0 +1,12 @@
+[gd_resource type="UnitDefinition" format=3]
+[ext_resource type="Resource" path="res://resources/abilities/Frost_Bolt.tres" id="1_q"]
+[ext_resource type="Resource" path="res://resources/abilities/Fireball.tres" id="2_w"]
+[ext_resource type="Resource" path="res://resources/abilities/Beam.tres" id="3_e"]
+[ext_resource type="Resource" path="res://resources/abilities/Explosion.tres" id="4_r"]
+
+[resource]
+unit_name = "MageHero"
+unit_id = 2
+description = "Mage hero specializing in frost and fire spells"
+unit_type = "hero"
+abilities = [ExtResource("1_q"), ExtResource("2_w"), ExtResource("3_e"), ExtResource("4_r")]

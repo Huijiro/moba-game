@@ -13,14 +13,19 @@
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include "../common/casting_mode.hpp"
+
 namespace godot {
 class Object;
 class PhysicsDirectSpaceState3D;
 class Node3D;
 }  // namespace godot
 
+class AbilityComponent;
+
 using godot::Camera3D;
 using godot::Color;
+using godot::Dictionary;
 using godot::InputEvent;
 using godot::Node;
 using godot::PackedScene;
@@ -59,17 +64,41 @@ class InputManager : public Node {
   void set_click_indicator_scene(const Ref<PackedScene>& scene);
   Ref<PackedScene> get_click_indicator_scene() const;
 
+  // Input action configuration
+  void set_move_action(const String& action);
+  String get_move_action() const;
+
+  void set_cast_action(const String& action);
+  String get_cast_action() const;
+
+  // Keybind management
+  void bind_ability_to_key(const String& key, int ability_slot);
+  void unbind_key(const String& key);
+  int get_bound_ability(const String& key) const;
+
  private:
   // Helper methods
   bool _try_raycast(Vector3& out_position, godot::Object*& out_collider);
   void _show_click_marker(const Vector3& position);
   void _update_click_marker(double delta);
+  void _handle_ability_input(const String& key);
+  void _enter_ability_targeting_mode(int ability_slot, int targeting_type);
+  void _handle_stop_command();
+  void _cancel_targeting();
+  void _init_default_keybinds();
+
+  // Get key name from input action (e.g., "game_ability_1" -> "Q")
+  String _get_key_name_for_action(const String& action);
 
   // Member variables
   Unit* controlled_unit = nullptr;
   Camera3D* camera = nullptr;
   godot::PhysicsDirectSpaceState3D* physics_state = nullptr;
   float raycast_distance = 1000.0f;
+
+  // Input actions
+  String move_action = "game_move";  // Default: right-click
+  String cast_action = "game_cast";  // Default: left-click
 
   // Visual feedback
   godot::Node3D* click_marker = nullptr;
@@ -79,6 +108,21 @@ class InputManager : public Node {
   float marker_fade_duration = 2.0f;
   bool marker_active = false;
   Ref<PackedScene> click_indicator_scene = nullptr;
+
+  // Keybinds: Maps key name to ability slot (e.g., "KEY_Q" -> 0)
+  Dictionary keybind_map;
+
+  // Ability targeting state
+  int awaiting_target_slot =
+      -1;  // -1 = not waiting, 0-3 = ability slot waiting for target
+  bool is_awaiting_unit_target =
+      false;  // true if waiting for unit click, false if waiting for position
+
+  // Indicator casting state
+  int indicator_ability_slot =
+      -1;  // -1 = not charging, 0-3 = ability slot being charged
+  bool indicator_charging = false;
+  double indicator_charge_time = 0.0;
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H

@@ -4,12 +4,15 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::PropertyInfo;
+using godot::String;
+using godot::UtilityFunctions;
 using godot::Variant;
 
 ResourcePoolComponent::ResourcePoolComponent() = default;
@@ -59,10 +62,14 @@ StringName ResourcePoolComponent::get_pool_id() const {
 }
 
 void ResourcePoolComponent::set_max_value(float value) {
+  float old_max = max_value;
   max_value = std::max(0.0f, value);
   if (current_value > max_value) {
     current_value = max_value;
   }
+  UtilityFunctions::print("[ResourcePool '" + pool_id +
+                          "'] Max changed: " + String::num(old_max) + " -> " +
+                          String::num(max_value));
   emit_signal("value_changed", current_value, max_value);
 }
 
@@ -71,7 +78,14 @@ float ResourcePoolComponent::get_max_value() const {
 }
 
 void ResourcePoolComponent::set_current_value(float value) {
+  float old_value = current_value;
   current_value = std::clamp(value, 0.0f, max_value);
+  if (old_value != current_value) {
+    UtilityFunctions::print("[ResourcePool '" + pool_id +
+                            "'] Value changed: " + String::num(old_value) +
+                            " -> " + String::num(current_value) + " / " +
+                            String::num(max_value));
+  }
   emit_signal("value_changed", current_value, max_value);
 }
 
@@ -88,7 +102,12 @@ bool ResourcePoolComponent::try_spend(float amount) {
     return false;
   }
 
+  float old_value = current_value;
   current_value -= amount;
+  UtilityFunctions::print("[ResourcePool '" + pool_id + "'] Spent " +
+                          String::num(amount) + ": " + String::num(old_value) +
+                          " -> " + String::num(current_value) + " / " +
+                          String::num(max_value));
   emit_signal("value_changed", current_value, max_value);
   return true;
 }
@@ -98,6 +117,11 @@ void ResourcePoolComponent::restore(float amount) {
     amount = 0.0f;
   }
 
+  float old_value = current_value;
   current_value = std::min(max_value, current_value + amount);
+  UtilityFunctions::print("[ResourcePool '" + pool_id + "'] Restored " +
+                          String::num(amount) + ": " + String::num(old_value) +
+                          " -> " + String::num(current_value) + " / " +
+                          String::num(max_value));
   emit_signal("value_changed", current_value, max_value);
 }

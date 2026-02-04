@@ -5,4 +5,6 @@ target_sources(
   ./attack_component.cpp
   ./projectile.hpp
   ./projectile.cpp
+  ./skillshot_projectile.hpp
+  ./skillshot_projectile.cpp
 )

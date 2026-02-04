@@ -7,8 +7,22 @@
 
 #include "ai/test_movement.hpp"
 #include "camera/moba_camera.hpp"
+
+#include "components/abilities/ability_component.hpp"
+#include "components/abilities/ability_definition.hpp"
+#include "components/abilities/ability_effect.hpp"
+#include "components/abilities/ability_node.hpp"
+#include "components/abilities/effects/aoe_damage_effect.hpp"
+#include "components/abilities/effects/damage_effect.hpp"
+#include "components/abilities/effects/skillshot_effect.hpp"
+#include "components/abilities/implementations/beam_node.hpp"
+#include "components/abilities/implementations/explosion_node.hpp"
+#include "components/abilities/implementations/fireball_node.hpp"
+#include "components/abilities/implementations/frost_bolt_node.hpp"
+#include "components/abilities/implementations/instant_strike_node.hpp"
 #include "components/combat/attack_component.hpp"
 #include "components/combat/projectile.hpp"
+#include "components/combat/skillshot_projectile.hpp"
 #include "components/health/health_component.hpp"
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
@@ -16,7 +30,10 @@
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
+#include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
+#include "visual/projectile_visual.hpp"
+#include "visual/visual_effect.hpp"
 
 using namespace godot;
 
@@ -37,6 +54,22 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
+  GDREGISTER_CLASS(SkillshotProjectile)
+  GDREGISTER_CLASS(AbilityEffect)
+  GDREGISTER_CLASS(AbilityDefinition)
+  GDREGISTER_CLASS(AbilityNode)
+  GDREGISTER_CLASS(BeamNode)
+  GDREGISTER_CLASS(ExplosionNode)
+  GDREGISTER_CLASS(InstantStrikeNode)
+  GDREGISTER_CLASS(FrostBoltNode)
+  GDREGISTER_CLASS(FireballNode)
+  GDREGISTER_CLASS(DamageEffect)
+  GDREGISTER_CLASS(AoEDamageEffect)
+  GDREGISTER_CLASS(SkillshotEffect)
+  GDREGISTER_CLASS(AbilityComponent)
+  GDREGISTER_CLASS(VisualDebugger)
+  GDREGISTER_CLASS(VisualEffect)
+  GDREGISTER_CLASS(ProjectileVisual)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

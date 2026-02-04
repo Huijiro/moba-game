@@ -26,6 +26,8 @@ class AttackComponent : public UnitComponent {
   float attack_point = 0.3f;      // Seconds until damage/projectile release
   float attack_range = 2.5f;
   float attack_damage = 10.0f;
+  float auto_attack_range = 2.5f;
+  float attack_buffer_range = 0.5f;  // Hysteresis buffer for resuming chase
   AttackDelivery delivery_type = AttackDelivery::MELEE;
   float projectile_speed = 20.0f;
 
@@ -33,12 +35,14 @@ class AttackComponent : public UnitComponent {
   double time_until_next_attack = 0.0;
   double attack_windup_timer = 0.0;
   bool in_attack_windup = false;
-  Unit* current_attack_target = nullptr;
+  Unit* current_attack_target = nullptr;  // Target currently in windup
+  Unit* active_attack_target = nullptr;   // Target from current ATTACK order
 
  public:
   AttackComponent();
   ~AttackComponent();
 
+  void _ready() override;
   void _physics_process(double delta) override;
 
   // Properties
@@ -63,6 +67,12 @@ class AttackComponent : public UnitComponent {
   void set_projectile_speed(float speed);
   float get_projectile_speed() const;
 
+  void set_auto_attack_range(float range);
+  float get_auto_attack_range() const;
+
+  void set_attack_buffer_range(float buffer);
+  float get_attack_buffer_range() const;
+
   void set_projectile_scene(const Ref<PackedScene>& scene);
   Ref<PackedScene> get_projectile_scene() const;
 
@@ -75,6 +85,11 @@ class AttackComponent : public UnitComponent {
 
   void _fire_melee(Unit* target);
   void _fire_projectile(Unit* target);
+
+  // Signal handler for Unit's order_changed signal
+  void _on_unit_order_changed(int previous_order,
+                              int new_order,
+                              Object* target);
 };
 
 #endif  // GDEXTENSION_ATTACK_COMPONENT_H
