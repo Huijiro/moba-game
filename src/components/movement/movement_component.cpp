@@ -69,6 +69,9 @@ void MovementComponent::_bind_methods() {
                        &MovementComponent::_on_attack_requested);
   ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
                        &MovementComponent::_on_chase_requested);
+  ClassDB::bind_method(D_METHOD("_on_chase_to_range_requested", "target",
+                                "position", "desired_range"),
+                       &MovementComponent::_on_chase_to_range_requested);
   ClassDB::bind_method(D_METHOD("_on_stop_requested"),
                        &MovementComponent::_on_stop_requested);
   ClassDB::bind_method(D_METHOD("_on_interact_requested", "target", "position"),
@@ -85,6 +88,8 @@ void MovementComponent::_ready() {
     owner->register_signal(move_requested);
     owner->register_signal(attack_requested);
     owner->register_signal(chase_requested);
+    owner->register_signal(chase_to_range_requested);
+    owner->register_signal(chase_range_reached);
     owner->register_signal(stop_requested);
     owner->register_signal(interact_requested);
 
@@ -109,6 +114,8 @@ void MovementComponent::_ready() {
                    Callable(this, StringName("_on_attack_requested")));
     owner->connect(chase_requested,
                    Callable(this, StringName("_on_chase_requested")));
+    owner->connect(chase_to_range_requested,
+                   Callable(this, StringName("_on_chase_to_range_requested")));
     owner->connect(stop_requested,
                    Callable(this, StringName("_on_stop_requested")));
     owner->connect(interact_requested,
@@ -130,6 +137,23 @@ void MovementComponent::_physics_process(double delta) {
   // Update desired location if actively chasing a target
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
+
+    // Check if we've reached desired range for chase
+    float distance_to_target = body->get_global_position().distance_to(
+        chase_target->get_global_position());
+    bool now_in_range = distance_to_target <= chase_desired_range;
+
+    if (now_in_range && !was_chase_in_range) {
+      // Just reached range - emit signal
+      Unit* owner = get_owner_unit();
+      if (owner != nullptr) {
+        owner->relay(get_chase_range_reached(), chase_target);
+      }
+      was_chase_in_range = true;
+    } else if (!now_in_range) {
+      // Out of range again
+      was_chase_in_range = false;
+    }
   }
 
   // Get movement velocity from our logic
@@ -322,6 +346,22 @@ void MovementComponent::_on_chase_requested(godot::Object* target,
                                             const Vector3& position) {
   // Chase orders - follow target with no distance constraint
   chase_target = Object::cast_to<Unit>(target);
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
+                                                     const Vector3& position,
+                                                     float desired_range) {
+  // Chase orders with desired range - follow target until in range
+  chase_target = Object::cast_to<Unit>(target);
+  chase_desired_range = desired_range;
+  was_chase_in_range = false;  // Reset range tracking
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
   } else {

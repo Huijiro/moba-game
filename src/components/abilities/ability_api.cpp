@@ -201,9 +201,11 @@ bool AbilityAPI::chase_and_prepare_execution(Unit* caster,
     return true;
   }
 
-  // Not in range - initiate chase using chase_requested signal
-  // Pass target object so movement can continuously follow it
-  caster->relay(get_chase_requested(), target, target->get_global_position());
+  // Not in range - initiate chase with range goal using
+  // chase_to_range_requested signal Movement will emit chase_range_reached when
+  // unit gets within ability_range
+  caster->relay(get_chase_to_range_requested(), target,
+                target->get_global_position(), ability_range);
 
   // Return false to indicate we're chasing, not executing
   // Caller should return early without executing the ability

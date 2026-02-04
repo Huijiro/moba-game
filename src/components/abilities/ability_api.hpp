@@ -73,9 +73,10 @@ class AbilityAPI {
 
   /// Chase target until in range, then store target for execution
   /// Used by abilities that need to move to target before executing
+  /// Emits chase_range_reached signal when unit gets within ability_range
   /// Returns true if already in range (ready to execute immediately)
   /// Returns false if movement was initiated (will execute on next cast
-  /// attempt)
+  /// attempt when chase_range_reached signal is received)
   static bool chase_and_prepare_execution(Unit* caster,
                                           Unit* target,
                                           float ability_range);

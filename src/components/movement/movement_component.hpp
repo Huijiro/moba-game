@@ -28,6 +28,8 @@ class MovementComponent : public NavigationAgent3D {
 
   // Chase tracking - when set, continuously move toward this unit
   Unit* chase_target = nullptr;
+  float chase_desired_range = 0.0f;  // How close to get to chase target
+  bool was_chase_in_range = false;   // Was range reached in previous frame
 
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
@@ -35,6 +37,9 @@ class MovementComponent : public NavigationAgent3D {
   void _on_move_requested(const Vector3& position);
   void _on_attack_requested(godot::Object* target, const Vector3& position);
   void _on_chase_requested(godot::Object* target, const Vector3& position);
+  void _on_chase_to_range_requested(godot::Object* target,
+                                    const Vector3& position,
+                                    float desired_range);
   void _on_stop_requested();
   void _on_interact_requested(godot::Object* target, const Vector3& position);
 
