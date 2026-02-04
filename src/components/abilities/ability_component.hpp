@@ -99,6 +99,9 @@ class AbilityComponent : public UnitComponent {
   // Interrupt active channel or cast (applies cooldown)
   void interrupt_casting();
 
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry) override;
+
   // ========== INTERNAL METHODS ==========
  private:
   // Get resource pool by ID, or return default if not found

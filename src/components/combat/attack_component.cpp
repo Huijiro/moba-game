@@ -10,9 +10,10 @@
 #include <godot_cpp/variant/variant.hpp>
 
 #include "../../core/unit.hpp"
-#include "../health/health_component.hpp"
-#include "projectile.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../health/health_component.hpp"
+#include "../ui/label_registry.hpp"
+#include "projectile.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -312,7 +313,8 @@ bool AttackComponent::try_fire_at(Unit* target, double delta) {
 
     if (owner_unit != nullptr) {
       DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                              " started attacking " + target->get_name());
+                                      " started attacking " +
+                                      target->get_name());
     }
 
     emit_signal("attack_started", target);
@@ -342,9 +344,9 @@ void AttackComponent::_fire_melee(Unit* target) {
   }
 
   if (owner_unit != nullptr) {
-    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                            " hit " + target->get_name() + " for " +
-                            String::num(attack_damage) + " damage (MELEE)");
+    DBG_INFO("AttackComponent",
+             "" + owner_unit->get_name() + " hit " + target->get_name() +
+                 " for " + String::num(attack_damage) + " damage (MELEE)");
   }
 
   target_health->apply_damage(attack_damage, owner_unit);
@@ -381,9 +383,10 @@ void AttackComponent::_fire_projectile(Unit* target) {
   }
 
   if (owner_unit != nullptr) {
-    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                            " fired projectile at " + target->get_name() +
-                            " (damage: " + String::num(attack_damage) + ")");
+    DBG_INFO("AttackComponent",
+             "" + owner_unit->get_name() + " fired projectile at " +
+                 target->get_name() +
+                 " (damage: " + String::num(attack_damage) + ")");
   }
 
   // Configure projectile with pre-calculated damage
@@ -418,4 +421,16 @@ void AttackComponent::_on_unit_order_changed(int previous_order,
     // Clear attack order when order changes to something else
     active_attack_target = nullptr;
   }
+}
+
+void AttackComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  registry->register_property("Attack", "cooldown",
+                              godot::String::num(time_until_next_attack));
+  registry->register_property(
+      "Attack", "target",
+      current_attack_target ? current_attack_target->get_unit_name() : "none");
 }

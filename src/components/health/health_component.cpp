@@ -11,6 +11,7 @@
 
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../ui/label_registry.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -86,20 +87,21 @@ bool HealthComponent::apply_damage(float amount, godot::Object* source) {
 
   // Log damage
   if (owner_unit != nullptr) {
-    DBG_INFO("HealthComponent", "" + owner_unit->get_name() + " took " +
-        godot::String::num(amount) +
-        " damage. HP: " + godot::String::num(current_health) + "/" +
-        godot::String::num(max_health));
+    DBG_INFO("HealthComponent",
+             "" + owner_unit->get_name() + " took " +
+                 godot::String::num(amount) +
+                 " damage. HP: " + godot::String::num(current_health) + "/" +
+                 godot::String::num(max_health));
   } else {
-    DBG_INFO("HealthComponent", "Took " + godot::String::num(amount) +
-        " damage. HP: " + godot::String::num(current_health) + "/" +
-        godot::String::num(max_health));
+    DBG_INFO("HealthComponent",
+             "Took " + godot::String::num(amount) +
+                 " damage. HP: " + godot::String::num(current_health) + "/" +
+                 godot::String::num(max_health));
   }
 
   if (current_health <= 0.0f) {
     if (owner_unit != nullptr) {
-      DBG_INFO("HealthComponent", "" + owner_unit->get_name() +
-                              " died!");
+      DBG_INFO("HealthComponent", "" + owner_unit->get_name() + " died!");
     } else {
       DBG_INFO("HealthComponent", "Unit died!");
     }
@@ -145,5 +147,18 @@ void HealthComponent::_disable_collision() {
   owner_unit->set_collision_layer(0);
   owner_unit->set_collision_mask(0);
 
-  DBG_INFO("HealthComponent", "Disabled collision for " + owner_unit->get_name());
+  DBG_INFO("HealthComponent",
+           "Disabled collision for " + owner_unit->get_name());
+}
+
+void HealthComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  registry->register_property("Health", "current",
+                              godot::String::num(current_health));
+  registry->register_property("Health", "max", godot::String::num(max_health));
+  registry->register_property("Health", "status",
+                              is_dead_flag ? "DEAD" : "ALIVE");
 }

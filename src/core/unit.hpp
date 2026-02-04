@@ -26,6 +26,7 @@ class HealthComponent;
 class AttackComponent;
 class MovementComponent;
 class AbilityComponent;
+class LabelRegistry;
 
 /// Character entity with components - pure orchestrator/mediator
 /// The playable/NPC unit that receives signals and delegates to components
@@ -81,6 +82,9 @@ class Unit : public CharacterBody3D {
   // Display name (for UI/debug purposes, not unique)
   void set_unit_name(const String& name);
   String get_unit_name() const;
+
+  // Debug label registration - called by LabelComponent
+  void register_all_debug_labels(LabelRegistry* registry);
 
  private:
   int32_t faction_id = 0;

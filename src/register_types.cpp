@@ -27,6 +27,7 @@
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
 #include "components/resources/resource_pool_component.hpp"
+#include "components/ui/label_component.hpp"
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
@@ -53,6 +54,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(MovementComponent)
   GDREGISTER_CLASS(HealthComponent)
   GDREGISTER_CLASS(ResourcePoolComponent)
+  GDREGISTER_CLASS(LabelComponent)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
   GDREGISTER_CLASS(SkillshotProjectile)

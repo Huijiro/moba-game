@@ -80,6 +80,9 @@ class AttackComponent : public UnitComponent {
   bool try_fire_at(Unit* target, double delta);
   float get_attack_interval() const;
 
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry) override;
+
  private:
   Ref<PackedScene> projectile_scene = nullptr;
 

@@ -5,6 +5,8 @@
 #include "../components/health/health_component.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../components/movement/movement_component.hpp"
+#include "../components/ui/label_registry.hpp"
+#include "../components/unit_component.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
@@ -172,4 +174,23 @@ void Unit::set_unit_name(const String& name) {
 
 String Unit::get_unit_name() const {
   return unit_name;
+}
+
+void Unit::register_all_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  // Register unit's own state
+  registry->register_property("Unit", "name", unit_name);
+  registry->register_property("Unit", "faction", String::num(faction_id));
+
+  // Iterate all children and call register_debug_labels on any UnitComponents
+  for (int i = 0; i < get_child_count(); ++i) {
+    Node* child = get_child(i);
+    auto* component = Object::cast_to<UnitComponent>(child);
+    if (component) {
+      component->register_debug_labels(registry);
+    }
+  }
 }

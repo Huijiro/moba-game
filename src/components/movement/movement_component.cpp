@@ -14,7 +14,9 @@
 #include <godot_cpp/variant/vector3.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/debug_utils.hpp"
 #include "../health/health_component.hpp"
+#include "../ui/label_registry.hpp"
 
 using godot::Basis;
 using godot::Callable;
@@ -285,4 +287,17 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
   if (is_inside_tree()) {
     queue_free();
   }
+}
+
+void MovementComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  registry->register_property("Movement", "speed", godot::String::num(speed));
+  registry->register_property(
+      "Movement", "dest",
+      DebugUtils::vector3_to_compact_string(desired_location));
+  registry->register_property("Movement", "at_dest",
+                              is_at_destination() ? "true" : "false");
 }

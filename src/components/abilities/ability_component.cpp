@@ -11,6 +11,7 @@
 #include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
 #include "../resources/resource_pool_component.hpp"
+#include "../ui/label_registry.hpp"
 #include "ability_node.hpp"
 
 using godot::ClassDB;
@@ -627,4 +628,27 @@ void AbilityComponent::_finish_casting() {
   casting_target = nullptr;
   casting_timer = 0.0f;
   casting_state = static_cast<int>(CastState::IDLE);
+}
+
+void AbilityComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  String casting_status;
+  if (is_casting()) {
+    casting_status = String("CASTING_") + String::num(casting_slot);
+  } else {
+    casting_status = "IDLE";
+  }
+
+  registry->register_property("Ability", "status", casting_status);
+
+  // Register cooldowns for first few ability slots
+  for (int i = 0; i < static_cast<int>(cooldown_timers.size()) && i < 4; ++i) {
+    String slot_key = String("slot_") + String::num(i) + "_cd";
+    float cd = get_cooldown_remaining(i);
+    registry->register_property("Ability", slot_key,
+                                cd > 0.0f ? String::num(cd) : "ready");
+  }
 }

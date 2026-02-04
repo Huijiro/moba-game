@@ -6,6 +6,7 @@
 using godot::Node;
 
 class Unit;
+class LabelRegistry;
 
 class UnitComponent : public Node {
   GDCLASS(UnitComponent, Node)
@@ -22,6 +23,12 @@ class UnitComponent : public Node {
   void _ready() override;
 
   Unit* get_unit() const;
+
+  /// Optional: Register debug label data. Override in subclasses to expose
+  /// debug info.
+  virtual void register_debug_labels(LabelRegistry* registry) {
+    // Default: do nothing
+  }
 };
 
 #endif  // GDEXTENSION_UNIT_COMPONENT_H

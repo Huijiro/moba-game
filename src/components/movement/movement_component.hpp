@@ -13,6 +13,7 @@ using godot::Vector3;
 
 // Forward declaration
 class Unit;
+class LabelRegistry;
 
 class MovementComponent : public NavigationAgent3D {
   GDCLASS(MovementComponent, NavigationAgent3D)
@@ -59,6 +60,9 @@ class MovementComponent : public NavigationAgent3D {
 
   // Get owner Unit for context (replaces get_component_by_class logic)
   Unit* get_owner_unit() const;
+
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry);
 };
 
 #endif  // GDEXTENSION_MOVEMENT_COMPONENT_H

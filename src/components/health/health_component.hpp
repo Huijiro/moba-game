@@ -28,6 +28,9 @@ class HealthComponent : public UnitComponent {
   void heal(float amount);
   bool is_dead() const;
 
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry) override;
+
  private:
   // Disable collision shapes when unit dies
   void _disable_collision();
