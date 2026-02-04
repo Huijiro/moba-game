@@ -4,8 +4,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -54,22 +54,15 @@ void InstantStrikeNode::execute(Unit* caster,
     return;
   }
 
-  // Get health component from target
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    DBG_INFO("InstantStrike", "Target has no HealthComponent");
-    return;
-  }
-
-  // Calculate and apply damage
+  // Calculate damage
   float damage = calculate_damage(caster, target);
-  target_health->apply_damage(damage, caster);
+
+  // Fire-and-forget: emit take_damage signal, don't wait for response
+  caster->relay(take_damage, damage, target);
 
   DBG_INFO("InstantStrike", String(caster->get_name()) + " dealt " +
-                          String::num(damage) + " damage to " +
-                          target->get_name());
+                                String::num(damage) + " damage to " +
+                                target->get_name());
 }
 
 bool InstantStrikeNode::can_execute_on_target(Unit* caster,

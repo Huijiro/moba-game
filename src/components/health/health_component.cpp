@@ -5,17 +5,23 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../ui/label_registry.hpp"
 
+using godot::Callable;
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::Engine;
 using godot::PropertyInfo;
+using godot::StringName;
 using godot::UtilityFunctions;
 using godot::Variant;
 
@@ -43,11 +49,32 @@ void HealthComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("heal", "amount"), &HealthComponent::heal);
   ClassDB::bind_method(D_METHOD("is_dead"), &HealthComponent::is_dead);
 
+  // Signal handler for take_damage relay
+  ClassDB::bind_method(D_METHOD("_on_take_damage", "damage", "source"),
+                       &HealthComponent::_on_take_damage);
+
   ADD_SIGNAL(godot::MethodInfo("health_changed",
                                PropertyInfo(Variant::FLOAT, "current"),
                                PropertyInfo(Variant::FLOAT, "max")));
   ADD_SIGNAL(
       godot::MethodInfo("died", PropertyInfo(Variant::OBJECT, "source")));
+}
+
+void HealthComponent::_ready() {
+  UnitComponent::_ready();
+
+  if (godot::Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  Unit* owner = get_unit();
+  if (owner == nullptr) {
+    return;
+  }
+
+  // Connect to Unit's take_damage signal
+  owner->connect(take_damage,
+                 godot::Callable(this, godot::StringName("_on_take_damage")));
 }
 
 void HealthComponent::set_max_health(float value) {
@@ -149,6 +176,11 @@ void HealthComponent::_disable_collision() {
 
   DBG_INFO("HealthComponent",
            "Disabled collision for " + owner_unit->get_name());
+}
+
+void HealthComponent::_on_take_damage(float damage, godot::Object* source) {
+  // Fire-and-forget: receive damage signal and apply it
+  apply_damage(damage, source);
 }
 
 void HealthComponent::register_debug_labels(LabelRegistry* registry) {

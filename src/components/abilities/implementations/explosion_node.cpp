@@ -6,8 +6,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
 
 using godot::Array;
 using godot::ClassDB;
@@ -76,25 +76,17 @@ void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
       continue;
     }
 
-    // Get health component
-    HealthComponent* affected_health = Object::cast_to<HealthComponent>(
-        affected_unit->get_component_by_class("HealthComponent"));
-
-    if (affected_health == nullptr) {
-      continue;
-    }
-
-    // Apply damage
+    // Apply damage via fire-and-forget signal
     float damage = calculate_damage(caster, affected_unit);
-    affected_health->apply_damage(damage, caster);
+    caster->relay(take_damage, damage, affected_unit);
     hit_count++;
 
-    DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) + " for " + String::num(damage) + " damage");
+    DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) +
+                               " for " + String::num(damage) + " damage");
   }
 
-  DBG_INFO("Explosion", String(caster->get_name()) +
-                          " detonated, hit " + String::num(hit_count) +
-                          " units");
+  DBG_INFO("Explosion", String(caster->get_name()) + " detonated, hit " +
+                            String::num(hit_count) + " units");
 }
 
 bool ExplosionNode::can_execute_on_target(Unit* caster, Unit* target) const {

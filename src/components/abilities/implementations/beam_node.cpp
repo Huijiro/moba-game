@@ -4,8 +4,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -54,25 +54,17 @@ void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
     return;
   }
 
-  // Get health component from target
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    DBG_INFO("Beam", "Target has no HealthComponent");
-    return;
-  }
-
   // For channel abilities, this executes ONE TICK of the channel
   // The AbilityComponent is responsible for calling this repeatedly
   // at channel_tick_interval to simulate the channel
 
   float tick_damage = calculate_damage(caster, target);
-  target_health->apply_damage(tick_damage, caster);
 
-  DBG_INFO("Beam", String(caster->get_name()) + " hit " +
-                          target->get_name() + " for " +
-                          String::num(tick_damage) + " damage (tick)");
+  // Fire-and-forget: emit take_damage signal, don't wait for response
+  caster->relay(take_damage, tick_damage, target);
+
+  DBG_INFO("Beam", String(caster->get_name()) + " hit " + target->get_name() +
+                       " for " + String::num(tick_damage) + " damage (tick)");
 }
 
 bool BeamNode::can_execute_on_target(Unit* caster, Unit* target) const {

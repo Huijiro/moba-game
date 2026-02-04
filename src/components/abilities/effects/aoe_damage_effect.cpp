@@ -7,11 +7,11 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <vector>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../../debug/visual_debugger.hpp"
-#include "../../health/health_component.hpp"
-#include "../ability_definition.hpp"
 #include "../../../debug/debug_macros.hpp"
+#include "../../../debug/visual_debugger.hpp"
+#include "../ability_definition.hpp"
 
 using godot::ClassDB;
 using godot::Color;
@@ -71,8 +71,9 @@ void AoEDamageEffect::execute(Unit* caster,
     debugger->draw_circle_xz(aoe_center, radius, Color(1, 1, 0, 0.5f));
   }
 
-  DBG_INFO("AoEDamageEffect", "Applied " + godot::String::num(damage) + " damage in radius " +
-                          godot::String::num(radius));
+  DBG_INFO("AoEDamageEffect", "Applied " + godot::String::num(damage) +
+                                  " damage in radius " +
+                                  godot::String::num(radius));
 }
 
 void AoEDamageEffect::execute_at_point(Unit* caster,
@@ -100,10 +101,11 @@ void AoEDamageEffect::execute_at_point(Unit* caster,
     debugger->draw_circle_xz(point, radius, Color(1, 1, 0, 0.5f));
   }
 
-  DBG_INFO("AoEDamageEffect", "Applied " + godot::String::num(damage) + " damage at point (" +
-                          godot::String::num(point.x) + ", " +
-                          godot::String::num(point.z) + ") with radius " +
-                          godot::String::num(radius));
+  DBG_INFO("AoEDamageEffect",
+           "Applied " + godot::String::num(damage) + " damage at point (" +
+               godot::String::num(point.x) + ", " +
+               godot::String::num(point.z) + ") with radius " +
+               godot::String::num(radius));
 }
 
 void AoEDamageEffect::_apply_damage_in_radius(Unit* caster,
@@ -148,18 +150,13 @@ void AoEDamageEffect::_apply_damage_in_radius(Unit* caster,
     }
   }
 
-  // Apply damage to all affected units
+  // Apply damage to all affected units (fire-and-forget via signals)
   int hit_count = 0;
   for (Unit* unit : affected_units) {
-    HealthComponent* health = Object::cast_to<HealthComponent>(
-        unit->get_component_by_class("HealthComponent"));
-
-    if (health != nullptr) {
-      health->apply_damage(damage, caster);
-      hit_count++;
-      DBG_INFO("AoEDamageEffect", "Hit " + unit->get_name() +
-                              " for " + godot::String::num(damage) + " damage");
-    }
+    caster->relay(take_damage, damage, unit);
+    hit_count++;
+    DBG_INFO("AoEDamageEffect", "Hit " + unit->get_name() + " for " +
+                                    godot::String::num(damage) + " damage");
   }
 
   DBG_INFO("AoEDamageEffect", "Total hits: " + godot::String::num(hit_count));

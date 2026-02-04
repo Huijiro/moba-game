@@ -4,10 +4,10 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
-#include "../ability_definition.hpp"
 #include "../../../debug/debug_macros.hpp"
+#include "../ability_definition.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -43,19 +43,10 @@ void DamageEffect::execute(Unit* caster,
     return;
   }
 
-  // Get health component from target
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target_unit->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    DBG_INFO("DamageEffect", "Target has no HealthComponent");
-    return;
-  }
-
-  // Apply damage
+  // Apply damage via fire-and-forget signal
   float damage = ability->get_base_damage();
-  target_health->apply_damage(damage, caster);
+  caster->relay(take_damage, damage, target_unit);
 
-  DBG_INFO("DamageEffect", "Applied " + godot::String::num(damage) + " damage to " +
-                          target_unit->get_name());
+  DBG_INFO("DamageEffect", "Applied " + godot::String::num(damage) +
+                               " damage to " + target_unit->get_name());
 }

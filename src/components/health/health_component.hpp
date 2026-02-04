@@ -13,9 +13,14 @@ class HealthComponent : public UnitComponent {
   float current_health = 100.0f;
   bool is_dead_flag = false;
 
+  // Signal handler for take_damage relay signal from Unit
+  void _on_take_damage(float damage, godot::Object* source);
+
  public:
   HealthComponent();
   ~HealthComponent();
+
+  void _ready() override;
 
   void set_max_health(float value);
   float get_max_health() const;

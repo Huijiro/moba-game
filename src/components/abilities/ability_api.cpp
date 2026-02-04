@@ -4,9 +4,9 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
-#include "../health/health_component.hpp"
 
 using godot::Node;
 using godot::Object;
@@ -20,8 +20,8 @@ float AbilityAPI::apply_damage(Unit* target, float damage, Unit* source) {
     return 0.0f;
   }
 
-  // Apply damage via relay signal
-  target->relay("take_damage", damage, source);
+  // Apply damage via relay signal (fire-and-forget)
+  target->relay(take_damage, damage, source);
   return damage;
 }
 
