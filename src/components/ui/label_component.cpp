@@ -1,19 +1,18 @@
 #include "label_component.hpp"
 
 #include <godot_cpp/classes/base_material3d.hpp>
-#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/object.hpp>
 
 #include "../../core/unit.hpp"
-#include "../../debug/debug_macros.hpp"
 
 using godot::BaseMaterial3D;
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Font;
 using godot::PropertyInfo;
-using godot::Ref;
+using godot::String;
 using godot::Variant;
 
 LabelComponent::LabelComponent() {}
@@ -29,49 +28,24 @@ void LabelComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_label_offset"),
                        &LabelComponent::get_label_offset);
 
-  ClassDB::bind_method(D_METHOD("set_font_size", "size"),
-                       &LabelComponent::set_font_size);
-  ClassDB::bind_method(D_METHOD("get_font_size"),
-                       &LabelComponent::get_font_size);
-
-  ClassDB::bind_method(D_METHOD("set_enabled", "enabled"),
-                       &LabelComponent::set_enabled);
-  ClassDB::bind_method(D_METHOD("is_enabled"), &LabelComponent::is_enabled);
-
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_rate"), "set_update_rate",
                "get_update_rate");
   ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "label_offset"),
                "set_label_offset", "get_label_offset");
-  ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size"), "set_font_size",
-               "get_font_size");
-  ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled",
-               "is_enabled");
 }
 
 void LabelComponent::_ready() {
-  // Call parent _ready to setup owner_unit
-  UnitComponent::_ready();
+  // Find parent Unit
+  auto parent = get_parent();
+  owner_unit = godot::Object::cast_to<Unit>(parent);
 
-  // Create Label3D child node
-  label_3d = memnew(Label3D);
-  add_child(label_3d);
-
-  // Position relative to component (which is on the unit)
-  label_3d->set_position(label_offset);
-
-  // Configure label
-  label_3d->set_text(String(""));
-  label_3d->set_font_size(font_size);
-
-  // Set billboard mode to always face camera (keep Y-axis fixed)
-  label_3d->set_billboard_mode(BaseMaterial3D::BILLBOARD_FIXED_Y);
-
-  // Set visibility based on enabled state
-  label_3d->set_visible(enabled);
+  // Configure this label
+  Label3D::set_text(String(""));
+  Label3D::set_billboard_mode(BaseMaterial3D::BILLBOARD_FIXED_Y);
 }
 
 void LabelComponent::_process(double delta) {
-  if (!enabled || !label_3d) {
+  if (!owner_unit) {
     return;
   }
 
@@ -86,26 +60,26 @@ void LabelComponent::_process(double delta) {
 }
 
 void LabelComponent::_update_label_content() {
-  if (!label_3d || !get_unit()) {
+  if (!owner_unit) {
     return;
   }
 
   // Clear registry and collect debug info from all components
   registry.clear();
-  get_unit()->register_all_debug_labels(&registry);
+  owner_unit->register_all_debug_labels(&registry);
 
-  // Update label text
-  label_3d->set_text(registry.get_formatted_text());
+  // Update this label's text
+  Label3D::set_text(registry.get_formatted_text());
 }
 
 void LabelComponent::_update_label_transform() {
-  if (!label_3d || !get_unit()) {
+  if (!owner_unit) {
     return;
   }
 
   // Position label above unit
-  Vector3 target_position = get_unit()->get_global_position() + label_offset;
-  label_3d->set_global_position(target_position);
+  Vector3 target_position = owner_unit->get_global_position() + label_offset;
+  Label3D::set_global_position(target_position);
 
   // Make label face camera
   auto viewport = get_viewport();
@@ -113,7 +87,7 @@ void LabelComponent::_update_label_transform() {
     auto camera = viewport->get_camera_3d();
     if (camera) {
       Vector3 camera_pos = camera->get_global_position();
-      Vector3 label_pos = label_3d->get_global_position();
+      Vector3 label_pos = Label3D::get_global_position();
 
       // Calculate direction from label to camera
       Vector3 look_dir = (camera_pos - label_pos).normalized();
@@ -125,7 +99,7 @@ void LabelComponent::_update_label_transform() {
 
       // If we have a valid forward direction, rotate to face it
       if (target_forward.length() > 0.001f) {
-        label_3d->look_at(label_pos + target_forward, Vector3(0, 1, 0));
+        Label3D::look_at(label_pos + target_forward, Vector3(0, 1, 0));
       }
     }
   }
@@ -145,26 +119,4 @@ void LabelComponent::set_label_offset(const Vector3& offset) {
 
 Vector3 LabelComponent::get_label_offset() const {
   return label_offset;
-}
-
-void LabelComponent::set_font_size(int size) {
-  font_size = size > 8 ? size : 8;
-  if (label_3d) {
-    label_3d->set_font_size(font_size);
-  }
-}
-
-int LabelComponent::get_font_size() const {
-  return font_size;
-}
-
-void LabelComponent::set_enabled(bool enable) {
-  enabled = enable;
-  if (label_3d) {
-    label_3d->set_visible(enabled);
-  }
-}
-
-bool LabelComponent::is_enabled() const {
-  return enabled;
 }
