@@ -72,9 +72,9 @@ void HealthComponent::_ready() {
     return;
   }
 
-  // Connect to Unit's take_damage signal
-  owner->connect(take_damage,
-                 godot::Callable(this, godot::StringName("_on_take_damage")));
+  // Connect to Unit's take_damage signal using dynamic signal relay
+  owner->connect_signal(
+      take_damage, godot::Callable(this, godot::StringName("_on_take_damage")));
 }
 
 void HealthComponent::set_max_health(float value) {

@@ -143,11 +143,13 @@ void AttackComponent::_ready() {
     return;
   }
 
-  // Connect to the Unit's attack-related signals
-  owner->connect(attack_requested,
-                 godot::Callable(this, "_on_attack_requested"));
-  owner->connect(chase_requested, godot::Callable(this, "_on_chase_requested"));
-  owner->connect(stop_requested, godot::Callable(this, "_on_stop_requested"));
+  // Connect to the Unit's attack-related signals using dynamic signal relay
+  owner->connect_signal(attack_requested,
+                        godot::Callable(this, "_on_attack_requested"));
+  owner->connect_signal(chase_requested,
+                        godot::Callable(this, "_on_chase_requested"));
+  owner->connect_signal(stop_requested,
+                        godot::Callable(this, "_on_stop_requested"));
 }
 
 void AttackComponent::_physics_process(double delta) {

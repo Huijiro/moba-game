@@ -4,21 +4,25 @@
 #include "../components/ui/label_registry.hpp"
 #include "../components/unit_component.hpp"
 
+#include <algorithm>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/object.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+using godot::Callable;
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
 using godot::MethodInfo;
 using godot::Node;
 using godot::PropertyInfo;
+using godot::StringName;
 using godot::Variant;
 
 Unit::Unit() = default;
@@ -38,24 +42,8 @@ void Unit::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_name"), "set_unit_name",
                "get_unit_name");
 
-  // Register relay signals - Unit is a transparent relay hub
-  // Movement signals (InputManager/AI → Components)
-  ADD_SIGNAL(
-      MethodInfo("move_requested", PropertyInfo(Variant::VECTOR3, "target")));
-  ADD_SIGNAL(MethodInfo("attack_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("chase_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("interact_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("stop_requested"));
-
-  // Damage/Combat signals (Combat systems → Components)
-  ADD_SIGNAL(MethodInfo("take_damage", PropertyInfo(Variant::FLOAT, "damage"),
-                        PropertyInfo(Variant::OBJECT, "source")));
+  // No signal registrations needed - relay() handles dynamic signal emission
+  // Components connect to signals they care about, Unit doesn't know about them
 }
 
 void Unit::_ready() {
@@ -117,4 +105,67 @@ AbilityComponent* Unit::get_ability_component() const {
   // Temporary implementation to support existing InputManager code
   Node* component = get_component_by_class("AbilityComponent");
   return Object::cast_to<AbilityComponent>(component);
+}
+
+void Unit::relay(const StringName& signal_name) {
+  // Emit to all listeners registered for this signal
+  auto it = signal_listeners.find(signal_name);
+  if (it != signal_listeners.end()) {
+    for (const auto& callable : it->second) {
+      callable.call();
+    }
+  }
+}
+
+void Unit::relay(const StringName& signal_name, const Variant& arg1) {
+  // Emit to all listeners registered for this signal
+  auto it = signal_listeners.find(signal_name);
+  if (it != signal_listeners.end()) {
+    for (const auto& callable : it->second) {
+      callable.call(arg1);
+    }
+  }
+}
+
+void Unit::relay(const StringName& signal_name,
+                 const Variant& arg1,
+                 const Variant& arg2) {
+  // Emit to all listeners registered for this signal
+  auto it = signal_listeners.find(signal_name);
+  if (it != signal_listeners.end()) {
+    for (const auto& callable : it->second) {
+      callable.call(arg1, arg2);
+    }
+  }
+}
+
+void Unit::relay(const StringName& signal_name,
+                 const Variant& arg1,
+                 const Variant& arg2,
+                 const Variant& arg3) {
+  // Emit to all listeners registered for this signal
+  auto it = signal_listeners.find(signal_name);
+  if (it != signal_listeners.end()) {
+    for (const auto& callable : it->second) {
+      callable.call(arg1, arg2, arg3);
+    }
+  }
+}
+
+void Unit::connect_signal(const StringName& signal_name,
+                          const Callable& callable) {
+  signal_listeners[signal_name].push_back(callable);
+}
+
+void Unit::disconnect_signal(const StringName& signal_name,
+                             const Callable& callable) {
+  auto it = signal_listeners.find(signal_name);
+  if (it != signal_listeners.end()) {
+    auto& listeners = it->second;
+    listeners.erase(std::remove_if(listeners.begin(), listeners.end(),
+                                   [&callable](const Callable& other) {
+                                     return other == callable;
+                                   }),
+                    listeners.end());
+  }
 }
