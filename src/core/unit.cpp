@@ -110,15 +110,18 @@ AbilityComponent* Unit::get_ability_component() const {
 
 void Unit::register_signal(const StringName& signal_name) {
   // Use Godot's add_user_signal() which is the official way to dynamically
-  // add signals to an object instance. It handles all the details for us.
-  // It's safe to call multiple times (will error if signal already exists, but
-  // that's fine for our use case since multiple components might register the
-  // same signal name).
+  // add signals to an object instance.
+  // Multiple components might try to register the same signal, so we check
+  // first to avoid "already existing signal" errors.
+
+  // Check if signal already exists
+  if (has_signal(signal_name)) {
+    return;  // Signal already registered, nothing to do
+  }
 
   // Convert StringName to String for add_user_signal
   String signal_str = String(signal_name);
 
-  // Try to add the signal - add_user_signal() will error if it already exists,
-  // which is fine since we only care about registering it once
+  // Add the signal for the first time
   add_user_signal(signal_str);
 }
