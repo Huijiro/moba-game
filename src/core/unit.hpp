@@ -3,19 +3,14 @@
 
 #include <godot_cpp/classes/character_body3d.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <map>
-#include <vector>
 
 namespace godot {
 class StringName;
-class Callable;
 }  // namespace godot
 
-using godot::Callable;
 using godot::CharacterBody3D;
 using godot::String;
 using godot::StringName;
-using godot::Variant;
 
 class LabelRegistry;
 
@@ -62,23 +57,12 @@ class Unit : public CharacterBody3D {
 
   void _ready() override;
 
-  // Signal relay - relays arbitrary signals to all listeners
+  // Signal relay - relays arbitrary signals to all children
   // Fire and forget: Unit doesn't care what signals or who listens
-  // Handles dynamic signal emission without requiring pre-registration
-  void relay(const StringName& signal_name);
-  void relay(const StringName& signal_name, const Variant& arg1);
-  void relay(const StringName& signal_name,
-             const Variant& arg1,
-             const Variant& arg2);
-  void relay(const StringName& signal_name,
-             const Variant& arg1,
-             const Variant& arg2,
-             const Variant& arg3);
-
-  // Signal multiplexing - used by components to connect to dynamic signals
-  void connect_signal(const StringName& signal_name, const Callable& callable);
-  void disconnect_signal(const StringName& signal_name,
-                         const Callable& callable);
+  template <typename... Args>
+  void relay(const StringName& signal_name, const Args&... args) {
+    emit_signal(signal_name, args...);
+  }
 
   // Metadata
   void set_faction_id(int32_t new_faction_id);
@@ -100,10 +84,6 @@ class Unit : public CharacterBody3D {
  private:
   int32_t faction_id = 0;
   String unit_name = "Unit";
-
-  // Signal multiplexer: maps signal names to lists of listeners (Callables)
-  // This allows dynamic signal emission without pre-registering signals
-  std::map<StringName, std::vector<Callable>> signal_listeners;
 };
 
 #endif  // GDEXTENSION_UNIT_H

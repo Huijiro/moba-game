@@ -95,17 +95,17 @@ void MovementComponent::_ready() {
       }
     }
 
-    // Connect to Unit's movement-related signals using dynamic signal relay
-    owner->connect_signal(move_requested,
-                          Callable(this, StringName("_on_move_requested")));
-    owner->connect_signal(attack_requested,
-                          Callable(this, StringName("_on_attack_requested")));
-    owner->connect_signal(chase_requested,
-                          Callable(this, StringName("_on_chase_requested")));
-    owner->connect_signal(stop_requested,
-                          Callable(this, StringName("_on_stop_requested")));
-    owner->connect_signal(interact_requested,
-                          Callable(this, StringName("_on_interact_requested")));
+    // Connect to Unit's movement-related signals
+    owner->connect(move_requested,
+                   Callable(this, StringName("_on_move_requested")));
+    owner->connect(attack_requested,
+                   Callable(this, StringName("_on_attack_requested")));
+    owner->connect(chase_requested,
+                   Callable(this, StringName("_on_chase_requested")));
+    owner->connect(stop_requested,
+                   Callable(this, StringName("_on_stop_requested")));
+    owner->connect(interact_requested,
+                   Callable(this, StringName("_on_interact_requested")));
   }
 }
 

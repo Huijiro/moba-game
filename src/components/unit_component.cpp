@@ -39,10 +39,3 @@ void UnitComponent::_ready() {
 Unit* UnitComponent::get_unit() const {
   return owner_unit;
 }
-
-void UnitComponent::connect_unit_signal(const StringName& signal_name,
-                                        const Callable& callable) {
-  if (owner_unit != nullptr) {
-    owner_unit->connect_signal(signal_name, callable);
-  }
-}
