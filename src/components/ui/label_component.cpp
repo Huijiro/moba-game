@@ -2,6 +2,7 @@
 
 #include <godot_cpp/classes/base_material3d.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/object.hpp>
@@ -45,6 +46,11 @@ void LabelComponent::_ready() {
 }
 
 void LabelComponent::_process(double delta) {
+  // Only run in runtime, not in editor
+  if (godot::Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
   if (!owner_unit) {
     return;
   }
@@ -89,18 +95,11 @@ void LabelComponent::_update_label_transform() {
       Vector3 camera_pos = camera->get_global_position();
       Vector3 label_pos = Label3D::get_global_position();
 
-      // Calculate direction from label to camera
+      // Calculate direction from label to camera (including vertical angle)
       Vector3 look_dir = (camera_pos - label_pos).normalized();
 
-      // Keep Y-axis fixed (upright), but rotate on XZ plane to face camera
-      Vector3 target_forward = look_dir;
-      target_forward.y = 0;
-      target_forward = target_forward.normalized();
-
-      // If we have a valid forward direction, rotate to face it
-      if (target_forward.length() > 0.001f) {
-        Label3D::look_at(label_pos + target_forward, Vector3(0, 1, 0));
-      }
+      // Face camera directly (includes both horizontal and vertical rotation)
+      Label3D::look_at(camera_pos, Vector3(0, 1, 0));
     }
   }
 }
