@@ -372,12 +372,9 @@ void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
 }
 
 void MovementComponent::_on_stop_requested() {
-  // Stop order - clear all movement targets and stop
+  // Stop order - clear chase and stop movement
   chase_target = nullptr;
-  set_desired_location(
-      get_owner_unit()->get_global_position());  // Stop at current location
   current_target_distance = 0.0f;
-  was_chase_in_range = false;
 }
 
 void MovementComponent::_on_interact_requested(godot::Object* target,
