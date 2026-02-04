@@ -31,6 +31,9 @@ class MovementComponent : public NavigationAgent3D {
   float chase_desired_range = 0.0f;  // How close to get to chase target
   bool was_chase_in_range = false;   // Was range reached in previous frame
 
+  // Last valid facing direction - maintained when unit stops
+  Vector3 last_facing_direction = Vector3(0, 0, -1);  // Default: face forward
+
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
   void _on_owner_unit_died(godot::Object* source);

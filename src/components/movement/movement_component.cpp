@@ -239,6 +239,8 @@ Vector3 MovementComponent::process_movement(double delta,
   if (distance > 0.001f) {
     direction = displacement / distance;
     velocity = direction * speed;
+    // Update last facing direction when moving
+    last_facing_direction = direction;
   } else if (distance >= 0.0f) {
     // Calculate direction to the actual target (for rotation when near
     // destination)
@@ -247,6 +249,12 @@ Vector3 MovementComponent::process_movement(double delta,
     float target_distance = to_target.length();
     if (target_distance > 0.001f) {
       direction = to_target / target_distance;
+      // Update last facing direction if we have a valid target direction
+      last_facing_direction = direction;
+    } else {
+      // No valid target direction - use last facing direction to maintain
+      // rotation
+      direction = last_facing_direction;
     }
   }
 
@@ -372,11 +380,18 @@ void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
 }
 
 void MovementComponent::_on_stop_requested() {
-  // Stop order - clear navigation target to stop movement
-  // NavigationAgent3D will naturally stop updating when
-  // target_position_submitted is false
+  // Stop order - clear chase target and set desired location to current
+  // position This makes the next pathfinding request update target to our
+  // current position, which effectively stops movement since we're already at
+  // "destination"
   chase_target = nullptr;
-  set_target_position(Vector3(0, 0, 0));  // Clear the navigation target
+
+  Unit* owner = get_owner_unit();
+  if (owner != nullptr && owner->is_inside_tree()) {
+    // Set desired location to our current position to stop movement
+    set_desired_location(owner->get_global_position());
+  }
+
   current_target_distance = 0.0f;
   was_chase_in_range = false;
 }
