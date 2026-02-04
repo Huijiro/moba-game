@@ -553,8 +553,9 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
   // Validate the ability can execute on this target
   Unit* target_unit = Object::cast_to<Unit>(target);
   if (!ability->can_execute_on_target(owner, target_unit)) {
-    DBG_INFO("AbilityComponent",
-             "Ability validation failed for slot " + String::num(slot));
+    DBG_DEBUG("AbilityComponent", "Ability validation failed for " +
+                                      ability->get_ability_name() +
+                                      " (invalid target)");
     emit_signal("cast_failed", slot, "invalid_target");
     return;
   }
