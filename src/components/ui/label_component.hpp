@@ -30,7 +30,7 @@ class LabelComponent : public Node {
   ~LabelComponent() = default;
 
   void _ready() override;
-  void _process(double delta) override;
+  void _physics_process(double delta) override;
 
   // Properties
   void set_update_rate(float rate);

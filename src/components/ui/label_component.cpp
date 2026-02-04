@@ -66,7 +66,7 @@ void LabelComponent::_ready() {
                                   0);
 }
 
-void LabelComponent::_process(double delta) {
+void LabelComponent::_physics_process(double delta) {
   // Only run in runtime, not in editor
   if (godot::Engine::get_singleton()->is_editor_hint()) {
     return;
