@@ -106,6 +106,29 @@ void LabelComponent::_update_label_transform() {
   // Position label above unit
   Vector3 target_position = get_unit()->get_global_position() + label_offset;
   label_3d->set_global_position(target_position);
+
+  // Make label face camera
+  auto viewport = get_viewport();
+  if (viewport) {
+    auto camera = viewport->get_camera_3d();
+    if (camera) {
+      Vector3 camera_pos = camera->get_global_position();
+      Vector3 label_pos = label_3d->get_global_position();
+
+      // Calculate direction from label to camera
+      Vector3 look_dir = (camera_pos - label_pos).normalized();
+
+      // Keep Y-axis fixed (upright), but rotate on XZ plane to face camera
+      Vector3 target_forward = look_dir;
+      target_forward.y = 0;
+      target_forward = target_forward.normalized();
+
+      // If we have a valid forward direction, rotate to face it
+      if (target_forward.length() > 0.001f) {
+        label_3d->look_at(label_pos + target_forward, Vector3(0, 1, 0));
+      }
+    }
+  }
 }
 
 void LabelComponent::set_update_rate(float rate) {
