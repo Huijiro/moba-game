@@ -13,7 +13,10 @@
 #include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/string_name.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
+
+#include "../debug/debug_macros.hpp"
 
 using godot::Callable;
 using godot::ClassDB;
@@ -109,7 +112,8 @@ AbilityComponent* Unit::get_ability_component() const {
 
 void Unit::relay(const StringName& signal_name) {
   // Emit to all listeners registered for this signal
-  auto it = signal_listeners.find(signal_name);
+  StringName name(signal_name);
+  auto it = signal_listeners.find(name);
   if (it != signal_listeners.end()) {
     for (const auto& callable : it->second) {
       callable.call();
@@ -119,7 +123,8 @@ void Unit::relay(const StringName& signal_name) {
 
 void Unit::relay(const StringName& signal_name, const Variant& arg1) {
   // Emit to all listeners registered for this signal
-  auto it = signal_listeners.find(signal_name);
+  StringName name(signal_name);
+  auto it = signal_listeners.find(name);
   if (it != signal_listeners.end()) {
     for (const auto& callable : it->second) {
       callable.call(arg1);
@@ -131,7 +136,8 @@ void Unit::relay(const StringName& signal_name,
                  const Variant& arg1,
                  const Variant& arg2) {
   // Emit to all listeners registered for this signal
-  auto it = signal_listeners.find(signal_name);
+  StringName name(signal_name);
+  auto it = signal_listeners.find(name);
   if (it != signal_listeners.end()) {
     for (const auto& callable : it->second) {
       callable.call(arg1, arg2);
@@ -144,7 +150,8 @@ void Unit::relay(const StringName& signal_name,
                  const Variant& arg2,
                  const Variant& arg3) {
   // Emit to all listeners registered for this signal
-  auto it = signal_listeners.find(signal_name);
+  StringName name(signal_name);
+  auto it = signal_listeners.find(name);
   if (it != signal_listeners.end()) {
     for (const auto& callable : it->second) {
       callable.call(arg1, arg2, arg3);
@@ -154,12 +161,14 @@ void Unit::relay(const StringName& signal_name,
 
 void Unit::connect_signal(const StringName& signal_name,
                           const Callable& callable) {
-  signal_listeners[signal_name].push_back(callable);
+  StringName name(signal_name);
+  signal_listeners[name].push_back(callable);
 }
 
 void Unit::disconnect_signal(const StringName& signal_name,
                              const Callable& callable) {
-  auto it = signal_listeners.find(signal_name);
+  StringName name(signal_name);
+  auto it = signal_listeners.find(name);
   if (it != signal_listeners.end()) {
     auto& listeners = it->second;
     listeners.erase(std::remove_if(listeners.begin(), listeners.end(),

@@ -1,11 +1,9 @@
 #ifndef GDEXTENSION_SIGNAL_NAME_H
 #define GDEXTENSION_SIGNAL_NAME_H
 
-#include <godot_cpp/variant/string_name.hpp>
-
-using godot::StringName;
-
-// Type alias for clarity - signals use StringName
-using SignalName = StringName;
+// Type alias for clarity - signals are defined as C++ strings
+// They are converted to StringName at runtime to avoid static initialization
+// issues
+using SignalName = const char*;
 
 #endif  // GDEXTENSION_SIGNAL_NAME_H
