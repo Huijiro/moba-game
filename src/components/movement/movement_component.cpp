@@ -81,6 +81,13 @@ void MovementComponent::_ready() {
 
   Unit* owner = get_owner_unit();
   if (owner != nullptr) {
+    // Register signals that this component uses
+    owner->register_signal(move_requested);
+    owner->register_signal(attack_requested);
+    owner->register_signal(chase_requested);
+    owner->register_signal(stop_requested);
+    owner->register_signal(interact_requested);
+
     // Connect to health component death signal if it exists
     // Iterate through siblings to find HealthComponent
     for (int i = 0; i < owner->get_child_count(); ++i) {

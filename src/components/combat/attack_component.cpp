@@ -143,6 +143,11 @@ void AttackComponent::_ready() {
     return;
   }
 
+  // Register signals that this component uses
+  owner->register_signal(attack_requested);
+  owner->register_signal(chase_requested);
+  owner->register_signal(stop_requested);
+
   // Connect to the Unit's attack-related signals
   owner->connect(attack_requested,
                  godot::Callable(this, "_on_attack_requested"));

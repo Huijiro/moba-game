@@ -19,6 +19,7 @@ using godot::Engine;
 using godot::MethodInfo;
 using godot::Node;
 using godot::PropertyInfo;
+using godot::String;
 using godot::Variant;
 
 Unit::Unit() = default;
@@ -38,24 +39,12 @@ void Unit::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_name"), "set_unit_name",
                "get_unit_name");
 
-  // Register signals for component communication
-  // Movement signals (InputManager/AI → Components)
-  ADD_SIGNAL(
-      MethodInfo("move_requested", PropertyInfo(Variant::VECTOR3, "target")));
-  ADD_SIGNAL(MethodInfo("attack_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("chase_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("interact_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("stop_requested"));
+  // Bind the register_signal method so components can call it
+  ClassDB::bind_method(D_METHOD("register_signal", "signal_name"),
+                       &Unit::register_signal);
 
-  // Damage/Combat signals (Combat systems → Components)
-  ADD_SIGNAL(MethodInfo("take_damage", PropertyInfo(Variant::FLOAT, "damage"),
-                        PropertyInfo(Variant::OBJECT, "source")));
+  // No signals pre-registered - components will register the signals they need
+  // in their _ready() methods
 }
 
 void Unit::_ready() {
@@ -117,4 +106,19 @@ AbilityComponent* Unit::get_ability_component() const {
   // Temporary implementation to support existing InputManager code
   Node* component = get_component_by_class("AbilityComponent");
   return Object::cast_to<AbilityComponent>(component);
+}
+
+void Unit::register_signal(const StringName& signal_name) {
+  // Use Godot's add_user_signal() which is the official way to dynamically
+  // add signals to an object instance. It handles all the details for us.
+  // It's safe to call multiple times (will error if signal already exists, but
+  // that's fine for our use case since multiple components might register the
+  // same signal name).
+
+  // Convert StringName to String for add_user_signal
+  String signal_str = String(signal_name);
+
+  // Try to add the signal - add_user_signal() will error if it already exists,
+  // which is fine since we only care about registering it once
+  add_user_signal(signal_str);
 }

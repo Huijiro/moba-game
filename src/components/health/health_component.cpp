@@ -72,6 +72,9 @@ void HealthComponent::_ready() {
     return;
   }
 
+  // Register signals that this component uses
+  owner->register_signal(take_damage);
+
   // Connect to Unit's take_damage signal
   owner->connect(take_damage,
                  godot::Callable(this, godot::StringName("_on_take_damage")));

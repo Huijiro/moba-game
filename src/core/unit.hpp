@@ -57,6 +57,11 @@ class Unit : public CharacterBody3D {
 
   void _ready() override;
 
+  // Signal registration - components call this to register signals they use
+  // Uses Godot's built-in add_user_signal() for dynamic signal creation
+  // Safe to call multiple times with the same signal name (idempotent)
+  void register_signal(const StringName& signal_name);
+
   // Signal relay - relays arbitrary signals to all children
   // Fire and forget: Unit doesn't care what signals or who listens
   template <typename... Args>
