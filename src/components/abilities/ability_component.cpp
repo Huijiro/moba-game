@@ -370,11 +370,21 @@ godot::Array AbilityComponent::get_abilities() const {
 
 bool AbilityComponent::try_cast(int slot, Object* target) {
   if (!_can_cast(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (not ready)");
     emit_signal("cast_failed", slot, "not_ready");
     return false;
   }
 
   if (!_can_afford(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (insufficient resources)");
     emit_signal("cast_failed", slot, "insufficient_resources");
     return false;
   }
@@ -385,11 +395,21 @@ bool AbilityComponent::try_cast(int slot, Object* target) {
 
 bool AbilityComponent::try_cast_point(int slot, const Vector3& point) {
   if (!_can_cast(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (not ready)");
     emit_signal("cast_failed", slot, "not_ready");
     return false;
   }
 
   if (!_can_afford(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (insufficient resources)");
     emit_signal("cast_failed", slot, "insufficient_resources");
     return false;
   }
@@ -567,8 +587,7 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
 
   emit_signal("ability_cast_started", slot, target);
 
-  DBG_INFO("AbilityComponent",
-           "Began casting ability slot " + String::num(slot));
+  DBG_INFO("AbilityComponent", "Began casting " + ability->get_ability_name());
 }
 
 void AbilityComponent::_execute_ability(int slot) {
