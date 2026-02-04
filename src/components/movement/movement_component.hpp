@@ -34,6 +34,9 @@ class MovementComponent : public NavigationAgent3D {
   // Last valid facing direction - maintained when unit stops
   Vector3 last_facing_direction = Vector3(0, 0, -1);  // Default: face forward
 
+  // Stop flag - when true, unit should not move or accept movement orders
+  bool is_stopped = false;
+
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
   void _on_owner_unit_died(godot::Object* source);

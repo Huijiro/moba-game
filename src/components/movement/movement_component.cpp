@@ -220,6 +220,11 @@ Vector3 MovementComponent::process_movement(double delta,
   // Update target distance based on stored value (set by signal handlers)
   set_target_desired_distance(current_target_distance);
 
+  // If stopped, don't update navigation target - just return zero velocity
+  if (is_stopped) {
+    return Vector3(0, 0, 0);
+  }
+
   // Update navigation target position
   Vector3 current_target = get_target_position();
   if (!current_target.is_equal_approx(target_location)) {
@@ -332,6 +337,7 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
 void MovementComponent::_on_move_requested(const Vector3& position) {
   // Static movement - no chase target
   chase_target = nullptr;
+  is_stopped = false;  // Resume movement
   set_desired_location(position);
   current_target_distance = 0.0f;
 }
@@ -341,6 +347,7 @@ void MovementComponent::_on_attack_requested(godot::Object* target,
   // Attack movement - chase target within attack range
   // Store target and maintain attack range distance
   chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
   } else {
@@ -354,6 +361,7 @@ void MovementComponent::_on_chase_requested(godot::Object* target,
                                             const Vector3& position) {
   // Chase orders - follow target with no distance constraint
   chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
   } else {
@@ -368,6 +376,7 @@ void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
                                                      float desired_range) {
   // Chase orders with desired range - follow target until in range
   chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
   chase_desired_range = desired_range;
   was_chase_in_range = false;  // Reset range tracking
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
@@ -380,18 +389,10 @@ void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
 }
 
 void MovementComponent::_on_stop_requested() {
-  // Stop order - clear chase target and set desired location to current
-  // position This makes the next pathfinding request update target to our
-  // current position, which effectively stops movement since we're already at
-  // "destination"
+  // Stop order - set flag to prevent further movement updates
+  // This preserves the unit's current facing direction
   chase_target = nullptr;
-
-  Unit* owner = get_owner_unit();
-  if (owner != nullptr && owner->is_inside_tree()) {
-    // Set desired location to our current position to stop movement
-    set_desired_location(owner->get_global_position());
-  }
-
+  is_stopped = true;
   current_target_distance = 0.0f;
   was_chase_in_range = false;
 }
@@ -400,6 +401,7 @@ void MovementComponent::_on_interact_requested(godot::Object* target,
                                                const Vector3& position) {
   // Interact movement - move to target position
   chase_target = nullptr;
+  is_stopped = false;  // Resume movement
   set_desired_location(position);
   current_target_distance = 0.0f;
 }
