@@ -59,9 +59,12 @@ void MovementComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("is_at_destination"),
                        &MovementComponent::is_at_destination);
 
-  // Bind signal callback method
+  // Bind signal callback methods
   ClassDB::bind_method(D_METHOD("_on_owner_unit_died", "source"),
                        &MovementComponent::_on_owner_unit_died);
+  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "order_type",
+                                "position_param", "target_param"),
+                       &MovementComponent::_on_unit_order_changed);
 }
 
 void MovementComponent::_ready() {
@@ -76,6 +79,10 @@ void MovementComponent::_ready() {
       health_comp->connect(StringName("died"),
                            Callable(this, StringName("_on_owner_unit_died")));
     }
+
+    // Connect to Unit's order_changed signal to listen for movement orders
+    owner->connect(StringName("order_changed"),
+                   Callable(this, StringName("_on_unit_order_changed")));
   }
 }
 
@@ -286,6 +293,34 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
   // Dead units should not have a movement component
   if (is_inside_tree()) {
     queue_free();
+  }
+}
+
+void MovementComponent::_on_unit_order_changed(int order_type,
+                                               const Vector3& position_param,
+                                               godot::Object* target_param) {
+  // Listen to order changes and update desired location based on order type
+  OrderType order = static_cast<OrderType>(order_type);
+
+  switch (order) {
+    case OrderType::MOVE:
+      // Set destination directly from position parameter
+      set_desired_location(position_param);
+      break;
+    case OrderType::ATTACK:
+    case OrderType::CHASE:
+      // For attack/chase orders, move to target's position
+      // Position parameter contains the target's current position
+      set_desired_location(position_param);
+      break;
+    case OrderType::INTERACT:
+      // For interact orders, move to target position
+      set_desired_location(position_param);
+      break;
+    case OrderType::NONE:
+      // Stop order - don't change desired location, just let existing
+      // movement finish. Other components can handle cleanup if needed.
+      break;
   }
 }
 

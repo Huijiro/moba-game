@@ -29,8 +29,8 @@ AttackComponent::~AttackComponent() = default;
 
 void AttackComponent::_bind_methods() {
   // Signal handler
-  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "previous_order",
-                                "new_order", "target"),
+  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "order_type",
+                                "position_param", "target_param"),
                        &AttackComponent::_on_unit_order_changed);
 
   // Bind all methods first
@@ -395,30 +395,25 @@ void AttackComponent::_fire_projectile(Unit* target) {
   emit_signal("attack_hit", target, attack_damage);
 }
 
-void AttackComponent::_on_unit_order_changed(int previous_order,
-                                             int new_order,
-                                             Object* target) {
+void AttackComponent::_on_unit_order_changed(int order_type,
+                                             const Vector3& position_param,
+                                             Object* target_param) {
+  // Handle different order types
   // OrderType::ATTACK = 2
-  if (new_order == 2) {
-    Unit* target_unit = Object::cast_to<Unit>(target);
+  // OrderType::CHASE = 3
+  if (order_type == 2 || order_type == 3) {
+    // Both ATTACK and CHASE orders can have a target
+    Unit* target_unit = Object::cast_to<Unit>(target_param);
     if (target_unit != nullptr) {
       // Set the active attack target
       active_attack_target = target_unit;
-      // Try to fire at the target
+      // Try to fire at the target if in range
       // The _physics_process will handle cooldown timing and repeat attacks
       try_fire_at(target_unit, 0.0);
     }
-  } else if (new_order == 3) {
-    // OrderType::CHASE = 3
-    Unit* target_unit = Object::cast_to<Unit>(target);
-    if (target_unit != nullptr) {
-      // Keep the attack target active for when we get back in range
-      if (active_attack_target == nullptr) {
-        active_attack_target = target_unit;
-      }
-    }
   } else {
-    // Clear attack order when order changes to something else
+    // Clear attack order when order changes to something else (MOVE, INTERACT,
+    // NONE)
     active_attack_target = nullptr;
   }
 }

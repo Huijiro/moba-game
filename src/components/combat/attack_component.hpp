@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/vector3.hpp>
 
 #include "../unit_component.hpp"
 
@@ -11,6 +12,7 @@ using godot::List;
 using godot::PackedScene;
 using godot::PropertyInfo;
 using godot::Ref;
+using godot::Vector3;
 
 enum class AttackDelivery { MELEE, PROJECTILE };
 
@@ -90,9 +92,9 @@ class AttackComponent : public UnitComponent {
   void _fire_projectile(Unit* target);
 
   // Signal handler for Unit's order_changed signal
-  void _on_unit_order_changed(int previous_order,
-                              int new_order,
-                              Object* target);
+  void _on_unit_order_changed(int order_type,
+                              const Vector3& position_param,
+                              Object* target_param);
 };
 
 #endif  // GDEXTENSION_ATTACK_COMPONENT_H

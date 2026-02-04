@@ -28,28 +28,30 @@ class MovementComponent;
 class AbilityComponent;
 class LabelRegistry;
 
-/// Character entity with components - pure orchestrator/mediator
-/// The playable/NPC unit that receives signals and delegates to components
+/// Character entity with components - pure signal dispatcher
+/// The playable/NPC unit that receives orders and emits signals
 ///
 /// Architecture:
 /// - Unit is a CharacterBody3D container for components
 /// - Does NOT contain game logic - all logic lives in components
-/// - Receives input/orders from InputManager or AI
-/// - Emits signals that components can listen to
-/// - Acts as a signal hub for component-to-component communication
+/// - Receives orders from InputManager or AI
+/// - Emits signals with order details, then forgets about them (fire and
+/// forget)
+/// - Components independently listen to signals and decide what to do
+/// - Unit doesn't care if components exist or are listening
 ///
 /// Component Pattern:
-/// - MovementComponent: Handles movement and rotation
-/// - AttackComponent: Handles attack timing and projectiles
-/// - AbilityComponent: Handles ability casting and cooldowns
-/// - HealthComponent: Handles HP and death
+/// - MovementComponent: Listens to orders, handles movement and rotation
+/// - AttackComponent: Listens to orders, handles attack timing and projectiles
+/// - AbilityComponent: Listens to orders, handles ability casting and cooldowns
+/// - HealthComponent: Tracks HP and death
 ///
 /// To Use:
 /// 1. Add Unit to scene
 /// 2. Add desired components as children
-/// 3. Components auto-wire via _ready()
+/// 3. Components auto-wire and listen to signals via _ready()
 /// 4. InputManager/AI calls issue_move_order(), issue_attack_order()
-/// 5. Unit emits signals, components respond
+/// 5. Unit emits signals, components independently respond
 class Unit : public CharacterBody3D {
   GDCLASS(Unit, CharacterBody3D)
 
@@ -62,7 +64,8 @@ class Unit : public CharacterBody3D {
 
   void _ready() override;
 
-  // Order signals - received by components
+  // Order methods - emit signals for components to listen to
+  // Fire and forget: Unit doesn't care if components exist or respond
   void issue_move_order(const Vector3& position);
   void issue_attack_order(Unit* target);
   void issue_chase_order(Unit* target);
@@ -86,14 +89,9 @@ class Unit : public CharacterBody3D {
   // Debug label registration - called by LabelComponent
   void register_all_debug_labels(LabelRegistry* registry);
 
-  // Get current order (for debug/UI purposes)
-  OrderType get_current_order() const;
-
  private:
   int32_t faction_id = 0;
   String unit_name = "Unit";
-  OrderType current_order = OrderType::NONE;
-  Unit* order_target = nullptr;
 };
 
 #endif  // GDEXTENSION_UNIT_H

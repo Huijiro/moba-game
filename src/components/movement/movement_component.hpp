@@ -31,6 +31,9 @@ class MovementComponent : public NavigationAgent3D {
   void _face_horizontal_direction(const Vector3& direction);
   void _apply_navigation_target_distance(OrderType order);
   void _on_owner_unit_died(godot::Object* source);
+  void _on_unit_order_changed(int order_type,
+                              const Vector3& position_param,
+                              godot::Object* target_param);
 
  public:
   MovementComponent();

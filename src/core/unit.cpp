@@ -4,7 +4,6 @@
 #include "../components/combat/attack_component.hpp"
 #include "../components/health/health_component.hpp"
 #include "../components/interaction/interactable.hpp"
-#include "../components/movement/movement_component.hpp"
 #include "../components/ui/label_registry.hpp"
 #include "../components/unit_component.hpp"
 
@@ -41,9 +40,9 @@ void Unit::_bind_methods() {
                        &Unit::issue_attack_order);
   ClassDB::bind_method(D_METHOD("issue_chase_order", "target"),
                        &Unit::issue_chase_order);
-  ClassDB::bind_method(D_METHOD("issue_interact_order", "target"),
-                       &Unit::issue_interact_order);
   ClassDB::bind_method(D_METHOD("stop_order"), &Unit::stop_order);
+  // Note: issue_interact_order is not bound because Interactable is an internal
+  // C++ type not exposed to Godot. It can still be called from C++.
 
   ClassDB::bind_method(D_METHOD("set_faction_id", "faction_id"),
                        &Unit::set_faction_id);
@@ -56,11 +55,12 @@ void Unit::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_name"), "set_unit_name",
                "get_unit_name");
 
-  // Unit definition setup
+  // Signal emitted when unit receives an order - fire and forget
+  // Components listen and independently decide what to do with it
   ADD_SIGNAL(MethodInfo("order_changed",
-                        PropertyInfo(Variant::INT, "previous_order"),
-                        PropertyInfo(Variant::INT, "new_order"),
-                        PropertyInfo(Variant::OBJECT, "target")));
+                        PropertyInfo(Variant::INT, "order_type"),
+                        PropertyInfo(Variant::VECTOR3, "position_param"),
+                        PropertyInfo(Variant::OBJECT, "target_param")));
 }
 
 void Unit::_ready() {
@@ -72,78 +72,43 @@ void Unit::_ready() {
 }
 
 void Unit::issue_move_order(const Vector3& position) {
-  // Emit signal for components to listen to
-  // MovementComponent will handle setting desired_location
-  emit_signal("order_changed", static_cast<int>(current_order),
-              static_cast<int>(OrderType::MOVE), nullptr);
-
-  current_order = OrderType::MOVE;
-  order_target = nullptr;
-
-  MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
-      get_component_by_class("MovementComponent"));
-  if (mov_comp != nullptr) {
-    mov_comp->set_desired_location(position);
-  }
+  // Emit order signal with destination position
+  // MovementComponent and other components listen and respond independently
+  emit_signal("order_changed", static_cast<int>(OrderType::MOVE), position,
+              nullptr);
 }
 
 void Unit::issue_attack_order(Unit* target) {
-  // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(current_order),
-              static_cast<int>(OrderType::ATTACK), target);
-
-  current_order = OrderType::ATTACK;
-  order_target = target;
-
-  // Set target location for movement
-  MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
-      get_component_by_class("MovementComponent"));
-  if (mov_comp != nullptr && target != nullptr) {
-    mov_comp->set_desired_location(target->get_global_position());
-  }
+  // Emit order signal with attack target
+  // AttackComponent, MovementComponent, and others listen independently
+  Vector3 target_pos =
+      target != nullptr ? target->get_global_position() : Vector3();
+  emit_signal("order_changed", static_cast<int>(OrderType::ATTACK), target_pos,
+              target);
 }
 
 void Unit::issue_chase_order(Unit* target) {
-  // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(current_order),
-              static_cast<int>(OrderType::CHASE), target);
-
-  current_order = OrderType::CHASE;
-  order_target = target;
-
-  // Set target location for movement
-  MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
-      get_component_by_class("MovementComponent"));
-  if (mov_comp != nullptr && target != nullptr) {
-    mov_comp->set_desired_location(target->get_global_position());
-  }
+  // Emit order signal with chase target
+  // MovementComponent and AttackComponent listen independently
+  Vector3 target_pos =
+      target != nullptr ? target->get_global_position() : Vector3();
+  emit_signal("order_changed", static_cast<int>(OrderType::CHASE), target_pos,
+              target);
 }
 
 void Unit::issue_interact_order(Interactable* target) {
-  // Emit signal for components to listen to
-  emit_signal("order_changed", static_cast<int>(current_order),
-              static_cast<int>(OrderType::INTERACT), target);
-
-  current_order = OrderType::INTERACT;
-  order_target = nullptr;
-
-  // Set target location for movement
-  MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
-      get_component_by_class("MovementComponent"));
-  if (mov_comp != nullptr && target != nullptr) {
-    mov_comp->set_desired_location(target->get_global_position());
-  }
+  // Emit order signal with interaction target
+  // Components listen and decide how to respond
+  Vector3 target_pos =
+      target != nullptr ? target->get_global_position() : Vector3();
+  emit_signal("order_changed", static_cast<int>(OrderType::INTERACT),
+              target_pos, target);
 }
 
 void Unit::stop_order() {
-  emit_signal("order_changed", static_cast<int>(current_order),
-              static_cast<int>(OrderType::NONE), nullptr);
-
-  current_order = OrderType::NONE;
-  order_target = nullptr;
-
-  // Stop horizontal movement but keep vertical velocity (gravity)
-  set_velocity(Vector3(0, get_velocity().y, 0));
+  // Emit stop order - components independently handle stopping
+  emit_signal("order_changed", static_cast<int>(OrderType::NONE), Vector3(),
+              nullptr);
 }
 
 void Unit::set_faction_id(int32_t new_faction_id) {
@@ -191,10 +156,6 @@ String Unit::get_unit_name() const {
   return unit_name;
 }
 
-OrderType Unit::get_current_order() const {
-  return current_order;
-}
-
 void Unit::register_all_debug_labels(LabelRegistry* registry) {
   if (!registry) {
     return;
@@ -204,33 +165,8 @@ void Unit::register_all_debug_labels(LabelRegistry* registry) {
   registry->register_property("Unit", "name", unit_name);
   registry->register_property("Unit", "faction", String::num(faction_id));
 
-  // Register current order
-  String order_str;
-  switch (current_order) {
-    case OrderType::NONE:
-      order_str = "NONE";
-      break;
-    case OrderType::MOVE:
-      order_str = "MOVE";
-      break;
-    case OrderType::ATTACK:
-      order_str = "ATTACK";
-      break;
-    case OrderType::CHASE:
-      order_str = "CHASE";
-      break;
-    case OrderType::INTERACT:
-      order_str = "INTERACT";
-      break;
-  }
-  registry->register_property("Unit", "order", order_str);
-
-  if (order_target) {
-    registry->register_property("Unit", "target",
-                                order_target->get_unit_name());
-  }
-
   // Iterate all children and call register_debug_labels on any UnitComponents
+  // Components track their own state (order, target, etc.)
   for (int i = 0; i < get_child_count(); ++i) {
     Node* child = get_child(i);
     auto* component = Object::cast_to<UnitComponent>(child);
