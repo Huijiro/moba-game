@@ -28,38 +28,18 @@ Use this skill when you need to:
 
 ## Quick Start
 
-### 1. Register the Logger as an Autoload
+### 1. Build the Project
 
-The DebugLogger must be registered with Godot's OS in an autoload script.
+The DebugLogger is built into the C++ GDExtension:
 
-**Option A: Using the provided autoload**
-1. In Project Settings > Autoload
-2. Add `DebugLogger.gd` with node name "DebugLogger"
-3. The logger will automatically register when the game starts
-
-**Option B: Manual registration in a custom autoload**
-```gdscript
-# In your autoload script (_init or _ready)
-func _init() -> void:
-  var logger = DebugLogger.new()
-  OS.add_logger(logger)
-  print("DebugLogger registered")
+```bash
+cmake -S . -DCMAKE_BUILD_TYPE=Debug
+ninja
 ```
 
-### 2. Initialize Visual Debugging in Your Scene
+The logger is ready to use immediately - it's **lazy-initialized** on first use.
 
-```gdscript
-# In your main scene script
-func _ready():
-  # Create and setup visual debugger
-  var debugger = VisualDebugger.new()
-  add_child(debugger)
-  debugger.set_debug_enabled(true)
-  
-  print("Debug system initialized")
-```
-
-### 2. Add Logging to Your Code
+### 2. Add Logging to Your C++ Code
 
 ```cpp
 #include "debug/debug_macros.hpp"
@@ -74,7 +54,17 @@ DBG_VALUE("Speed", "current_speed", unit->get_speed());
 DBG_VECTOR3("Position", "unit_pos", unit->get_global_position());
 ```
 
-### 3. Add Visual Debugging
+### 3. Initialize Visual Debugging in Your Scene (Optional)
+
+```gdscript
+# In your main scene script
+func _ready():
+  var debugger = VisualDebugger.new()
+  add_child(debugger)
+  debugger.set_debug_enabled(true)
+```
+
+### 4. Add Visual Debugging
 
 ```cpp
 auto* debugger = VisualDebugger::get_singleton();
@@ -91,7 +81,7 @@ if (debugger && debugger->is_debug_enabled()) {
 }
 ```
 
-### 4. Control Logging at Runtime
+### 5. Control Logging at Runtime
 
 Press keyboard shortcuts:
 - **D** - Toggle visual debugging on/off
@@ -132,18 +122,21 @@ DBG_ASSERT(condition, category, "failure message")
 
 ### How Logging Works
 
-**DebugLogger Registration:**
-The DebugLogger is registered with Godot's OS via an autoload. Once registered, all log messages are routed through the DBG_* macros automatically. The macros internally call the singleton:
+**Lazy Initialization:**
+The DebugLogger self-initializes on the first `DBG_*` macro call. The macros call `ensure_singleton()` which:
+1. Checks if singleton exists
+2. If not, creates it and registers with Godot's OS
+3. All subsequent calls use the cached singleton
 
 **C++ Code (automatic via macros):**
 ```cpp
-// Macros handle singleton lookup automatically
-DBG_INFO("Category", "message");  // No need to get singleton manually
+// Macros handle singleton creation and access automatically
+DBG_INFO("Category", "message");  // Just works, no setup needed
 
-// Direct access (rarely needed):
-auto* logger = DebugLogger::get_singleton();
+// Direct access (if needed):
+auto* logger = DebugLogger::ensure_singleton();
 if (logger) {
-  logger->set_log_level(DebugLogger::LogLevel::WARNING);
+  logger->set_log_level(::LogLevel::WARNING);
 }
 ```
 
@@ -157,7 +150,7 @@ if (debugger && debugger->is_debug_enabled()) {
 
 **From GDScript:**
 ```gdscript
-# Once registered, you can access from GDScript
+# Access the logger if needed (usually not necessary)
 var logger = DebugLogger.get_singleton()
 if logger:
   logger.set_log_level(DebugLogger.LogLevel.WARNING)
@@ -376,29 +369,31 @@ func _input(event: InputEvent) -> void:
 
 ### Logs Not Appearing
 
-1. **Check if logger is registered as autoload:**
-   - Go to Project Settings > Autoload
-   - Verify "DebugLogger" is listed
-   - Check that DebugLogger.gd script exists and is correct
-   
-2. **Verify logger singleton:**
-   ```gdscript
-   var logger = DebugLogger.get_singleton()
-   if not logger:
-     print("Logger not registered! Check autoload settings.")
+1. **Check Godot Output Panel:**
+   - View > Output (in Godot editor)
+   - Make sure it's visible and not scrolled up
+
+2. **Try a simple log message:**
+   ```cpp
+   DBG_INFO("Test", "Hello");
    ```
+   - This initializes the logger if not already done
 
 3. **Check log level threshold:**
    ```cpp
-   auto* logger = DebugLogger::get_singleton();
-   int level = logger->get_log_level();
-   // DEBUG=0, INFO=1, WARNING=2, ERROR=3
-   // Your message's level must be >= the threshold
+   auto* logger = DebugLogger::ensure_singleton();
+   if (logger) {
+     logger->set_log_level(::LogLevel::DEBUG);
+   }
    ```
+   - DEBUG=0 (most verbose), INFO=1, WARNING=2, ERROR=3 (least verbose)
 
-4. **Ensure output is enabled:**
+4. **Verify output is enabled:**
    ```cpp
-   logger->set_log_to_output(true);
+   auto* logger = DebugLogger::ensure_singleton();
+   if (logger) {
+     logger->set_log_to_output(true);
+   }
    ```
 
 ### Visual Debugger Not Showing

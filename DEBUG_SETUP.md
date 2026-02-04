@@ -2,24 +2,20 @@
 
 ## Quick Setup
 
-### 1. Register the Logger as an Autoload
+### 1. Build the Project
 
-The DebugLogger must be registered with Godot's OS in an autoload to function properly.
+The DebugLogger is built into the C++ GDExtension. Just rebuild:
 
-**Steps:**
-1. Open Godot Editor
-2. Go to **Project > Project Settings > Autoload**
-3. Add a new autoload:
-   - **Path:** `res://DebugLogger.gd`
-   - **Node Name:** `DebugLogger`
-4. Click "Add"
-5. Close Project Settings
+```bash
+cmake -S . -DCMAKE_BUILD_TYPE=Debug
+ninja
+```
 
-The logger will now automatically register when you run the game.
+The logger is ready to use immediately - no additional setup needed.
 
-### 2. Create Visual Debugger in Your Scene
+### 2. Create Visual Debugger in Your Scene (Optional)
 
-In your main scene's `_ready()` function:
+If you want visual debugging in the viewport, add to your main scene:
 
 ```gdscript
 func _ready():
@@ -30,12 +26,12 @@ func _ready():
 
 ### 3. Start Using Debug Logging
 
-In your C++ code:
+In your C++ code, use the logging macros - they work immediately:
 
 ```cpp
 #include "debug/debug_macros.hpp"
 
-// Simple logging
+// Simple logging - works right away, no setup needed
 DBG_INFO("Movement", "Unit started moving");
 DBG_WARN("Combat", "Target out of range");
 DBG_ERROR("Physics", "Collision failed");
@@ -45,17 +41,19 @@ DBG_VALUE("Speed", "current_speed", speed);
 DBG_VECTOR3("Position", "pos", unit->get_global_position());
 ```
 
+The logger is **lazy-initialized** - it creates and registers itself on the first `DBG_*` macro call.
+
 ## Verification
 
 To verify the logger is working:
 
-1. **In Godot Editor Output:**
-   - When you run the game, you should see: `[DebugLogger] Registered with Godot's logging system`
-   - This confirms the logger is registered
+1. **First Log Message:**
+   - When you make your first `DBG_*` call, the logger creates and registers itself
+   - You should see: `[DebugLogger] Initialized with log level: DEBUG`
 
 2. **In Game Output:**
    - Run the game and check the Godot Output panel
-   - You should see your DBG_* messages
+   - You should see your `DBG_*` messages with `[INFO]`, `[DEBUG]`, etc. prefixes
 
 3. **Visual Debugging:**
    - Press **D** to toggle visual debugging on/off
@@ -63,28 +61,22 @@ To verify the logger is working:
 
 ## Troubleshooting
 
-### "Logger not registered" Error
-
-If you see errors about the logger not being registered:
-
-1. Check Project Settings > Autoload
-2. Verify `DebugLogger` is listed
-3. Verify the path points to `res://DebugLogger.gd`
-4. Restart the editor
-5. Try running the game again
-
 ### Logs Not Appearing
 
-1. Check Godot Output panel (View > Output)
-2. Verify log level is set to DEBUG:
-   ```gdscript
-   var logger = DebugLogger.get_singleton()
-   if logger:
-     logger.set_log_level(DebugLogger.LogLevel.DEBUG)
+1. **Check Godot Output panel** (View > Output)
+2. **Verify the library is loaded:**
+   - Open main.tscn in the editor
+   - Check that C++ classes are available
+3. **Try calling a DBG macro** - the logger initializes on first use:
+   ```cpp
+   DBG_INFO("Test", "Hello from C++");
    ```
-3. Verify output is enabled:
-   ```gdscript
-   logger.set_log_to_output(true)
+4. **Check log level:**
+   ```cpp
+   auto* logger = DebugLogger::get_singleton();
+   if (logger) {
+     logger->set_log_level(::LogLevel::DEBUG);
+   }
    ```
 
 ### Visual Debugger Not Showing
@@ -95,10 +87,9 @@ If you see errors about the logger not being registered:
 
 ## Files Involved
 
-- `DebugLogger.gd` - Autoload registration script (in project root)
-- `src/debug/debug_logger.hpp/.cpp` - Logger class
-- `src/debug/debug_macros.hpp` - Logging macros
-- `src/debug/visual_debugger.hpp/.cpp` - Visual debugging
+- `src/debug/debug_logger.hpp/.cpp` - Logger class (C++)
+- `src/debug/debug_macros.hpp` - Logging macros (C++)
+- `src/debug/visual_debugger.hpp/.cpp` - Visual debugging (C++)
 - `.opencode/skills/moba-debugging/SKILL.md` - Complete documentation
 
 ## Next Steps
