@@ -37,25 +37,6 @@ void Unit::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_unit_name"), &Unit::get_unit_name);
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "unit_name"), "set_unit_name",
                "get_unit_name");
-
-  // Register relay signals - Unit is a transparent relay hub
-  // Movement signals (InputManager/AI → Components)
-  ADD_SIGNAL(
-      MethodInfo("move_requested", PropertyInfo(Variant::VECTOR3, "target")));
-  ADD_SIGNAL(MethodInfo("attack_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("chase_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("interact_requested",
-                        PropertyInfo(Variant::OBJECT, "target"),
-                        PropertyInfo(Variant::VECTOR3, "position")));
-  ADD_SIGNAL(MethodInfo("stop_requested"));
-
-  // Damage/Combat signals (Combat systems → Components)
-  ADD_SIGNAL(MethodInfo("take_damage", PropertyInfo(Variant::FLOAT, "damage"),
-                        PropertyInfo(Variant::OBJECT, "source")));
 }
 
 void Unit::_ready() {
