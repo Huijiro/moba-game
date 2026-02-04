@@ -635,6 +635,10 @@ void AbilityComponent::_execute_ability(int slot) {
   if (executed) {
     _apply_cooldown(slot);
     emit_signal("ability_executed", slot, casting_target);
+
+    // Stop movement after ability execution
+    owner->relay(get_stop_requested());
+
     DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
   } else {
     // Ability deferred (e.g., chasing) - reset casting state to try again
