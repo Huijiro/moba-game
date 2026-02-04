@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "../unit_component.hpp"
-#include "ability_definition.hpp"
 #include "ability_node.hpp"
 #include "ability_types.hpp"
 

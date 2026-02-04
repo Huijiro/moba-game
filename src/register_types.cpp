@@ -9,12 +9,7 @@
 #include "camera/moba_camera.hpp"
 
 #include "components/abilities/ability_component.hpp"
-#include "components/abilities/ability_definition.hpp"
-#include "components/abilities/ability_effect.hpp"
 #include "components/abilities/ability_node.hpp"
-#include "components/abilities/effects/aoe_damage_effect.hpp"
-#include "components/abilities/effects/damage_effect.hpp"
-#include "components/abilities/effects/skillshot_effect.hpp"
 #include "components/abilities/implementations/beam_node.hpp"
 #include "components/abilities/implementations/explosion_node.hpp"
 #include "components/abilities/implementations/fireball_node.hpp"
@@ -58,17 +53,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
   GDREGISTER_CLASS(SkillshotProjectile)
-  GDREGISTER_CLASS(AbilityEffect)
-  GDREGISTER_CLASS(AbilityDefinition)
   GDREGISTER_CLASS(AbilityNode)
   GDREGISTER_CLASS(BeamNode)
   GDREGISTER_CLASS(ExplosionNode)
   GDREGISTER_CLASS(InstantStrikeNode)
   GDREGISTER_CLASS(FrostBoltNode)
   GDREGISTER_CLASS(FireballNode)
-  GDREGISTER_CLASS(DamageEffect)
-  GDREGISTER_CLASS(AoEDamageEffect)
-  GDREGISTER_CLASS(SkillshotEffect)
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(DebugLogger)

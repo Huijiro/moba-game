@@ -21,7 +21,6 @@
 
 #include "../common/unit_signals.hpp"
 #include "../components/abilities/ability_component.hpp"
-#include "../components/abilities/ability_definition.hpp"
 #include "../components/abilities/ability_node.hpp"
 #include "../components/interaction/interactable.hpp"
 #include "../core/game_settings.hpp"
@@ -727,7 +726,7 @@ String InputManager::_get_key_name_for_action(const String& action) {
   }
 
   // Get the list of input events for this action
-  Array events = input_map->action_get_events(action);
+  godot::Array events = input_map->action_get_events(action);
   if (events.size() == 0) {
     return "UNBOUND";
   }
