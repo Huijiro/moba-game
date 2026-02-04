@@ -38,10 +38,9 @@ class AbilityComponent : public UnitComponent {
  protected:
   static void _bind_methods();
 
-  // Ability slots - stored as Godot Array for proper editor integration
-  // Editor stores PackedScene references, but at runtime they're instantiated
-  // Array elements are AbilityNode instances stored as Variants
-  godot::Array ability_scenes;
+  // Ability slots - stored as PackedScene references during editor
+  // Only instantiated to AbilityNode instances at runtime (in _ready)
+  godot::Array ability_scenes;  // Stores either PackedScene or AbilityNode
 
   // Cooldown tracking per ability slot
   std::vector<float> cooldown_timers;

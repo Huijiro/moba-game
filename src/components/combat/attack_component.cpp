@@ -5,6 +5,7 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
@@ -25,6 +26,11 @@ AttackComponent::AttackComponent() = default;
 AttackComponent::~AttackComponent() = default;
 
 void AttackComponent::_bind_methods() {
+  // Signal handler
+  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "previous_order",
+                                "new_order", "target"),
+                       &AttackComponent::_on_unit_order_changed);
+
   // Bind all methods first
   ClassDB::bind_method(D_METHOD("set_base_attack_time", "bat"),
                        &AttackComponent::set_base_attack_time);
@@ -119,6 +125,23 @@ void AttackComponent::_bind_methods() {
                                PropertyInfo(Variant::FLOAT, "damage")));
 }
 
+void AttackComponent::_ready() {
+  UnitComponent::_ready();
+
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  Unit* owner = get_unit();
+  if (owner == nullptr) {
+    return;
+  }
+
+  // Connect to the Unit's order_changed signal
+  owner->connect("order_changed",
+                 godot::Callable(this, "_on_unit_order_changed"));
+}
+
 void AttackComponent::_physics_process(double delta) {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
@@ -156,6 +179,36 @@ void AttackComponent::_physics_process(double delta) {
       // Exit windup regardless
       in_attack_windup = false;
       current_attack_target = nullptr;
+    }
+  }
+
+  // Handle active attack target
+  if (active_attack_target != nullptr &&
+      active_attack_target->is_inside_tree()) {
+    HealthComponent* target_health = Object::cast_to<HealthComponent>(
+        active_attack_target->get_component_by_class("HealthComponent"));
+
+    if (target_health == nullptr || target_health->is_dead()) {
+      // Target is dead, clear the order
+      active_attack_target = nullptr;
+      return;
+    }
+
+    // Check distance to target
+    Unit* owner = get_unit();
+    if (owner != nullptr) {
+      float distance = owner->get_global_position().distance_to(
+          active_attack_target->get_global_position());
+
+      if (distance <= attack_range) {
+        // In range: attempt to attack if cooldown is over
+        if (!in_attack_windup && time_until_next_attack <= 0.0) {
+          try_fire_at(active_attack_target, delta);
+        }
+      } else {
+        // Out of range: issue chase order to move toward target
+        owner->issue_chase_order(active_attack_target);
+      }
     }
   }
 }
@@ -336,4 +389,32 @@ void AttackComponent::_fire_projectile(Unit* target) {
   projectile->setup(owner_unit, target, attack_damage, projectile_speed);
 
   emit_signal("attack_hit", target, attack_damage);
+}
+
+void AttackComponent::_on_unit_order_changed(int previous_order,
+                                             int new_order,
+                                             Object* target) {
+  // OrderType::ATTACK = 2
+  if (new_order == 2) {
+    Unit* target_unit = Object::cast_to<Unit>(target);
+    if (target_unit != nullptr) {
+      // Set the active attack target
+      active_attack_target = target_unit;
+      // Try to fire at the target
+      // The _physics_process will handle cooldown timing and repeat attacks
+      try_fire_at(target_unit, 0.0);
+    }
+  } else if (new_order == 3) {
+    // OrderType::CHASE = 3
+    Unit* target_unit = Object::cast_to<Unit>(target);
+    if (target_unit != nullptr) {
+      // Keep the attack target active for when we get back in range
+      if (active_attack_target == nullptr) {
+        active_attack_target = target_unit;
+      }
+    }
+  } else {
+    // Clear attack order when order changes to something else
+    active_attack_target = nullptr;
+  }
 }

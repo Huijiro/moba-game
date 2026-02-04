@@ -112,13 +112,14 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
   Vector3 direction = target_position - caster_pos;
 
   // Setup the projectile
-  projectile->setup(caster,     // Caster unit
-                    direction,  // Direction vector (will be normalized)
-                    calculate_damage(caster, nullptr),  // Damage amount
-                    20.0f,                              // Speed
-                    get_range(),                        // Max distance (range)
-                    0.0f,  // No explosion radius (single target hit)
-                    0.5f   // Hit radius (collision detection)
+  projectile->setup(
+      caster,     // Caster unit
+      direction,  // Direction vector (will be normalized)
+      calculate_damage(caster, nullptr),  // Damage amount
+      get_skillshot_speed(),              // Speed
+      get_skillshot_max_distance(),       // Max distance (range)
+      0.0f,                               // No AoE (single target)
+      get_skillshot_hit_radius()          // Hit radius (collision detection)
   );
 
   return projectile;

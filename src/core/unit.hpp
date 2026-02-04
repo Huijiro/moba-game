@@ -64,6 +64,7 @@ class Unit : public CharacterBody3D {
   // Order signals - received by components
   void issue_move_order(const Vector3& position);
   void issue_attack_order(Unit* target);
+  void issue_chase_order(Unit* target);
   void issue_interact_order(Interactable* target);
   void stop_order();
 

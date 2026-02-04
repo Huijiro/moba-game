@@ -103,6 +103,7 @@ void SkillshotProjectile::_physics_process(double delta) {
   to_process.push_back(start);
 
   bool hit_unit = false;
+  Unit* hit_target = nullptr;
   while (!to_process.empty() && !hit_unit) {
     Node* current = to_process.back();
     to_process.pop_back();
@@ -118,7 +119,8 @@ void SkillshotProjectile::_physics_process(double delta) {
         UtilityFunctions::print("[SkillshotProjectile] Hit unit: " +
                                 unit->get_name());
         hit_unit = true;
-        _detonate();
+        hit_target = unit;
+        _detonate(hit_target);
         break;
       }
     }
@@ -130,7 +132,7 @@ void SkillshotProjectile::_physics_process(double delta) {
   }
 }
 
-void SkillshotProjectile::_detonate() {
+void SkillshotProjectile::_detonate(Unit* hit_target) {
   if (caster == nullptr || !caster->is_inside_tree()) {
     queue_free();
     return;
@@ -138,20 +140,41 @@ void SkillshotProjectile::_detonate() {
 
   Vector3 explosion_center = get_global_position();
 
-  UtilityFunctions::print("[SkillshotProjectile] Detonating at (" +
-                          godot::String::num(explosion_center.x) + ", " +
-                          godot::String::num(explosion_center.z) +
-                          ") with radius " + godot::String::num(aoe_radius));
+  // If we have a specific hit target (from collision), damage only that unit
+  if (hit_target != nullptr && hit_target->is_inside_tree()) {
+    UtilityFunctions::print("[SkillshotProjectile] Detonating at (" +
+                            godot::String::num(explosion_center.x) + ", " +
+                            godot::String::num(explosion_center.z) + ")");
 
-  // Debug visualization: Draw AoE explosion radius (red/orange circle)
-  VisualDebugger* debugger = VisualDebugger::get_singleton();
-  if (debugger != nullptr && debugger->is_debug_enabled()) {
-    // Draw AoE explosion radius at detonation point (orange for visibility)
-    debugger->draw_circle_xz(explosion_center, aoe_radius,
-                             godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
+    HealthComponent* health = Object::cast_to<HealthComponent>(
+        hit_target->get_component_by_class("HealthComponent"));
+
+    if (health != nullptr) {
+      health->apply_damage(damage, caster);
+      UtilityFunctions::print("[SkillshotProjectile] Hit " +
+                              hit_target->get_name() + " for " +
+                              godot::String::num(damage) + " damage");
+    }
+
+    UtilityFunctions::print("[SkillshotProjectile] Total hits: 1");
+  } else {
+    // No specific target - search for units in AoE radius
+    UtilityFunctions::print("[SkillshotProjectile] Detonating at (" +
+                            godot::String::num(explosion_center.x) + ", " +
+                            godot::String::num(explosion_center.z) +
+                            ") with radius " + godot::String::num(aoe_radius));
+
+    // Debug visualization: Draw AoE explosion radius (red/orange circle)
+    VisualDebugger* debugger = VisualDebugger::get_singleton();
+    if (debugger != nullptr && debugger->is_debug_enabled()) {
+      // Draw AoE explosion radius at detonation point (orange for visibility)
+      debugger->draw_circle_xz(explosion_center, aoe_radius,
+                               godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
+    }
+
+    _find_and_damage_units();
   }
 
-  _find_and_damage_units();
   queue_free();
 }
 

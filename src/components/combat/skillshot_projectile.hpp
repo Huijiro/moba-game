@@ -39,7 +39,9 @@ class SkillshotProjectile : public Node3D {
       nullptr;  // Optional visual representation
 
   // Called when projectile hits something
-  void _detonate();
+  // If hit_target is provided, only damage that unit (single-target hit)
+  // Otherwise, find all units in aoe_radius and damage them
+  void _detonate(Unit* hit_target = nullptr);
 
   // Find all units hit by explosion
   void _find_and_damage_units();

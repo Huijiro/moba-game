@@ -37,6 +37,8 @@ void Unit::_bind_methods() {
                        &Unit::issue_move_order);
   ClassDB::bind_method(D_METHOD("issue_attack_order", "target"),
                        &Unit::issue_attack_order);
+  ClassDB::bind_method(D_METHOD("issue_chase_order", "target"),
+                       &Unit::issue_chase_order);
   ClassDB::bind_method(D_METHOD("issue_interact_order", "target"),
                        &Unit::issue_interact_order);
   ClassDB::bind_method(D_METHOD("stop_order"), &Unit::stop_order);
@@ -84,6 +86,19 @@ void Unit::issue_attack_order(Unit* target) {
   // Emit signal for components to listen to
   emit_signal("order_changed", static_cast<int>(OrderType::NONE),
               static_cast<int>(OrderType::ATTACK), target);
+
+  // Set target location for movement
+  MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
+      get_component_by_class("MovementComponent"));
+  if (mov_comp != nullptr && target != nullptr) {
+    mov_comp->set_desired_location(target->get_global_position());
+  }
+}
+
+void Unit::issue_chase_order(Unit* target) {
+  // Emit signal for components to listen to
+  emit_signal("order_changed", static_cast<int>(OrderType::NONE),
+              static_cast<int>(OrderType::CHASE), target);
 
   // Set target location for movement
   MovementComponent* mov_comp = Object::cast_to<MovementComponent>(
