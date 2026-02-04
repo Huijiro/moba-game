@@ -1,5 +1,6 @@
 #include "debug_logger.hpp"
 
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
@@ -139,6 +140,17 @@ bool DebugLogger::is_logging_to_output() const {
 }
 
 DebugLogger* DebugLogger::get_singleton() {
+  return singleton_instance;
+}
+
+DebugLogger* DebugLogger::ensure_singleton() {
+  if (singleton_instance == nullptr) {
+    // Create the singleton if it doesn't exist
+    singleton_instance = memnew(DebugLogger);
+    // Register with Godot's OS
+    godot::OS::get_singleton()->add_logger(
+        (godot::Ref<godot::Logger>)singleton_instance);
+  }
   return singleton_instance;
 }
 

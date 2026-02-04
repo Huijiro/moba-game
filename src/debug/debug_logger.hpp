@@ -51,6 +51,7 @@ class DebugLogger : public Logger {
   bool is_logging_to_output() const;
 
   static DebugLogger* get_singleton();
+  static DebugLogger* ensure_singleton();  // Creates singleton if needed
 
  private:
   static DebugLogger* singleton_instance;

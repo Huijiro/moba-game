@@ -11,28 +11,28 @@ using godot::String;
 
 #define DBG_DEBUG(category, message)                  \
   do {                                                \
-    auto* _dbg = DebugLogger::get_singleton();        \
+    auto* _dbg = DebugLogger::ensure_singleton();     \
     if (_dbg)                                         \
       _dbg->debug(String(category), String(message)); \
   } while (0)
 
 #define DBG_INFO(category, message)                  \
   do {                                               \
-    auto* _dbg = DebugLogger::get_singleton();       \
+    auto* _dbg = DebugLogger::ensure_singleton();    \
     if (_dbg)                                        \
       _dbg->info(String(category), String(message)); \
   } while (0)
 
 #define DBG_WARN(category, message)                     \
   do {                                                  \
-    auto* _dbg = DebugLogger::get_singleton();          \
+    auto* _dbg = DebugLogger::ensure_singleton();       \
     if (_dbg)                                           \
       _dbg->warning(String(category), String(message)); \
   } while (0)
 
 #define DBG_ERROR(category, message)                  \
   do {                                                \
-    auto* _dbg = DebugLogger::get_singleton();        \
+    auto* _dbg = DebugLogger::ensure_singleton();     \
     if (_dbg)                                         \
       _dbg->error(String(category), String(message)); \
   } while (0)
@@ -42,14 +42,14 @@ using godot::String;
 
 #define DBG_VALUE(category, name, value)                                       \
   do {                                                                         \
-    auto* _dbg = DebugLogger::get_singleton();                                 \
+    auto* _dbg = DebugLogger::ensure_singleton();                              \
     if (_dbg)                                                                  \
       _dbg->debug(String(category), String(name) + ": " + String::num(value)); \
   } while (0)
 
 #define DBG_VECTOR3(category, name, vec)                                     \
   do {                                                                       \
-    auto* _dbg = DebugLogger::get_singleton();                               \
+    auto* _dbg = DebugLogger::ensure_singleton();                            \
     if (_dbg)                                                                \
       _dbg->debug(String(category),                                          \
                   String(name) + ": (" + String::num(vec.x) + ", " +         \
@@ -58,7 +58,7 @@ using godot::String;
 
 #define DBG_BOOL(category, name, value)                                    \
   do {                                                                     \
-    auto* _dbg = DebugLogger::get_singleton();                             \
+    auto* _dbg = DebugLogger::ensure_singleton();                          \
     if (_dbg)                                                              \
       _dbg->debug(String(category),                                        \
                   String(name) + ": " + String(value ? "true" : "false")); \
@@ -70,7 +70,7 @@ using godot::String;
 #define DBG_ASSERT(condition, category, message)        \
   do {                                                  \
     if (!(condition)) {                                 \
-      auto* _dbg = DebugLogger::get_singleton();        \
+      auto* _dbg = DebugLogger::ensure_singleton();     \
       if (_dbg)                                         \
         _dbg->error(String(category), String(message)); \
     }                                                   \
