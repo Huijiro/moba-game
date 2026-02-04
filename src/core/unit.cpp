@@ -72,41 +72,29 @@ void Unit::_ready() {
 }
 
 void Unit::issue_move_order(const Vector3& position) {
-  // Emit order signal with destination position
-  // MovementComponent and other components listen and respond independently
   emit_signal("order_changed", static_cast<int>(OrderType::MOVE), position,
               nullptr);
 }
 
 void Unit::issue_attack_order(Unit* target) {
-  // Emit order signal with attack target
-  // AttackComponent, MovementComponent, and others listen independently
-  Vector3 target_pos =
-      target != nullptr ? target->get_global_position() : Vector3();
-  emit_signal("order_changed", static_cast<int>(OrderType::ATTACK), target_pos,
+  emit_signal("order_changed", static_cast<int>(OrderType::ATTACK),
+              target != nullptr ? target->get_global_position() : Vector3(),
               target);
 }
 
 void Unit::issue_chase_order(Unit* target) {
-  // Emit order signal with chase target
-  // MovementComponent and AttackComponent listen independently
-  Vector3 target_pos =
-      target != nullptr ? target->get_global_position() : Vector3();
-  emit_signal("order_changed", static_cast<int>(OrderType::CHASE), target_pos,
+  emit_signal("order_changed", static_cast<int>(OrderType::CHASE),
+              target != nullptr ? target->get_global_position() : Vector3(),
               target);
 }
 
 void Unit::issue_interact_order(Interactable* target) {
-  // Emit order signal with interaction target
-  // Components listen and decide how to respond
-  Vector3 target_pos =
-      target != nullptr ? target->get_global_position() : Vector3();
   emit_signal("order_changed", static_cast<int>(OrderType::INTERACT),
-              target_pos, target);
+              target != nullptr ? target->get_global_position() : Vector3(),
+              target);
 }
 
 void Unit::stop_order() {
-  // Emit stop order - components independently handle stopping
   emit_signal("order_changed", static_cast<int>(OrderType::NONE), Vector3(),
               nullptr);
 }
