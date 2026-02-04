@@ -17,7 +17,7 @@ Ask: `"What tasks are ready from moba-game?"`
 
 ### Available Skills
 
-Four OpenCode skills guide development in `.opencode/skills/`:
+Five OpenCode skills guide development in `.opencode/skills/`:
 
 1. **moba-github-workflow**
    - Track work through GitHub Projects
@@ -37,7 +37,14 @@ Four OpenCode skills guide development in `.opencode/skills/`:
    - Debug issues and validate acceptance criteria
    - Use: `/skill moba-testing`
 
-4. **moba-workflow-overview**
+4. **moba-debugging**
+   - Use the debug logging system for categorized logging
+   - Add visual debugging to components
+   - Monitor game systems in real-time
+   - Troubleshoot issues with visual and text debugging
+   - Use: `/skill moba-debugging`
+
+5. **moba-workflow-overview**
    - Complete workflow documentation
    - Example development scenarios
    - Best practices and patterns
@@ -513,6 +520,13 @@ All OpenCode skills are self-contained in `.opencode/skills/` and provide detail
 - Common build/runtime errors and solutions
 - Testing in Godot editor
 - Verification checklist
+
+### moba-debugging
+- Debug logging system using categorized DBG_* macros
+- Visual debugging with VisualDebugger for runtime visualization
+- Best practices for adding debug information
+- Troubleshooting with visual and text debugging
+- Keyboard shortcuts and runtime controls
 
 ### moba-workflow-overview
 - Complete workflow examples
