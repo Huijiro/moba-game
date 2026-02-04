@@ -123,6 +123,9 @@ class AbilityComponent : public UnitComponent {
 
   // Transition out of casting state
   void _finish_casting();
+
+  // Handle chase_range_reached signal - re-execute deferred abilities
+  void _on_chase_range_reached(godot::Object* target);
 };
 
 #endif  // GDEXTENSION_ABILITY_COMPONENT_H

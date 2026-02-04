@@ -7,6 +7,7 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
@@ -93,6 +94,10 @@ void AbilityComponent::_bind_methods() {
   ADD_SIGNAL(godot::MethodInfo("ability_channel_tick",
                                PropertyInfo(Variant::INT, "slot"),
                                PropertyInfo(Variant::OBJECT, "target")));
+
+  // Bind signal handler for chase range reached
+  ClassDB::bind_method(D_METHOD("_on_chase_range_reached", "target"),
+                       &AbilityComponent::_on_chase_range_reached);
 }
 
 void AbilityComponent::_ready() {
@@ -107,6 +112,13 @@ void AbilityComponent::_ready() {
     DBG_INFO("AbilityComponent", "No Unit owner found");
     return;
   }
+
+  // Register and connect to chase_range_reached signal
+  // This allows deferred abilities (e.g., Instant Strike) to execute when in
+  // range
+  owner->register_signal(get_chase_range_reached());
+  owner->connect(get_chase_range_reached(),
+                 godot::Callable(this, StringName("_on_chase_range_reached")));
 
   // Try to get resource pool for mana checks
   resource_pool = Object::cast_to<ResourcePoolComponent>(
@@ -676,4 +688,19 @@ void AbilityComponent::register_debug_labels(LabelRegistry* registry) {
     registry->register_property("Ability", slot_key,
                                 cd > 0.0f ? String::num(cd) : "ready");
   }
+}
+
+void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
+  // When movement system indicates we've reached chase range,
+  // re-execute any ability that was deferred waiting for range
+  if (casting_slot < 0 ||
+      casting_slot >= static_cast<int>(ability_scenes.size())) {
+    return;
+  }
+
+  // Re-execute the ability now that we're in range
+  _execute_ability(casting_slot);
+
+  DBG_INFO("AbilityComponent", "Ability in slot " + String::num(casting_slot) +
+                                   " triggered by chase_range_reached");
 }
