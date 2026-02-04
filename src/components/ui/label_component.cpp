@@ -6,6 +6,7 @@
 #include <godot_cpp/core/class_db.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::BaseMaterial3D;
 using godot::ClassDB;
@@ -48,19 +49,27 @@ void LabelComponent::_bind_methods() {
 }
 
 void LabelComponent::_ready() {
+  // Call parent _ready to setup owner_unit
+  UnitComponent::_ready();
+
   // Create Label3D child node
   label_3d = memnew(Label3D);
   add_child(label_3d);
 
+  // Position relative to component (which is on the unit)
+  label_3d->set_position(label_offset);
+
   // Configure label
-  label_3d->set_text(String(""));
+  label_3d->set_text(String("[Test] label=active"));
   label_3d->set_font_size(font_size);
 
   // Set billboard mode to always face camera (keep Y-axis fixed)
   label_3d->set_billboard_mode(BaseMaterial3D::BILLBOARD_FIXED_Y);
 
-  // Set visibility based on enabled state
-  label_3d->set_visible(enabled);
+  // Ensure the label is visible
+  label_3d->set_visible(true);
+
+  DBG_INFO("LabelComponent", "Ready - created label");
 }
 
 void LabelComponent::_process(double delta) {
@@ -80,6 +89,7 @@ void LabelComponent::_process(double delta) {
 
 void LabelComponent::_update_label_content() {
   if (!label_3d || !get_unit()) {
+    DBG_WARN("LabelComponent", "Cannot update - missing label_3d or unit");
     return;
   }
 
@@ -88,7 +98,12 @@ void LabelComponent::_update_label_content() {
   get_unit()->register_all_debug_labels(&registry);
 
   // Update label text
-  label_3d->set_text(registry.get_formatted_text());
+  String formatted_text = registry.get_formatted_text();
+  label_3d->set_text(formatted_text);
+
+  if (formatted_text.is_empty()) {
+    DBG_DEBUG("LabelComponent", "No debug labels registered");
+  }
 }
 
 void LabelComponent::_update_label_transform() {
