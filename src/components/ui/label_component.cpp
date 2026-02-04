@@ -60,16 +60,14 @@ void LabelComponent::_ready() {
   label_3d->set_position(label_offset);
 
   // Configure label
-  label_3d->set_text(String("[Test] label=active"));
+  label_3d->set_text(String(""));
   label_3d->set_font_size(font_size);
 
   // Set billboard mode to always face camera (keep Y-axis fixed)
   label_3d->set_billboard_mode(BaseMaterial3D::BILLBOARD_FIXED_Y);
 
-  // Ensure the label is visible
-  label_3d->set_visible(true);
-
-  DBG_INFO("LabelComponent", "Ready - created label");
+  // Set visibility based on enabled state
+  label_3d->set_visible(enabled);
 }
 
 void LabelComponent::_process(double delta) {
@@ -89,7 +87,6 @@ void LabelComponent::_process(double delta) {
 
 void LabelComponent::_update_label_content() {
   if (!label_3d || !get_unit()) {
-    DBG_WARN("LabelComponent", "Cannot update - missing label_3d or unit");
     return;
   }
 
@@ -98,12 +95,7 @@ void LabelComponent::_update_label_content() {
   get_unit()->register_all_debug_labels(&registry);
 
   // Update label text
-  String formatted_text = registry.get_formatted_text();
-  label_3d->set_text(formatted_text);
-
-  if (formatted_text.is_empty()) {
-    DBG_DEBUG("LabelComponent", "No debug labels registered");
-  }
+  label_3d->set_text(registry.get_formatted_text());
 }
 
 void LabelComponent::_update_label_transform() {
