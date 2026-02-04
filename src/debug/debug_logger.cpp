@@ -12,7 +12,6 @@ DebugLogger* DebugLogger::singleton_instance = nullptr;
 
 DebugLogger::DebugLogger() {
   singleton_instance = this;
-  UtilityFunctions::print("[DebugLogger] Initialized with log level: DEBUG");
 }
 
 DebugLogger::~DebugLogger() {
@@ -52,21 +51,6 @@ void DebugLogger::_bind_methods() {
                                  ::LogLevel::ERROR);
 }
 
-String DebugLogger::_get_level_prefix(int level) const {
-  switch (level) {
-    case ::LogLevel::DEBUG:
-      return "[DEBUG]";
-    case ::LogLevel::INFO:
-      return "[INFO]";
-    case ::LogLevel::WARNING:
-      return "[WARNING]";
-    case ::LogLevel::ERROR:
-      return "[ERROR]";
-    default:
-      return "[UNKNOWN]";
-  }
-}
-
 void DebugLogger::_log(int level,
                        const String& category,
                        const String& message) {
@@ -75,19 +59,16 @@ void DebugLogger::_log(int level,
     return;
   }
 
-  String level_prefix = _get_level_prefix(level);
-  String log_message =
-      level_prefix + String(" [") + category + String("] ") + message;
+  String log_message = String("[") + category + String("] ") + message;
 
-  if (log_to_output) {
-    UtilityFunctions::print(log_message);
-  }
-
-  // Also push to Godot's logging system for file output
+  // Route through Godot's native logging system
   if (level == ::LogLevel::WARNING) {
     UtilityFunctions::push_warning(log_message);
   } else if (level == ::LogLevel::ERROR) {
     UtilityFunctions::push_error(log_message);
+  } else {
+    // DEBUG and INFO use regular print
+    UtilityFunctions::print(log_message);
   }
 }
 
@@ -109,22 +90,6 @@ void DebugLogger::error(const String& category, const String& message) {
 
 void DebugLogger::set_log_level(int level) {
   current_log_level = level;
-  String level_name;
-  switch (level) {
-    case ::LogLevel::DEBUG:
-      level_name = "DEBUG";
-      break;
-    case ::LogLevel::INFO:
-      level_name = "INFO";
-      break;
-    case ::LogLevel::WARNING:
-      level_name = "WARNING";
-      break;
-    case ::LogLevel::ERROR:
-      level_name = "ERROR";
-      break;
-  }
-  UtilityFunctions::print("[DebugLogger] Log level set to: " + level_name);
 }
 
 int DebugLogger::get_log_level() const {

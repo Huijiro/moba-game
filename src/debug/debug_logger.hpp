@@ -58,7 +58,6 @@ class DebugLogger : public Logger {
 
   // Internal logging method
   void _log(int level, const String& category, const String& message);
-  String _get_level_prefix(int level) const;
 };
 
 #endif  // GDEXTENSION_DEBUG_LOGGER_H
