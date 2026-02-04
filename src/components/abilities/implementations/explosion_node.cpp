@@ -52,11 +52,33 @@ bool ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
     return false;
   }
 
+  if (!caster->is_inside_tree()) {
+    DBG_ERROR("Explosion", "Caster is not in scene tree");
+    return false;
+  }
+
   // For self-cast abilities, the impact point is the caster's position
   Vector3 impact_point = caster->get_global_position();
 
+  // Get the root node to search from
+  // SceneTree::get_root() returns a Window, but we need to search the scene
+  // tree Instead, use the caster's parent hierarchy to find the scene root
+  Node* root = caster;
+  while (root->get_parent() != nullptr) {
+    root = root->get_parent();
+  }
+  if (root == nullptr) {
+    DBG_ERROR("Explosion", "Cannot find scene root");
+    return false;
+  }
+
+  // Calculate radius squared for distance checks
+  float radius = get_aoe_radius();
+  float radius_sq = radius * radius;
+
   // Find all units in the area
-  Array units_in_area = query_units_in_area(impact_point);
+  Array units_in_area;
+  _search_units_in_tree(root, impact_point, radius_sq, units_in_area);
 
   if (units_in_area.is_empty()) {
     DBG_WARN("Explosion", "No units found in explosion area");
@@ -108,31 +130,25 @@ float ExplosionNode::calculate_damage(Unit* caster, Unit* target) const {
 Array ExplosionNode::query_units_in_area(const Vector3& center) const {
   Array result;
 
-  // Get the scene tree using Godot's built-in method
-  // Cast away const since get_tree() is const-correct in Godot
-  ExplosionNode* mutable_this = const_cast<ExplosionNode*>(this);
-  SceneTree* scene_tree = mutable_this->get_tree();
+  // This method needs to be called with a caster that's in the scene tree
+  // For now, we'll search from the current node's perspective
+  // Note: ExplosionNode itself is not in the tree, but is called from
+  // AbilityComponent which is in the tree
 
-  if (scene_tree == nullptr || !mutable_this->is_inside_tree()) {
-    DBG_ERROR("Explosion", "Cannot access scene tree");
-    return result;
-  }
-
-  // Find the root by traversing up
-  Node* current = mutable_this;
-  Node* root = mutable_this;
-  while (current != nullptr) {
-    root = current;
-    current = current->get_parent();
-  }
+  // Since we can't reliably access the scene tree from here, we'll use a
+  // different approach: The caster is responsible for being in the tree, so we
+  // search from the root by finding any Unit in the scene
 
   // Calculate radius squared for distance checks
   float radius = get_aoe_radius();
   float radius_sq = radius * radius;
 
-  // Search for all units in the area
-  _search_units_in_tree(root, center, radius_sq, result);
+  // We need the scene root - try to get it from the owner if available
+  // This is a limitation of the current design - abilities are data objects
+  // that don't have direct scene tree access
 
+  // For now, just return empty - the caster should provide units to search
+  DBG_WARN("Explosion", "query_units_in_area called without scene context");
   return result;
 }
 
