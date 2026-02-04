@@ -372,14 +372,10 @@ void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
 }
 
 void MovementComponent::_on_stop_requested() {
-  // Stop order - clear navigation target to stop moving
-  // Keep current facing direction (don't update target)
+  // Stop order - clear all movement targets and stop
   chase_target = nullptr;
-  CharacterBody3D* body = Object::cast_to<CharacterBody3D>(get_parent());
-  if (body != nullptr) {
-    set_target_position(
-        body->get_global_position());  // Tell navigation agent to stop
-  }
+  set_desired_location(
+      get_owner_unit()->get_global_position());  // Stop at current location
   current_target_distance = 0.0f;
   was_chase_in_range = false;
 }
