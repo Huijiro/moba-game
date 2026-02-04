@@ -3,6 +3,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include "../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -50,8 +51,7 @@ void ProjectileVisual::_physics_process(double delta) {
 
 void ProjectileVisual::_on_spawn(const Vector3& position,
                                  const Vector3& direction) {
-  UtilityFunctions::print("[ProjectileVisual] Spawned at (" +
-                          godot::String::num(position.x) + ", " +
+  DBG_INFO("ProjectileVisual", "Spawned at (" + godot::String::num(position.x) + ", " +
                           godot::String::num(position.z) + ") direction (" +
                           godot::String::num(direction.x) + ", " +
                           godot::String::num(direction.z) + ")");
@@ -64,8 +64,7 @@ void ProjectileVisual::_on_travel(const Vector3& position,
 }
 
 void ProjectileVisual::_on_impact(const Vector3& position) {
-  UtilityFunctions::print("[ProjectileVisual] Impact at (" +
-                          godot::String::num(position.x) + ", " +
+  DBG_INFO("ProjectileVisual", "Impact at (" + godot::String::num(position.x) + ", " +
                           godot::String::num(position.z) +
                           ") AoE radius: " + godot::String::num(aoe_radius));
 }

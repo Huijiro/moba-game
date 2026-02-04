@@ -7,6 +7,7 @@
 #include "../../../core/unit.hpp"
 #include "../../health/health_component.hpp"
 #include "../ability_definition.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -31,15 +32,14 @@ void DamageEffect::execute(Unit* caster,
   }
 
   if (target == nullptr || ability == nullptr) {
-    UtilityFunctions::print("[DamageEffect] Invalid target or ability");
+    DBG_INFO("DamageEffect", "Invalid target or ability");
     return;
   }
 
   // Cast target to Unit
   Unit* target_unit = Object::cast_to<Unit>(target);
   if (target_unit == nullptr || !target_unit->is_inside_tree()) {
-    UtilityFunctions::print(
-        "[DamageEffect] Target is not a Unit or not in tree");
+    DBG_INFO("DamageEffect", "Target is not a Unit or not in tree");
     return;
   }
 
@@ -48,7 +48,7 @@ void DamageEffect::execute(Unit* caster,
       target_unit->get_component_by_class("HealthComponent"));
 
   if (target_health == nullptr) {
-    UtilityFunctions::print("[DamageEffect] Target has no HealthComponent");
+    DBG_INFO("DamageEffect", "Target has no HealthComponent");
     return;
   }
 
@@ -56,7 +56,6 @@ void DamageEffect::execute(Unit* caster,
   float damage = ability->get_base_damage();
   target_health->apply_damage(damage, caster);
 
-  UtilityFunctions::print("[DamageEffect] Applied " +
-                          godot::String::num(damage) + " damage to " +
+  DBG_INFO("DamageEffect", "Applied " + godot::String::num(damage) + " damage to " +
                           target_unit->get_name());
 }

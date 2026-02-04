@@ -8,6 +8,7 @@
 #include "../../../core/unit.hpp"
 #include "../../combat/skillshot_projectile.hpp"
 #include "../ability_definition.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -58,7 +59,7 @@ void SkillshotEffect::execute(Unit* caster,
   }
 
   if (caster == nullptr || ability == nullptr) {
-    UtilityFunctions::print("[SkillshotEffect] Invalid caster or ability");
+    DBG_INFO("SkillshotEffect", "Invalid caster or ability");
     return;
   }
 
@@ -76,8 +77,7 @@ void SkillshotEffect::execute(Unit* caster,
       if (distance > 0.001f) {
         direction = to_target / distance;
       }
-      UtilityFunctions::print("[SkillshotEffect] Skillshot targeting unit at " +
-                              godot::String::num(target_pos.x) + ", " +
+      DBG_INFO("SkillshotEffect", "Skillshot targeting unit at " + godot::String::num(target_pos.x) + ", " +
                               godot::String::num(target_pos.z));
     }
   }
@@ -89,7 +89,7 @@ void SkillshotEffect::execute(Unit* caster,
                     projectile_speed, projectile_max_distance, explosion_radius,
                     projectile_hit_radius);
 
-  UtilityFunctions::print("[SkillshotEffect] Spawned skillshot projectile");
+  DBG_INFO("SkillshotEffect", "Spawned skillshot projectile");
 }
 
 void SkillshotEffect::execute_at_point(Unit* caster,
@@ -100,7 +100,7 @@ void SkillshotEffect::execute_at_point(Unit* caster,
   }
 
   if (caster == nullptr || ability == nullptr) {
-    UtilityFunctions::print("[SkillshotEffect] Invalid caster or ability");
+    DBG_INFO("SkillshotEffect", "Invalid caster or ability");
     return;
   }
 
@@ -114,8 +114,7 @@ void SkillshotEffect::execute_at_point(Unit* caster,
     direction = to_point / distance;
   }
 
-  UtilityFunctions::print("[SkillshotEffect] Skillshot toward point (" +
-                          godot::String::num(point.x) + ", " +
+  DBG_INFO("SkillshotEffect", "Skillshot toward point (" + godot::String::num(point.x) + ", " +
                           godot::String::num(point.z) + ")");
 
   // Create and spawn projectile
@@ -125,7 +124,7 @@ void SkillshotEffect::execute_at_point(Unit* caster,
                     projectile_speed, projectile_max_distance, explosion_radius,
                     projectile_hit_radius);
 
-  UtilityFunctions::print("[SkillshotEffect] Spawned skillshot projectile");
+  DBG_INFO("SkillshotEffect", "Spawned skillshot projectile");
 }
 
 void SkillshotEffect::set_projectile_speed(float speed) {

@@ -1,4 +1,5 @@
 #include "beam_node.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -39,17 +40,17 @@ void BeamNode::_bind_methods() {
 
 void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
   if (caster == nullptr) {
-    UtilityFunctions::print("[Beam] No caster provided");
+    DBG_INFO("Beam", "No caster provided");
     return;
   }
 
   if (target == nullptr) {
-    UtilityFunctions::print("[Beam] No target provided");
+    DBG_INFO("Beam", "No target provided");
     return;
   }
 
   if (!target->is_inside_tree()) {
-    UtilityFunctions::print("[Beam] Target is not in tree");
+    DBG_INFO("Beam", "Target is not in tree");
     return;
   }
 
@@ -58,7 +59,7 @@ void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
       target->get_component_by_class("HealthComponent"));
 
   if (target_health == nullptr) {
-    UtilityFunctions::print("[Beam] Target has no HealthComponent");
+    DBG_INFO("Beam", "Target has no HealthComponent");
     return;
   }
 
@@ -69,7 +70,7 @@ void BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
   float tick_damage = calculate_damage(caster, target);
   target_health->apply_damage(tick_damage, caster);
 
-  UtilityFunctions::print("[Beam] " + caster->get_name() + " hit " +
+  DBG_INFO("Beam", String(caster->get_name()) + " hit " +
                           target->get_name() + " for " +
                           String::num(tick_damage) + " damage (tick)");
 }

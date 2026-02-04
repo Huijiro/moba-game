@@ -37,6 +37,18 @@ void VisualDebugger::_bind_methods() {
       D_METHOD("draw_line", "from", "to", "color", "thickness"),
       &VisualDebugger::draw_line, 1.0f);
 
+  ClassDB::bind_method(D_METHOD("draw_sphere", "center", "radius", "color",
+                                "segments", "thickness"),
+                       &VisualDebugger::draw_sphere, 16, 1.0f);
+
+  ClassDB::bind_method(D_METHOD("draw_vector", "origin", "direction", "length",
+                                "color", "thickness"),
+                       &VisualDebugger::draw_vector, 1.0f, 1.0f);
+
+  ClassDB::bind_method(
+      D_METHOD("draw_cross", "center", "size", "color", "thickness"),
+      &VisualDebugger::draw_cross, 0.5f, 1.0f);
+
   ClassDB::bind_method(D_METHOD("clear"), &VisualDebugger::clear);
 
   ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"),
@@ -194,6 +206,93 @@ void VisualDebugger::draw_line(const Vector3& from,
   draw.color = color;
   draw.thickness = thickness;
   pending_draws.push_back(draw);
+}
+
+void VisualDebugger::draw_sphere(const Vector3& center,
+                                 float radius,
+                                 const Color& color,
+                                 int segments,
+                                 float thickness) {
+  if (!debug_enabled) {
+    return;
+  }
+
+  // Draw as three perpendicular circles (wireframe sphere)
+  // XY circle
+  draw_circle_xz(center, radius, color, segments, thickness, false);
+
+  // XZ circle (already drawn in circle_xz)
+  float angle_step = 2.0f * 3.14159265f / segments;
+  for (int i = 0; i < segments; i++) {
+    float angle1 = i * angle_step;
+    float angle2 = (i + 1) * angle_step;
+
+    float y1 = center.y + radius * std::cos(angle1);
+    float z1 = center.z + radius * std::sin(angle1);
+    float y2 = center.y + radius * std::cos(angle2);
+    float z2 = center.z + radius * std::sin(angle2);
+
+    Vector3 p1(center.x, y1, z1);
+    Vector3 p2(center.x, y2, z2);
+
+    draw_line(p1, p2, color, thickness);
+  }
+}
+
+void VisualDebugger::draw_vector(const Vector3& origin,
+                                 const Vector3& direction,
+                                 float length,
+                                 const Color& color,
+                                 float thickness) {
+  if (!debug_enabled) {
+    return;
+  }
+
+  Vector3 normalized_dir = direction.normalized();
+  Vector3 end_point = origin + (normalized_dir * length);
+
+  // Draw main line
+  draw_line(origin, end_point, color, thickness);
+
+  // Draw arrowhead (small lines at the end)
+  Vector3 perpendicular =
+      Vector3(-normalized_dir.z, normalized_dir.y, normalized_dir.x);
+  if (perpendicular.length() < 0.01f) {
+    perpendicular = Vector3(1, 0, 0);
+  }
+  perpendicular = perpendicular.normalized();
+
+  float arrow_size = length * 0.2f;
+  Vector3 arrow_base = end_point - (normalized_dir * arrow_size);
+
+  draw_line(end_point, arrow_base + (perpendicular * arrow_size * 0.5f), color,
+            thickness);
+  draw_line(end_point, arrow_base - (perpendicular * arrow_size * 0.5f), color,
+            thickness);
+}
+
+void VisualDebugger::draw_cross(const Vector3& center,
+                                float size,
+                                const Color& color,
+                                float thickness) {
+  if (!debug_enabled) {
+    return;
+  }
+
+  // Draw three perpendicular lines forming a cross
+  Vector3 half_size(size * 0.5f, size * 0.5f, size * 0.5f);
+
+  // X axis (red usually)
+  draw_line(center - Vector3(half_size.x, 0, 0),
+            center + Vector3(half_size.x, 0, 0), color, thickness);
+
+  // Y axis (green usually)
+  draw_line(center - Vector3(0, half_size.y, 0),
+            center + Vector3(0, half_size.y, 0), color, thickness);
+
+  // Z axis (blue usually)
+  draw_line(center - Vector3(0, 0, half_size.z),
+            center + Vector3(0, 0, half_size.z), color, thickness);
 }
 
 void VisualDebugger::_flush_draws() {

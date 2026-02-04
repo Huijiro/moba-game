@@ -3,6 +3,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../debug/debug_macros.hpp"
 #include "unit_definition.hpp"
 
 using godot::ClassDB;
@@ -44,9 +45,9 @@ void UnitDefinitionManager::_bind_methods() {
 }
 
 void UnitDefinitionManager::_ready() {
-  UtilityFunctions::print("[UnitDefinitionManager] Initialized with " +
-                          godot::String::num(unit_registry.size()) +
-                          " registered units");
+  DBG_INFO("UnitDefinitionManager",
+           "Initialized with " + godot::String::num(unit_registry.size()) +
+               " registered units");
 }
 
 UnitDefinitionManager* UnitDefinitionManager::get_singleton() {
@@ -55,24 +56,22 @@ UnitDefinitionManager* UnitDefinitionManager::get_singleton() {
 
 void UnitDefinitionManager::register_unit(const Ref<UnitDefinition>& unit_def) {
   if (unit_def.is_null()) {
-    UtilityFunctions::print(
-        "[UnitDefinitionManager] Cannot register null unit definition");
+    DBG_INFO("UnitDefinitionManager", "Cannot register null unit definition");
     return;
   }
 
   int unit_id = unit_def->get_unit_id();
   if (unit_id < 0) {
-    UtilityFunctions::print(
-        "[UnitDefinitionManager] Cannot register unit with invalid ID: " +
-        godot::String::num(unit_id));
+    DBG_INFO("UnitDefinitionManager", "Cannot register unit with invalid ID: " +
+                                          godot::String::num(unit_id));
     return;
   }
 
   unit_registry[unit_id] = unit_def;
-  UtilityFunctions::print(
-      "[UnitDefinitionManager] Registered unit: " + unit_def->get_unit_name() +
-      " (ID: " + godot::String::num(unit_id) +
-      ", Type: " + unit_def->get_unit_type() + ")");
+  DBG_INFO("UnitDefinitionManager",
+           "Registered unit: " + unit_def->get_unit_name() +
+               " (ID: " + godot::String::num(unit_id) +
+               ", Type: " + unit_def->get_unit_type() + ")");
 }
 
 Ref<UnitDefinition> UnitDefinitionManager::get_unit_by_id(int unit_id) {
@@ -98,13 +97,13 @@ bool UnitDefinitionManager::has_unit(int unit_id) {
 }
 
 void UnitDefinitionManager::list_all_units() {
-  UtilityFunctions::print(
-      "[UnitDefinitionManager] Listing all registered units:");
+  DBG_INFO("UnitDefinitionManager", "Listing all registered units:");
   for (auto& pair : unit_registry) {
     int unit_id = pair.first;
     Ref<UnitDefinition> unit_def = pair.second;
-    UtilityFunctions::print("  - " + unit_def->get_unit_name() +
-                            " (ID: " + godot::String::num(unit_id) +
-                            ", Type: " + unit_def->get_unit_type() + ")");
+    DBG_DEBUG("UnitDefinition", "  - " + unit_def->get_unit_name() +
+                                    " (ID: " + godot::String::num(unit_id) +
+                                    ", Type: " + unit_def->get_unit_type() +
+                                    ")");
   }
 }

@@ -12,6 +12,7 @@
 #include "../../core/unit.hpp"
 #include "../health/health_component.hpp"
 #include "projectile.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -310,7 +311,7 @@ bool AttackComponent::try_fire_at(Unit* target, double delta) {
     current_attack_target = target;
 
     if (owner_unit != nullptr) {
-      UtilityFunctions::print("[AttackComponent] " + owner_unit->get_name() +
+      DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
                               " started attacking " + target->get_name());
     }
 
@@ -341,7 +342,7 @@ void AttackComponent::_fire_melee(Unit* target) {
   }
 
   if (owner_unit != nullptr) {
-    UtilityFunctions::print("[AttackComponent] " + owner_unit->get_name() +
+    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
                             " hit " + target->get_name() + " for " +
                             String::num(attack_damage) + " damage (MELEE)");
   }
@@ -380,7 +381,7 @@ void AttackComponent::_fire_projectile(Unit* target) {
   }
 
   if (owner_unit != nullptr) {
-    UtilityFunctions::print("[AttackComponent] " + owner_unit->get_name() +
+    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
                             " fired projectile at " + target->get_name() +
                             " (damage: " + String::num(attack_damage) + ")");
   }

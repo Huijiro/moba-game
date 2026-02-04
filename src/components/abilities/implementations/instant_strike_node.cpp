@@ -1,4 +1,5 @@
 #include "instant_strike_node.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -39,17 +40,17 @@ void InstantStrikeNode::execute(Unit* caster,
                                 Unit* target,
                                 godot::Vector3 position) {
   if (caster == nullptr) {
-    UtilityFunctions::print("[InstantStrike] No caster provided");
+    DBG_INFO("InstantStrike", "No caster provided");
     return;
   }
 
   if (target == nullptr) {
-    UtilityFunctions::print("[InstantStrike] No target provided");
+    DBG_INFO("InstantStrike", "No target provided");
     return;
   }
 
   if (!target->is_inside_tree()) {
-    UtilityFunctions::print("[InstantStrike] Target is not in tree");
+    DBG_INFO("InstantStrike", "Target is not in tree");
     return;
   }
 
@@ -58,7 +59,7 @@ void InstantStrikeNode::execute(Unit* caster,
       target->get_component_by_class("HealthComponent"));
 
   if (target_health == nullptr) {
-    UtilityFunctions::print("[InstantStrike] Target has no HealthComponent");
+    DBG_INFO("InstantStrike", "Target has no HealthComponent");
     return;
   }
 
@@ -66,7 +67,7 @@ void InstantStrikeNode::execute(Unit* caster,
   float damage = calculate_damage(caster, target);
   target_health->apply_damage(damage, caster);
 
-  UtilityFunctions::print("[InstantStrike] " + caster->get_name() + " dealt " +
+  DBG_INFO("InstantStrike", String(caster->get_name()) + " dealt " +
                           String::num(damage) + " damage to " +
                           target->get_name());
 }

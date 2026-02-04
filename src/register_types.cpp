@@ -30,6 +30,7 @@
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
+#include "debug/debug_logger.hpp"
 #include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
 #include "visual/projectile_visual.hpp"
@@ -68,6 +69,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(SkillshotEffect)
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
+  GDREGISTER_CLASS(DebugLogger)
   GDREGISTER_CLASS(VisualEffect)
   GDREGISTER_CLASS(ProjectileVisual)
 }

@@ -6,6 +6,7 @@
 
 #include "../../core/unit.hpp"
 #include "../health/health_component.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::Node;
 using godot::Object;
@@ -126,7 +127,7 @@ void AbilityAPI::apply_slow(Unit* target, float slow_percent, float duration) {
   // TODO: Implement status effect system
   // For now, this is a placeholder
   // Would apply movement speed reduction for duration seconds
-  UtilityFunctions::print("[AbilityAPI] Slow applied (not yet implemented)");
+  DBG_INFO("AbilityAPI", "Slow applied (not yet implemented)");
 }
 
 void AbilityAPI::apply_stun(Unit* target, float duration) {
@@ -137,7 +138,7 @@ void AbilityAPI::apply_stun(Unit* target, float duration) {
   // TODO: Implement status effect system
   // For now, this is a placeholder
   // Would disable movement and ability casting for duration seconds
-  UtilityFunctions::print("[AbilityAPI] Stun applied (not yet implemented)");
+  DBG_INFO("AbilityAPI", "Stun applied (not yet implemented)");
 }
 
 void AbilityAPI::knockback_unit(Unit* target,
@@ -150,8 +151,7 @@ void AbilityAPI::knockback_unit(Unit* target,
   // TODO: Implement knockback physics
   // For now, this is a placeholder
   // Would apply velocity in direction for force amount
-  UtilityFunctions::print(
-      "[AbilityAPI] Knockback applied (not yet implemented)");
+  DBG_INFO("AbilityAPI", "Knockback applied (not yet implemented)");
 }
 
 bool AbilityAPI::are_enemies(Unit* unit_a, Unit* unit_b) {

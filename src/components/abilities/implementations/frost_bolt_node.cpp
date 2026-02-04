@@ -1,4 +1,5 @@
 #include "frost_bolt_node.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -42,17 +43,17 @@ void FrostBoltNode::execute(Unit* caster,
                             Unit* target,
                             godot::Vector3 position) {
   if (caster == nullptr) {
-    UtilityFunctions::print("[FrostBolt] No caster provided");
+    DBG_ERROR("FrostBolt", "No caster provided");
     return;
   }
 
   if (target == nullptr) {
-    UtilityFunctions::print("[FrostBolt] No target provided");
+    DBG_ERROR("FrostBolt", "No target provided");
     return;
   }
 
   if (!target->is_inside_tree()) {
-    UtilityFunctions::print("[FrostBolt] Target is not in tree");
+    DBG_ERROR("FrostBolt", "Target is not in tree");
     return;
   }
 
@@ -61,17 +62,16 @@ void FrostBoltNode::execute(Unit* caster,
       target->get_component_by_class("HealthComponent"));
 
   if (target_health == nullptr) {
-    UtilityFunctions::print("[FrostBolt] Target has no HealthComponent");
+    DBG_ERROR("FrostBolt", "Target has no HealthComponent");
     return;
   }
 
   // Calculate and apply damage
   float damage = calculate_damage(caster, target);
   target_health->apply_damage(damage, caster);
-
-  UtilityFunctions::print("[FrostBolt] " + caster->get_name() + " dealt " +
-                          String::num(damage) + " damage to " +
-                          target->get_name());
+  DBG_INFO("FrostBolt", String(caster->get_name()) + " dealt " +
+                            String::num(damage) + " damage to " +
+                            String(target->get_name()));
 
   // TODO: Apply slow effect to target
   // For now, just damage. Slow effect can be added with a status effect system

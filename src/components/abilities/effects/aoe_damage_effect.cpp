@@ -11,6 +11,7 @@
 #include "../../../debug/visual_debugger.hpp"
 #include "../../health/health_component.hpp"
 #include "../ability_definition.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::Color;
@@ -37,7 +38,7 @@ void AoEDamageEffect::execute(Unit* caster,
   }
 
   if (caster == nullptr || ability == nullptr) {
-    UtilityFunctions::print("[AoEDamageEffect] Invalid caster or ability");
+    DBG_INFO("AoEDamageEffect", "Invalid caster or ability");
     return;
   }
 
@@ -49,14 +50,13 @@ void AoEDamageEffect::execute(Unit* caster,
     Unit* target_unit = Object::cast_to<Unit>(target);
     if (target_unit != nullptr && target_unit->is_inside_tree()) {
       aoe_center = target_unit->get_global_position();
-      UtilityFunctions::print("[AoEDamageEffect] Centering AoE on target unit");
+      DBG_INFO("AoEDamageEffect", "Centering AoE on target unit");
     }
   } else {
     // For point-target abilities, AoE should damage nearby units around center
     // If target is null, use caster position
     // (Position-based abilities will pass Unit objects or be handled specially)
-    UtilityFunctions::print(
-        "[AoEDamageEffect] Centering AoE on caster position");
+    DBG_INFO("AoEDamageEffect", "Centering AoE on caster position");
   }
 
   float radius = ability->get_aoe_radius();
@@ -71,8 +71,7 @@ void AoEDamageEffect::execute(Unit* caster,
     debugger->draw_circle_xz(aoe_center, radius, Color(1, 1, 0, 0.5f));
   }
 
-  UtilityFunctions::print("[AoEDamageEffect] Applied " +
-                          godot::String::num(damage) + " damage in radius " +
+  DBG_INFO("AoEDamageEffect", "Applied " + godot::String::num(damage) + " damage in radius " +
                           godot::String::num(radius));
 }
 
@@ -84,7 +83,7 @@ void AoEDamageEffect::execute_at_point(Unit* caster,
   }
 
   if (caster == nullptr || ability == nullptr) {
-    UtilityFunctions::print("[AoEDamageEffect] Invalid caster or ability");
+    DBG_INFO("AoEDamageEffect", "Invalid caster or ability");
     return;
   }
 
@@ -101,8 +100,7 @@ void AoEDamageEffect::execute_at_point(Unit* caster,
     debugger->draw_circle_xz(point, radius, Color(1, 1, 0, 0.5f));
   }
 
-  UtilityFunctions::print("[AoEDamageEffect] Applied " +
-                          godot::String::num(damage) + " damage at point (" +
+  DBG_INFO("AoEDamageEffect", "Applied " + godot::String::num(damage) + " damage at point (" +
                           godot::String::num(point.x) + ", " +
                           godot::String::num(point.z) + ") with radius " +
                           godot::String::num(radius));
@@ -159,11 +157,10 @@ void AoEDamageEffect::_apply_damage_in_radius(Unit* caster,
     if (health != nullptr) {
       health->apply_damage(damage, caster);
       hit_count++;
-      UtilityFunctions::print("[AoEDamageEffect] Hit " + unit->get_name() +
+      DBG_INFO("AoEDamageEffect", "Hit " + unit->get_name() +
                               " for " + godot::String::num(damage) + " damage");
     }
   }
 
-  UtilityFunctions::print("[AoEDamageEffect] Total hits: " +
-                          godot::String::num(hit_count));
+  DBG_INFO("AoEDamageEffect", "Total hits: " + godot::String::num(hit_count));
 }

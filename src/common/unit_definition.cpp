@@ -6,6 +6,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../components/abilities/ability_definition.hpp"
+#include "../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -104,8 +105,7 @@ String UnitDefinition::get_unit_type() const {
 void UnitDefinition::set_ability(int slot,
                                  const Ref<AbilityDefinition>& ability) {
   if (slot < 0 || slot >= static_cast<int>(abilities.size())) {
-    UtilityFunctions::print("[UnitDefinition] Invalid ability slot: " +
-                            godot::String::num(slot));
+    DBG_INFO("UnitDefinition", "Invalid ability slot: " + godot::String::num(slot));
     return;
   }
   abilities[slot] = ability;

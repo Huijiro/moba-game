@@ -1,4 +1,5 @@
 #include "explosion_node.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -47,7 +48,7 @@ void ExplosionNode::_bind_methods() {
 
 void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
   if (caster == nullptr) {
-    UtilityFunctions::print("[Explosion] No caster provided");
+    DBG_ERROR("Explosion", "No caster provided");
     return;
   }
 
@@ -58,7 +59,7 @@ void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
   Array units_in_area = query_units_in_area(impact_point);
 
   if (units_in_area.is_empty()) {
-    UtilityFunctions::print("[Explosion] No units found in explosion area");
+    DBG_WARN("Explosion", "No units found in explosion area");
     return;
   }
 
@@ -88,11 +89,10 @@ void ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
     affected_health->apply_damage(damage, caster);
     hit_count++;
 
-    UtilityFunctions::print("[Explosion] Hit " + affected_unit->get_name() +
-                            " for " + String::num(damage) + " damage");
+    DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) + " for " + String::num(damage) + " damage");
   }
 
-  UtilityFunctions::print("[Explosion] " + caster->get_name() +
+  DBG_INFO("Explosion", String(caster->get_name()) +
                           " detonated, hit " + String::num(hit_count) +
                           " units");
 }
@@ -121,7 +121,7 @@ Array ExplosionNode::query_units_in_area(const Vector3& center) const {
   SceneTree* scene_tree = mutable_this->get_tree();
 
   if (scene_tree == nullptr || !mutable_this->is_inside_tree()) {
-    UtilityFunctions::print("[Explosion] Cannot access scene tree");
+    DBG_ERROR("Explosion", "Cannot access scene tree");
     return result;
   }
 

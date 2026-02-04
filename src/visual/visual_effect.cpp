@@ -3,6 +3,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include "../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -33,8 +34,7 @@ void VisualEffect::_bind_methods() {
 
 void VisualEffect::_play_at_position(const Vector3& position) {
   // Override in subclasses
-  UtilityFunctions::print("[VisualEffect] Playing at (" +
-                          godot::String::num(position.x) + ", " +
+  DBG_INFO("VisualEffect", "Playing at (" + godot::String::num(position.x) + ", " +
                           godot::String::num(position.z) + ")");
 }
 
@@ -42,8 +42,7 @@ void VisualEffect::_play_toward_direction(const Vector3& from,
                                           const Vector3& direction,
                                           float distance) {
   // Override in subclasses
-  UtilityFunctions::print(
-      "[VisualEffect] Playing projectile from (" + godot::String::num(from.x) +
+  DBG_INFO("VisualEffect", "Playing projectile from (" + godot::String::num(from.x) +
       ", " + godot::String::num(from.z) + ") direction (" +
       godot::String::num(direction.x) + ", " + godot::String::num(direction.z) +
       ") distance " + godot::String::num(distance));
@@ -51,7 +50,7 @@ void VisualEffect::_play_toward_direction(const Vector3& from,
 
 void VisualEffect::_stop() {
   // Override in subclasses
-  UtilityFunctions::print("[VisualEffect] Stopping");
+  DBG_INFO("VisualEffect", "Stopping");
 }
 
 void VisualEffect::play_at_position(const Vector3& position) {

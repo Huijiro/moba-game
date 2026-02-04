@@ -6,6 +6,7 @@
 
 #include "../../core/unit.hpp"
 #include "ability_definition.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -28,8 +29,7 @@ void AbilityEffect::execute(Unit* caster,
                             Object* target,
                             const AbilityDefinition* ability) {
   // Base implementation does nothing - subclasses override
-  UtilityFunctions::print(
-      "[AbilityEffect] Base effect executed with no implementation");
+  DBG_INFO("AbilityEffect", "Base effect executed with no implementation");
 }
 
 void AbilityEffect::execute_at_point(Unit* caster,

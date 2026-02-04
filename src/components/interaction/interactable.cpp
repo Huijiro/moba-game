@@ -4,6 +4,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -26,5 +27,5 @@ bool Interactable::can_interact(Unit* unit) const {
 
 void Interactable::interact(Unit* unit) {
   (void)unit;
-  UtilityFunctions::print("[Interactable] interact called on: " + get_name());
+  DBG_INFO("Interaction", "Interact called on: " + get_name());
 }

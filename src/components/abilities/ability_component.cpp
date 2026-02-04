@@ -8,6 +8,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
 #include "../resources/resource_pool_component.hpp"
 #include "ability_node.hpp"
@@ -102,7 +103,7 @@ void AbilityComponent::_ready() {
 
   Unit* owner = get_unit();
   if (owner == nullptr) {
-    UtilityFunctions::print("[AbilityComponent] No Unit owner found");
+    DBG_INFO("AbilityComponent", "No Unit owner found");
     return;
   }
 
@@ -111,9 +112,7 @@ void AbilityComponent::_ready() {
       owner->get_component_by_class("ResourcePoolComponent"));
 
   if (resource_pool == nullptr) {
-    UtilityFunctions::print(
-        "[AbilityComponent] Warning: No ResourcePoolComponent for mana "
-        "tracking");
+    DBG_WARN("AbilityComponent", "No ResourcePoolComponent for mana tracking");
   }
 
   // Instantiate all PackedScene references into AbilityNode instances at
@@ -138,13 +137,13 @@ void AbilityComponent::_ready() {
           ability = Object::cast_to<AbilityNode>(instance);
           if (ability != nullptr) {
             instantiated_abilities.append(ability);
-            UtilityFunctions::print("[AbilityComponent] Instantiated ability " +
-                                    String::num(i) + ": " +
-                                    ability->get_ability_name());
+            DBG_INFO("AbilityComponent", "Instantiated ability " +
+                                             String::num(i) + ": " +
+                                             ability->get_ability_name());
           } else {
-            UtilityFunctions::print(
-                "[AbilityComponent] Warning: Scene at slot " + String::num(i) +
-                " does not contain AbilityNode");
+            DBG_INFO("AbilityComponent", "Warning: Scene at slot " +
+                                             String::num(i) +
+                                             " does not contain AbilityNode");
             godot::Node* node_instance = Object::cast_to<godot::Node>(instance);
             if (node_instance != nullptr) {
               node_instance->queue_free();
@@ -224,16 +223,17 @@ void AbilityComponent::_physics_process(double delta) {
 
         if (range > 0.0f && distance > range) {
           // Target out of range - interrupt channel
-          UtilityFunctions::print(
-              "[AbilityComponent] Channel interrupted: target out of range (" +
-              String::num(distance, 1) + "m > " + String::num(range, 1) + "m)");
+          DBG_INFO("AbilityComponent",
+                   "Channel interrupted: target out of range (" +
+                       String::num(distance, 1) + "m > " +
+                       String::num(range, 1) + "m)");
           _finish_casting();
           return;
         }
       } else {
         // Target no longer exists or not in tree - interrupt channel
-        UtilityFunctions::print(
-            "[AbilityComponent] Channel interrupted: target no longer valid");
+        DBG_INFO("AbilityComponent",
+                 "Channel interrupted: target no longer valid");
         _finish_casting();
         return;
       }
@@ -295,8 +295,7 @@ void AbilityComponent::_physics_process(double delta) {
 void AbilityComponent::set_ability_scene(int slot,
                                          const Ref<PackedScene>& scene) {
   if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
-    UtilityFunctions::print("[AbilityComponent] Invalid slot: " +
-                            String::num(slot));
+    DBG_INFO("AbilityComponent", "Invalid slot: " + String::num(slot));
     return;
   }
   ability_scenes[slot] = scene;
@@ -333,8 +332,8 @@ void AbilityComponent::set_ability_count(int count) {
   if (static_cast<int>(ability_scenes.size()) != count) {
     ability_scenes.resize(count);
     cooldown_timers.resize(count, 0.0f);
-    UtilityFunctions::print("[AbilityComponent] Resized to " +
-                            String::num(count) + " ability slots");
+    DBG_INFO("AbilityComponent",
+             "Resized to " + String::num(count) + " ability slots");
   }
 }
 
@@ -350,8 +349,8 @@ void AbilityComponent::set_ability_scenes(const godot::Array& scenes) {
   ability_scenes = scenes;
   // Resize cooldown timers to match
   cooldown_timers.resize(ability_scenes.size(), 0.0f);
-  UtilityFunctions::print("[AbilityComponent] Set " +
-                          String::num(scenes.size()) + " ability scenes");
+  DBG_INFO("AbilityComponent",
+           "Set " + String::num(scenes.size()) + " ability scenes");
 }
 
 godot::Array AbilityComponent::get_ability_scenes() const {
@@ -409,8 +408,8 @@ bool AbilityComponent::is_casting() const {
 
 void AbilityComponent::interrupt_casting() {
   if (casting_slot >= 0) {
-    UtilityFunctions::print("[AbilityComponent] Casting interrupted on slot " +
-                            godot::String::num(casting_slot));
+    DBG_INFO("AbilityComponent",
+             "Casting interrupted on slot " + godot::String::num(casting_slot));
     // Apply cooldown even though we interrupted
     if (casting_state == static_cast<int>(CastState::ON_COOLDOWN) ||
         casting_state == static_cast<int>(CastState::CASTING)) {
@@ -521,9 +520,9 @@ bool AbilityComponent::_can_afford(int slot) {
     String pool_id = ability->get_resource_pool_id();
     ResourcePoolComponent* pool = _get_resource_pool(pool_id);
     if (pool == nullptr) {
-      UtilityFunctions::print("[AbilityComponent] Warning: No resource pool '" +
-                              pool_id + "' found for ability '" +
-                              ability->get_ability_name() + "'");
+      DBG_INFO("AbilityComponent", "Warning: No resource pool '" + pool_id +
+                                       "' found for ability '" +
+                                       ability->get_ability_name() + "'");
       return false;
     }
 
@@ -553,9 +552,8 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
   // Validate the ability can execute on this target
   Unit* target_unit = Object::cast_to<Unit>(target);
   if (!ability->can_execute_on_target(owner, target_unit)) {
-    UtilityFunctions::print(
-        "[AbilityComponent] Ability validation failed for slot " +
-        String::num(slot));
+    DBG_INFO("AbilityComponent",
+             "Ability validation failed for slot " + String::num(slot));
     emit_signal("cast_failed", slot, "invalid_target");
     return;
   }
@@ -567,8 +565,8 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
 
   emit_signal("ability_cast_started", slot, target);
 
-  UtilityFunctions::print("[AbilityComponent] Began casting ability slot " +
-                          String::num(slot));
+  DBG_INFO("AbilityComponent",
+           "Began casting ability slot " + String::num(slot));
 }
 
 void AbilityComponent::_execute_ability(int slot) {
@@ -605,8 +603,7 @@ void AbilityComponent::_execute_ability(int slot) {
 
   emit_signal("ability_executed", slot, casting_target);
 
-  UtilityFunctions::print("[AbilityComponent] Executed ability slot " +
-                          String::num(slot));
+  DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
 }
 
 void AbilityComponent::_apply_cooldown(int slot) {

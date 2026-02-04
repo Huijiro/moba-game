@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/print_string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include "../debug/debug_macros.hpp"
 
 using godot::ProjectSettings;
 using godot::UtilityFunctions;
@@ -25,9 +26,7 @@ void GameSettings::set_channel_requires_stop_command_only(bool value) {
   }
 
   settings->set_setting(SETTING_CHANNEL_REQUIRES_STOP, value);
-  UtilityFunctions::print(
-      "[GameSettings] Channel requires stop command only: " +
-      godot::String(value ? "true" : "false"));
+  DBG_INFO("GameSettings", "Channel requires stop command only: " + godot::String(value ? "true" : "false"));
 }
 
 int GameSettings::get_casting_mode() {
@@ -62,7 +61,7 @@ void GameSettings::set_casting_mode(int mode) {
       break;
   }
 
-  UtilityFunctions::print("[GameSettings] Casting mode set to: " + mode_name);
+  DBG_INFO("GameSettings", "Casting mode set to: " + mode_name);
 }
 
 CastingMode GameSettings::get_casting_mode_enum() {
@@ -81,15 +80,13 @@ void GameSettings::register_settings() {
   // Register channel setting with default value
   if (!settings->has_setting(SETTING_CHANNEL_REQUIRES_STOP)) {
     settings->set_setting(SETTING_CHANNEL_REQUIRES_STOP, true);
-    UtilityFunctions::print(
-        "[GameSettings] Registered channel_requires_stop_command_only = true");
+    DBG_INFO("GameSettings", "Registered channel_requires_stop_command_only = true");
   }
 
   // Register casting mode setting with default value (CLICK_TO_CAST)
   if (!settings->has_setting(SETTING_CASTING_MODE)) {
     settings->set_setting(SETTING_CASTING_MODE,
                           static_cast<int>(CastingMode::CLICK_TO_CAST));
-    UtilityFunctions::print(
-        "[GameSettings] Registered casting_mode = CLICK_TO_CAST");
+    DBG_INFO("GameSettings", "Registered casting_mode = CLICK_TO_CAST");
   }
 }

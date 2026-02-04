@@ -11,6 +11,7 @@
 #include "../../debug/visual_debugger.hpp"
 #include "../../visual/projectile_visual.hpp"
 #include "../health/health_component.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -86,8 +87,7 @@ void SkillshotProjectile::_physics_process(double delta) {
 
   // Check if we've exceeded max distance
   if (travel_distance >= max_distance) {
-    UtilityFunctions::print("[SkillshotProjectile] Reached max distance " +
-                            godot::String::num(max_distance));
+    DBG_INFO("SkillshotProjectile", "Reached max distance " + godot::String::num(max_distance));
     _detonate();
     return;
   }
@@ -116,8 +116,7 @@ void SkillshotProjectile::_physics_process(double delta) {
     if (unit != nullptr && unit != caster && unit->is_inside_tree()) {
       float distance = current_pos.distance_to(unit->get_global_position());
       if (distance <= hit_radius) {
-        UtilityFunctions::print("[SkillshotProjectile] Hit unit: " +
-                                unit->get_name());
+        DBG_INFO("SkillshotProjectile", "Hit unit: " + unit->get_name());
         hit_unit = true;
         hit_target = unit;
         _detonate(hit_target);
@@ -142,8 +141,7 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
 
   // If we have a specific hit target (from collision), damage only that unit
   if (hit_target != nullptr && hit_target->is_inside_tree()) {
-    UtilityFunctions::print("[SkillshotProjectile] Detonating at (" +
-                            godot::String::num(explosion_center.x) + ", " +
+    DBG_INFO("SkillshotProjectile", "Detonating at (" + godot::String::num(explosion_center.x) + ", " +
                             godot::String::num(explosion_center.z) + ")");
 
     HealthComponent* health = Object::cast_to<HealthComponent>(
@@ -151,16 +149,14 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
 
     if (health != nullptr) {
       health->apply_damage(damage, caster);
-      UtilityFunctions::print("[SkillshotProjectile] Hit " +
-                              hit_target->get_name() + " for " +
+      DBG_INFO("SkillshotProjectile", "Hit " + hit_target->get_name() + " for " +
                               godot::String::num(damage) + " damage");
     }
 
-    UtilityFunctions::print("[SkillshotProjectile] Total hits: 1");
+    DBG_INFO("SkillshotProjectile", "Total hits: 1");
   } else {
     // No specific target - search for units in AoE radius
-    UtilityFunctions::print("[SkillshotProjectile] Detonating at (" +
-                            godot::String::num(explosion_center.x) + ", " +
+    DBG_INFO("SkillshotProjectile", "Detonating at (" + godot::String::num(explosion_center.x) + ", " +
                             godot::String::num(explosion_center.z) +
                             ") with radius " + godot::String::num(aoe_radius));
 
@@ -226,13 +222,12 @@ void SkillshotProjectile::_find_and_damage_units() {
     if (health != nullptr) {
       health->apply_damage(damage, caster);
       hit_count++;
-      UtilityFunctions::print("[SkillshotProjectile] Hit " + unit->get_name() +
+      DBG_INFO("SkillshotProjectile", "Hit " + unit->get_name() +
                               " for " + godot::String::num(damage) + " damage");
     }
   }
 
-  UtilityFunctions::print("[SkillshotProjectile] Total hits: " +
-                          godot::String::num(hit_count));
+  DBG_INFO("SkillshotProjectile", "Total hits: " + godot::String::num(hit_count));
 }
 
 void SkillshotProjectile::setup(Unit* caster_unit,
@@ -262,8 +257,7 @@ void SkillshotProjectile::setup(Unit* caster_unit,
     set_global_position(caster_unit->get_global_position());
   }
 
-  UtilityFunctions::print(
-      "[SkillshotProjectile] Setup: damage=" + godot::String::num(damage) +
+  DBG_INFO("SkillshotProjectile", "Setup: damage=" + godot::String::num(damage) +
       ", speed=" + godot::String::num(speed) +
       ", max_distance=" + godot::String::num(max_distance) +
       ", aoe_radius=" + godot::String::num(aoe_radius));

@@ -1,4 +1,5 @@
 #include "fireball_node.hpp"
+#include "../../../debug/debug_macros.hpp"
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -39,7 +40,7 @@ void FireballNode::_bind_methods() {
 
 void FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
   if (caster == nullptr) {
-    UtilityFunctions::print("[Fireball] No caster provided");
+    DBG_INFO("Fireball", "No caster provided");
     return;
   }
 
@@ -56,8 +57,7 @@ void FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
   // Spawn the projectile
   SkillshotProjectile* projectile = _spawn_projectile(caster, target_position);
   if (projectile != nullptr) {
-    UtilityFunctions::print("[Fireball] Launched fireball from " +
-                            caster->get_name() + " towards (" +
+    DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() + " towards (" +
                             String::num(target_position.x, 2) + ", " +
                             String::num(target_position.z, 2) + ")");
   }
@@ -83,15 +83,14 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
     Unit* caster,
     const Vector3& target_position) {
   if (caster == nullptr || !caster->is_inside_tree()) {
-    UtilityFunctions::print(
-        "[Fireball] Cannot spawn projectile: caster invalid");
+    DBG_INFO("Fireball", "Cannot spawn projectile: caster invalid");
     return nullptr;
   }
 
   // Create new projectile node
   SkillshotProjectile* projectile = memnew(SkillshotProjectile);
   if (projectile == nullptr) {
-    UtilityFunctions::print("[Fireball] Failed to create projectile");
+    DBG_INFO("Fireball", "Failed to create projectile");
     return nullptr;
   }
 
@@ -101,7 +100,7 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
   if (parent != nullptr) {
     parent->add_child(projectile);
   } else {
-    UtilityFunctions::print("[Fireball] Warning: Caster has no parent");
+    DBG_INFO("Fireball", "Warning: Caster has no parent");
     // Don't add to tree if parent doesn't exist
     delete projectile;
     return nullptr;

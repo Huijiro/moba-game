@@ -18,18 +18,20 @@ using godot::Vector3;
 enum class DrawType {
   LINE,
   CIRCLE,
+  SPHERE,
+  VECTOR,
 };
 
 struct PendingDraw {
   DrawType type;
   Vector3 p1;
   Vector3 p2;
-  Vector3 center;       // For circles
-  float radius = 0.0f;  // For circles
+  Vector3 center;       // For circles, spheres
+  float radius = 0.0f;  // For circles, spheres
   Color color;
   float thickness = 1.0f;  // Line thickness in units
   bool filled = false;     // Whether to fill shapes
-  int segments = 32;       // For circles
+  int segments = 32;       // For circles, spheres
 };
 
 /// Visual debugger using ImmediateMesh for real-time drawing
@@ -70,6 +72,23 @@ class VisualDebugger : public Node3D {
                  const Vector3& to,
                  const Color& color = Color(1, 1, 1, 1),
                  float thickness = 1.0f);
+
+  void draw_sphere(const Vector3& center,
+                   float radius,
+                   const Color& color = Color(0, 1, 0, 1),
+                   int segments = 16,
+                   float thickness = 1.0f);
+
+  void draw_vector(const Vector3& origin,
+                   const Vector3& direction,
+                   float length = 1.0f,
+                   const Color& color = Color(1, 1, 0, 1),
+                   float thickness = 1.0f);
+
+  void draw_cross(const Vector3& center,
+                  float size = 0.5f,
+                  const Color& color = Color(1, 0, 0, 1),
+                  float thickness = 1.0f);
 
   void clear();
 

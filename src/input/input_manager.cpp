@@ -26,6 +26,7 @@
 #include "../core/game_settings.hpp"
 #include "../core/unit.hpp"
 #include "../debug/visual_debugger.hpp"
+#include "../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -194,8 +195,7 @@ void InputManager::_input(const Ref<InputEvent>& event) {
             awaiting_target_slot = -1;
           } else {
             // No target clicked - stay in targeting mode
-            UtilityFunctions::print(
-                "[InputManager] No valid target. Click on a unit.");
+            DBG_INFO("InputManager", "No valid target. Click on a unit.");
             return;
           }
         } else {
@@ -208,12 +208,10 @@ void InputManager::_input(const Ref<InputEvent>& event) {
 
         // Log appropriate message based on ability type
         if (cast_type == 2) {  // CHANNEL
-          UtilityFunctions::print(
-              "[InputManager] Channel started on ability slot " +
-              String::num(awaiting_target_slot) +
+          DBG_INFO("InputManager", "Channel started on ability slot " + String::num(awaiting_target_slot) +
               " - use S (stop) to interrupt");
         } else {
-          UtilityFunctions::print("[InputManager] Cast ability at target");
+          DBG_INFO("InputManager", "Cast ability at target");
         }
 
         get_viewport()->set_input_as_handled();
@@ -249,16 +247,14 @@ void InputManager::_input(const Ref<InputEvent>& event) {
 
       // Enemies: issue ATTACK order (approach until in range).
       controlled_unit->issue_attack_order(clicked_unit);
-      UtilityFunctions::print("[InputManager] Issued ATTACK order on: " +
-                              String(clicked_unit->get_name()));
+      DBG_INFO("InputManager", "Issued ATTACK order on: " + String(clicked_unit->get_name()));
       get_viewport()->set_input_as_handled();
       return;
     }
 
     if (auto clicked_interactable =
             Object::cast_to<Interactable>(clicked_object)) {
-      UtilityFunctions::print("[InputManager] Clicked Interactable: " +
-                              String(clicked_interactable->get_name()));
+      DBG_INFO("InputManager", "Clicked Interactable: " + String(clicked_interactable->get_name()));
       get_viewport()->set_input_as_handled();
       return;
     }
@@ -346,7 +342,7 @@ Ref<PackedScene> InputManager::get_click_indicator_scene() const {
 
 void InputManager::set_move_action(const String& action) {
   move_action = action;
-  UtilityFunctions::print("[InputManager] Move action set to: " + action);
+  DBG_INFO("InputManager", "Move action set to: " + action);
 }
 
 String InputManager::get_move_action() const {
@@ -355,7 +351,7 @@ String InputManager::get_move_action() const {
 
 void InputManager::set_cast_action(const String& action) {
   cast_action = action;
-  UtilityFunctions::print("[InputManager] Cast action set to: " + action);
+  DBG_INFO("InputManager", "Cast action set to: " + action);
 }
 
 String InputManager::get_cast_action() const {
@@ -507,19 +503,18 @@ void InputManager::_update_click_marker(double delta) {
 
 void InputManager::bind_ability_to_key(const String& key, int ability_slot) {
   if (ability_slot < 0 || ability_slot > 3) {
-    UtilityFunctions::print("[InputManager] Invalid ability slot: " +
-                            String::num(ability_slot));
+    DBG_INFO("InputManager", "Invalid ability slot: " + String::num(ability_slot));
     return;
   }
   keybind_map[key] = ability_slot;
-  UtilityFunctions::print("[InputManager] Bound " + key + " to ability slot " +
+  DBG_INFO("InputManager", "Bound " + key + " to ability slot " +
                           String::num(ability_slot));
 }
 
 void InputManager::unbind_key(const String& key) {
   if (keybind_map.has(key)) {
     keybind_map.erase(key);
-    UtilityFunctions::print("[InputManager] Unbound " + key);
+    DBG_INFO("InputManager", "Unbound " + key);
   }
 }
 
@@ -553,14 +548,12 @@ void InputManager::_init_default_keybinds() {
       AbilityNode* ability = ability_component->get_ability(i);
       String ability_name =
           ability != nullptr ? ability->get_ability_name() : "Unknown";
-      UtilityFunctions::print("[InputManager] Ability " +
-                              String::num(i + 1, 0) + " (" + ability_name +
+      DBG_INFO("InputManager", "Ability " + String::num(i + 1, 0) + " (" + ability_name +
                               ") bound to key: " + key_name);
     }
   }
 
-  UtilityFunctions::print("[InputManager] Initialized keybinds for " +
-                          String::num(ability_count) + " ability slots");
+  DBG_INFO("InputManager", "Initialized keybinds for " + String::num(ability_count) + " ability slots");
 }
 
 void InputManager::_handle_ability_input(const String& key) {
@@ -571,7 +564,7 @@ void InputManager::_handle_ability_input(const String& key) {
   // Get the ability component from the unit
   auto ability_component = controlled_unit->get_ability_component();
   if (ability_component == nullptr) {
-    UtilityFunctions::print("[InputManager] Unit has no AbilityComponent");
+    DBG_INFO("InputManager", "Unit has no AbilityComponent");
     return;
   }
 
@@ -590,8 +583,7 @@ void InputManager::_handle_ability_input(const String& key) {
   // Check if ability is on cooldown before allowing cast attempt
   if (ability_component->is_on_cooldown(ability_slot)) {
     float remaining = ability_component->get_cooldown_remaining(ability_slot);
-    UtilityFunctions::print("[InputManager] Ability slot " +
-                            String::num(ability_slot) + " is on cooldown (" +
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) + " is on cooldown (" +
                             String::num(remaining, 2) + "s remaining)");
     return;  // Don't enter targeting mode if on cooldown
   }
@@ -605,8 +597,7 @@ void InputManager::_handle_ability_input(const String& key) {
     // Cast immediately on self
     ability_component->try_cast_point(ability_slot,
                                       controlled_unit->get_global_position());
-    UtilityFunctions::print("[InputManager] Self-cast ability slot " +
-                            String::num(ability_slot));
+    DBG_INFO("InputManager", "Self-cast ability slot " + String::num(ability_slot));
     return;
   }
 
@@ -621,17 +612,15 @@ void InputManager::_handle_ability_input(const String& key) {
         if (targeting_type == 0 && cursor_target != nullptr) {
           // UNIT_TARGET - use target if available
           ability_component->try_cast(ability_slot, cursor_target);
-          UtilityFunctions::print("[InputManager] Instant cast on unit target");
+          DBG_INFO("InputManager", "Instant cast on unit target");
         } else {
           // SKILLSHOT, POINT_TARGET, AREA - use position
           ability_component->try_cast_point(ability_slot, cursor_position);
-          UtilityFunctions::print(
-              "[InputManager] Instant cast at cursor position");
+          DBG_INFO("InputManager", "Instant cast at cursor position");
         }
       } else {
         // No valid cursor position
-        UtilityFunctions::print(
-            "[InputManager] Cannot cast - no valid target position");
+        DBG_INFO("InputManager", "Cannot cast - no valid target position");
       }
       break;
     }
@@ -647,9 +636,7 @@ void InputManager::_handle_ability_input(const String& key) {
       indicator_ability_slot = ability_slot;
       indicator_charging = true;
       indicator_charge_time = 0.0;
-      UtilityFunctions::print(
-          "[InputManager] Indicator charging for ability slot " +
-          String::num(ability_slot) + " - release to cast");
+      DBG_INFO("InputManager", "Indicator charging for ability slot " + String::num(ability_slot) + " - release to cast");
       break;
     }
   }
@@ -661,16 +648,13 @@ void InputManager::_enter_ability_targeting_mode(int ability_slot,
   is_awaiting_unit_target = (targeting_type == 0);  // UNIT_TARGET requires unit
 
   if (targeting_type == 0) {  // UNIT_TARGET
-    UtilityFunctions::print("[InputManager] Ability slot " +
-                            String::num(ability_slot) +
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
                             " waiting for unit target - click on target");
   } else if (targeting_type == 3) {  // SKILLSHOT
-    UtilityFunctions::print("[InputManager] Ability slot " +
-                            String::num(ability_slot) +
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
                             " waiting for skillshot direction - click to aim");
   } else {  // POINT_TARGET (1), AREA (2), or other position-based
-    UtilityFunctions::print("[InputManager] Ability slot " +
-                            String::num(ability_slot) +
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
                             " waiting for position target - click to cast");
   }
 }
@@ -684,9 +668,7 @@ void InputManager::_handle_stop_command() {
 
   // Cancel any ability targeting
   if (awaiting_target_slot >= 0) {
-    UtilityFunctions::print(
-        "[InputManager] Stop command: Cancelled targeting mode for ability " +
-        String::num(awaiting_target_slot));
+    DBG_INFO("InputManager", "Stop command: Cancelled targeting mode for ability " + String::num(awaiting_target_slot));
     awaiting_target_slot = -1;
     is_awaiting_unit_target = false;
     did_stop_anything = true;
@@ -695,7 +677,7 @@ void InputManager::_handle_stop_command() {
   // Interrupt any active channel ability
   auto ability_component = controlled_unit->get_ability_component();
   if (ability_component != nullptr && ability_component->is_casting()) {
-    UtilityFunctions::print("[InputManager] Stop command: Channel interrupted");
+    DBG_INFO("InputManager", "Stop command: Channel interrupted");
     ability_component->interrupt_casting();
     did_stop_anything = true;
   }
@@ -703,21 +685,19 @@ void InputManager::_handle_stop_command() {
   // Cancel any movement orders
   if (controlled_unit->has_method("issue_stop_order")) {
     controlled_unit->call("issue_stop_order");
-    UtilityFunctions::print("[InputManager] Stop command: Cancelled movement");
+    DBG_INFO("InputManager", "Stop command: Cancelled movement");
     did_stop_anything = true;
   }
 
   if (!did_stop_anything) {
-    UtilityFunctions::print("[InputManager] Stop command: Nothing to stop");
+    DBG_INFO("InputManager", "Stop command: Nothing to stop");
   }
 }
 
 void InputManager::_cancel_targeting() {
   // Cancel the "ready to cast" state when player takes any action
   if (awaiting_target_slot >= 0) {
-    UtilityFunctions::print(
-        "[InputManager] Cancelled targeting mode for ability " +
-        String::num(awaiting_target_slot) + " (action taken)");
+    DBG_INFO("InputManager", "Cancelled targeting mode for ability " + String::num(awaiting_target_slot) + " (action taken)");
     awaiting_target_slot = -1;
     is_awaiting_unit_target = false;
   }

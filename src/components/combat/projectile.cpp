@@ -8,6 +8,7 @@
 
 #include "../../core/unit.hpp"
 #include "../health/health_component.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -54,7 +55,7 @@ void Projectile::_physics_process(double delta) {
     if (target_health != nullptr && !target_health->is_dead()) {
       // Apply damage
       if (attacker != nullptr) {
-        UtilityFunctions::print("[Projectile] " + attacker->get_name() +
+        DBG_INFO("Projectile", "" + attacker->get_name() +
                                 "'s projectile hit " + target->get_name() +
                                 " for " + godot::String::num(damage) +
                                 " damage");
@@ -62,7 +63,7 @@ void Projectile::_physics_process(double delta) {
       target_health->apply_damage(damage, attacker);
     } else if (target_health != nullptr && target_health->is_dead()) {
       if (attacker != nullptr) {
-        UtilityFunctions::print("[Projectile] " + attacker->get_name() +
+        DBG_INFO("Projectile", "" + attacker->get_name() +
                                 "'s projectile reached " + target->get_name() +
                                 " but target was already dead");
       }

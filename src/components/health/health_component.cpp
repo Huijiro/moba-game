@@ -10,6 +10,7 @@
 #include <godot_cpp/variant/variant.hpp>
 
 #include "../../core/unit.hpp"
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -85,24 +86,22 @@ bool HealthComponent::apply_damage(float amount, godot::Object* source) {
 
   // Log damage
   if (owner_unit != nullptr) {
-    UtilityFunctions::print(
-        "[HealthComponent] " + owner_unit->get_name() + " took " +
+    DBG_INFO("HealthComponent", "" + owner_unit->get_name() + " took " +
         godot::String::num(amount) +
         " damage. HP: " + godot::String::num(current_health) + "/" +
         godot::String::num(max_health));
   } else {
-    UtilityFunctions::print(
-        "[HealthComponent] Took " + godot::String::num(amount) +
+    DBG_INFO("HealthComponent", "Took " + godot::String::num(amount) +
         " damage. HP: " + godot::String::num(current_health) + "/" +
         godot::String::num(max_health));
   }
 
   if (current_health <= 0.0f) {
     if (owner_unit != nullptr) {
-      UtilityFunctions::print("[HealthComponent] " + owner_unit->get_name() +
+      DBG_INFO("HealthComponent", "" + owner_unit->get_name() +
                               " died!");
     } else {
-      UtilityFunctions::print("[HealthComponent] Unit died!");
+      DBG_INFO("HealthComponent", "Unit died!");
     }
 
     is_dead_flag = true;
@@ -146,6 +145,5 @@ void HealthComponent::_disable_collision() {
   owner_unit->set_collision_layer(0);
   owner_unit->set_collision_mask(0);
 
-  UtilityFunctions::print("[HealthComponent] Disabled collision for " +
-                          owner_unit->get_name());
+  DBG_INFO("HealthComponent", "Disabled collision for " + owner_unit->get_name());
 }
