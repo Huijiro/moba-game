@@ -414,6 +414,63 @@ If unit floats:
 
 ## Git Workflow
 
+### Commit Message Format
+
+All commits must follow this format for consistency and clarity:
+
+```
+<type>(<scope>): <subject>
+
+<body>
+```
+
+**Types:**
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code refactoring without changing functionality
+- `chore` - Build, CI, documentation, or non-code changes
+- `test` - Adding or updating tests
+- `perf` - Performance improvements
+- `docs` - Documentation updates
+
+**Scope:** The component or system affected (e.g., `combat`, `abilities`, `input`, `movement`)
+
+**Subject:** Brief description (50 chars max), imperative mood ("add" not "added")
+
+**Body:** Detailed explanation of the change (optional but recommended for complex changes):
+- Why the change was made
+- What the change does
+- Any breaking changes or side effects
+
+### Examples
+
+```bash
+# Simple fix
+git commit -m "fix(attack): Resolve unit stopping after first attack"
+
+# Feature with explanation
+git commit -m "feat(combat): Implement attack order system with range-based chase behavior
+
+Major improvements to the attack component:
+
+**Attack Order System:**
+- Added signal-based attack order handling in AttackComponent
+- Component now listens to Unit's order_changed signal and responds to ATTACK orders
+- Maintains persistent attack target throughout attack lifecycle
+
+**Range-Based Attack and Chase:**
+- Unit automatically chases target when out of attack range
+- Instantly switches to attacking when target comes into range
+- Continues attacking repeatedly with proper cooldown management"
+
+# Cleanup
+git commit -m "chore: Remove markdown documentation from root directory
+
+Cleaned up the project root by removing outdated markdown guides."
+```
+
+### Basic Git Commands
+
 ```bash
 # Check status
 git status
@@ -421,8 +478,8 @@ git status
 # Stage changes
 git add .
 
-# Commit with descriptive message
-git commit -m "Add feature: description"
+# Commit with message
+git commit -m "type(scope): description"
 
 # View log
 git log --oneline
