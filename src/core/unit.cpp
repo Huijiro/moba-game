@@ -45,6 +45,14 @@ void Unit::_ready() {
   }
 }
 
+void Unit::set_faction_id(int32_t new_faction_id) {
+  faction_id = new_faction_id;
+}
+
+int32_t Unit::get_faction_id() const {
+  return faction_id;
+}
+
 void Unit::set_unit_name(const String& name) {
   unit_name = name;
 }
