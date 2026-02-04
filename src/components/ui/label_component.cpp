@@ -3,9 +3,11 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/style_box_flat.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/object.hpp>
+#include <godot_cpp/variant/color.hpp>
 
 #include "../../core/unit.hpp"
 
@@ -28,10 +30,17 @@ void LabelComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_label_offset"),
                        &LabelComponent::get_label_offset);
 
+  ClassDB::bind_method(D_METHOD("set_font_size", "size"),
+                       &LabelComponent::set_font_size);
+  ClassDB::bind_method(D_METHOD("get_font_size"),
+                       &LabelComponent::get_font_size);
+
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_rate"), "set_update_rate",
                "get_update_rate");
   ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "world_offset"),
                "set_label_offset", "get_label_offset");
+  ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size"), "set_font_size",
+               "get_font_size");
 }
 
 void LabelComponent::_ready() {
@@ -64,6 +73,17 @@ void LabelComponent::_ready() {
                                   godot::Control::ANCHOR_BEGIN, 0);
   label_2d->set_anchor_and_offset(godot::SIDE_TOP, godot::Control::ANCHOR_BEGIN,
                                   0);
+
+  // Set font size
+  label_2d->add_theme_font_size_override(String("font_size"), font_size);
+
+  // Add background for visibility
+  auto bg = memnew(godot::StyleBoxFlat);
+  bg->set_bg_color(
+      godot::Color(0, 0, 0, 0.6f));  // Semi-transparent dark background
+  bg->set_corner_radius_all(4);      // Rounded corners
+  bg->set_content_margin_all(4);     // Padding inside
+  label_2d->add_theme_stylebox_override(String("normal"), bg);
 }
 
 void LabelComponent::_physics_process(double delta) {
@@ -133,4 +153,15 @@ void LabelComponent::set_label_offset(const Vector3& offset) {
 
 Vector3 LabelComponent::get_label_offset() const {
   return world_offset;
+}
+
+void LabelComponent::set_font_size(int size) {
+  font_size = size > 8 ? size : 8;
+  if (label_2d) {
+    label_2d->add_theme_font_size_override(String("font_size"), font_size);
+  }
+}
+
+int LabelComponent::get_font_size() const {
+  return font_size;
 }

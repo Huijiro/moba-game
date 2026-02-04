@@ -39,6 +39,9 @@ class LabelComponent : public Node {
   void set_label_offset(const Vector3& offset);
   Vector3 get_label_offset() const;
 
+  void set_font_size(int size);
+  int get_font_size() const;
+
  private:
   // Update label content and positioning
   void _update_label_content();
@@ -52,6 +55,7 @@ class LabelComponent : public Node {
   // Configuration
   float update_rate = 10.0f;                   // Updates per second
   Vector3 world_offset = Vector3(0, 2.5f, 0);  // World space offset from unit
+  int font_size = 16;                          // Font size in pixels
 
   // Timing
   double accumulated_time = 0.0;
