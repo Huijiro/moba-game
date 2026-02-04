@@ -98,8 +98,15 @@ void LabelComponent::_update_label_transform() {
       // Calculate direction from label to camera (including vertical angle)
       Vector3 look_dir = (camera_pos - label_pos).normalized();
 
-      // Face camera directly (includes both horizontal and vertical rotation)
-      Label3D::look_at(camera_pos, Vector3(0, 1, 0));
+      // Face camera directly without Y-axis constraint to allow vertical
+      // rotation We need to find an up vector that isn't parallel to look_dir
+      Vector3 up = Vector3(0, 1, 0);
+      if (godot::Math::abs(look_dir.dot(up)) > 0.99f) {
+        // If looking nearly straight up or down, use a different up vector
+        up = Vector3(1, 0, 0);
+      }
+
+      Label3D::look_at(camera_pos, up);
     }
   }
 }
