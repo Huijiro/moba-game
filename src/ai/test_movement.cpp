@@ -1,5 +1,6 @@
 #include "test_movement.hpp"
 
+#include "../common/unit_signals.hpp"
 #include "../core/unit.hpp"
 
 #include <cmath>
@@ -175,7 +176,8 @@ void TestMovement::wander_once() {
   Vector3 target = origin_position + offset;
   target.y = origin_position.y;
 
-  unit->issue_move_order(target);
+  // Relay move request through Unit signal hub
+  unit->relay(move_requested, target);
 }
 
 Unit* TestMovement::_get_unit() const {

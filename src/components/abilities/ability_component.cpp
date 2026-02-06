@@ -7,16 +7,17 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
 #include "../resources/resource_pool_component.hpp"
+#include "../ui/label_registry.hpp"
 #include "ability_node.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
-using godot::Object;
 using godot::PackedScene;
 using godot::PropertyInfo;
 using godot::Ref;
@@ -92,6 +93,10 @@ void AbilityComponent::_bind_methods() {
   ADD_SIGNAL(godot::MethodInfo("ability_channel_tick",
                                PropertyInfo(Variant::INT, "slot"),
                                PropertyInfo(Variant::OBJECT, "target")));
+
+  // Bind signal handler for chase range reached
+  ClassDB::bind_method(D_METHOD("_on_chase_range_reached", "target"),
+                       &AbilityComponent::_on_chase_range_reached);
 }
 
 void AbilityComponent::_ready() {
@@ -106,6 +111,13 @@ void AbilityComponent::_ready() {
     DBG_INFO("AbilityComponent", "No Unit owner found");
     return;
   }
+
+  // Register and connect to chase_range_reached signal
+  // This allows deferred abilities (e.g., Instant Strike) to execute when in
+  // range
+  owner->register_signal(get_chase_range_reached());
+  owner->connect(get_chase_range_reached(),
+                 godot::Callable(this, StringName("_on_chase_range_reached")));
 
   // Try to get resource pool for mana checks
   resource_pool = Object::cast_to<ResourcePoolComponent>(
@@ -369,11 +381,21 @@ godot::Array AbilityComponent::get_abilities() const {
 
 bool AbilityComponent::try_cast(int slot, Object* target) {
   if (!_can_cast(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (not ready)");
     emit_signal("cast_failed", slot, "not_ready");
     return false;
   }
 
   if (!_can_afford(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (insufficient resources)");
     emit_signal("cast_failed", slot, "insufficient_resources");
     return false;
   }
@@ -384,11 +406,21 @@ bool AbilityComponent::try_cast(int slot, Object* target) {
 
 bool AbilityComponent::try_cast_point(int slot, const Vector3& point) {
   if (!_can_cast(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (not ready)");
     emit_signal("cast_failed", slot, "not_ready");
     return false;
   }
 
   if (!_can_afford(slot)) {
+    AbilityNode* ability = get_ability(slot);
+    DBG_DEBUG("AbilityComponent",
+              "Cannot cast " +
+                  (ability ? ability->get_ability_name() : String::num(slot)) +
+                  " (insufficient resources)");
     emit_signal("cast_failed", slot, "insufficient_resources");
     return false;
   }
@@ -552,8 +584,9 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
   // Validate the ability can execute on this target
   Unit* target_unit = Object::cast_to<Unit>(target);
   if (!ability->can_execute_on_target(owner, target_unit)) {
-    DBG_INFO("AbilityComponent",
-             "Ability validation failed for slot " + String::num(slot));
+    DBG_DEBUG("AbilityComponent", "Ability validation failed for " +
+                                      ability->get_ability_name() +
+                                      " (invalid target)");
     emit_signal("cast_failed", slot, "invalid_target");
     return;
   }
@@ -565,8 +598,7 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
 
   emit_signal("ability_cast_started", slot, target);
 
-  DBG_INFO("AbilityComponent",
-           "Began casting ability slot " + String::num(slot));
+  DBG_INFO("AbilityComponent", "Began casting " + ability->get_ability_name());
 }
 
 void AbilityComponent::_execute_ability(int slot) {
@@ -596,14 +628,23 @@ void AbilityComponent::_execute_ability(int slot) {
 
   // Execute the ability
   Unit* target_unit = Object::cast_to<Unit>(casting_target);
-  ability->execute(owner, target_unit, casting_point);
+  bool executed = ability->execute(owner, target_unit, casting_point);
 
-  // Apply cooldown
-  _apply_cooldown(slot);
+  // Only apply cooldown if ability actually executed (not deferred)
+  if (executed) {
+    _apply_cooldown(slot);
+    emit_signal("ability_executed", slot, casting_target);
 
-  emit_signal("ability_executed", slot, casting_target);
+    // Stop movement after ability execution
+    owner->relay(get_stop_requested());
 
-  DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
+    DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
+  } else {
+    // Ability deferred (e.g., chasing) - reset casting state to try again
+    casting_state = static_cast<int>(CastState::IDLE);
+    casting_timer = 0.0f;
+    DBG_INFO("AbilityComponent", "Ability deferred (waiting for range)");
+  }
 }
 
 void AbilityComponent::_apply_cooldown(int slot) {
@@ -627,4 +668,42 @@ void AbilityComponent::_finish_casting() {
   casting_target = nullptr;
   casting_timer = 0.0f;
   casting_state = static_cast<int>(CastState::IDLE);
+}
+
+void AbilityComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  String casting_status;
+  if (is_casting()) {
+    casting_status = String("CASTING_") + String::num(casting_slot);
+  } else {
+    casting_status = "IDLE";
+  }
+
+  registry->register_property("Ability", "status", casting_status);
+
+  // Register cooldowns for first few ability slots
+  for (int i = 0; i < static_cast<int>(cooldown_timers.size()) && i < 4; ++i) {
+    String slot_key = String("slot_") + String::num(i) + "_cd";
+    float cd = get_cooldown_remaining(i);
+    registry->register_property("Ability", slot_key,
+                                cd > 0.0f ? String::num(cd) : "ready");
+  }
+}
+
+void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
+  // When movement system indicates we've reached chase range,
+  // re-execute any ability that was deferred waiting for range
+  if (casting_slot < 0 ||
+      casting_slot >= static_cast<int>(ability_scenes.size())) {
+    return;
+  }
+
+  // Re-execute the ability now that we're in range
+  _execute_ability(casting_slot);
+
+  DBG_INFO("AbilityComponent", "Ability in slot " + String::num(casting_slot) +
+                                   " triggered by chase_range_reached");
 }

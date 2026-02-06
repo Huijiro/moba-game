@@ -4,12 +4,11 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Object;
 using godot::String;
 using godot::UtilityFunctions;
 
@@ -39,36 +38,29 @@ void FrostBoltNode::_bind_methods() {
                        &FrostBoltNode::calculate_damage);
 }
 
-void FrostBoltNode::execute(Unit* caster,
+bool FrostBoltNode::execute(Unit* caster,
                             Unit* target,
                             godot::Vector3 position) {
   if (caster == nullptr) {
     DBG_ERROR("FrostBolt", "No caster provided");
-    return;
+    return false;
   }
 
   if (target == nullptr) {
     DBG_ERROR("FrostBolt", "No target provided");
-    return;
+    return false;
   }
 
   if (!target->is_inside_tree()) {
     DBG_ERROR("FrostBolt", "Target is not in tree");
-    return;
+    return false;
   }
 
-  // Get health component from target
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    DBG_ERROR("FrostBolt", "Target has no HealthComponent");
-    return;
-  }
-
-  // Calculate and apply damage
+  // Calculate damage
   float damage = calculate_damage(caster, target);
-  target_health->apply_damage(damage, caster);
+
+  // Fire-and-forget: emit take_damage signal, don't wait for response
+  caster->relay(take_damage, damage, target);
   DBG_INFO("FrostBolt", String(caster->get_name()) + " dealt " +
                             String::num(damage) + " damage to " +
                             String(target->get_name()));
@@ -76,6 +68,7 @@ void FrostBoltNode::execute(Unit* caster,
   // TODO: Apply slow effect to target
   // For now, just damage. Slow effect can be added with a status effect system
   // later.
+  return true;
 }
 
 bool FrostBoltNode::can_execute_on_target(Unit* caster, Unit* target) const {

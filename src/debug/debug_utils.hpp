@@ -16,6 +16,12 @@ using godot::Vector3;
 
 namespace DebugUtils {
 
+/// Format Vector3 as compact string: (x,y,z)
+inline String vector3_to_compact_string(const Vector3& v) {
+  return String("(") + String::num(v.x) + String(",") + String::num(v.y) +
+         String(",") + String::num(v.z) + String(")");
+}
+
 /// Draw a path showing movement trajectory
 inline void draw_path(const Vector3* points,
                       int point_count,

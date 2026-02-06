@@ -64,6 +64,23 @@ class AbilityAPI {
                              const Vector3& direction,
                              float force);
 
+  // Movement helpers for abilities
+  /// Move caster towards target to get within ability range
+  /// Returns true if already in range, false if movement was initiated
+  static bool move_to_ability_range(Unit* caster,
+                                    Unit* target,
+                                    float ability_range);
+
+  /// Chase target until in range, then store target for execution
+  /// Used by abilities that need to move to target before executing
+  /// Emits chase_range_reached signal when unit gets within ability_range
+  /// Returns true if already in range (ready to execute immediately)
+  /// Returns false if movement was initiated (will execute on next cast
+  /// attempt when chase_range_reached signal is received)
+  static bool chase_and_prepare_execution(Unit* caster,
+                                          Unit* target,
+                                          float ability_range);
+
   // Utility
   /// Check if two units are enemies
   static bool are_enemies(Unit* unit_a, Unit* unit_b);

@@ -4,12 +4,12 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
-#include "../../health/health_component.hpp"
+#include "../ability_api.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Object;
 using godot::String;
 using godot::UtilityFunctions;
 
@@ -36,40 +36,44 @@ void InstantStrikeNode::_bind_methods() {
                        &InstantStrikeNode::calculate_damage);
 }
 
-void InstantStrikeNode::execute(Unit* caster,
+bool InstantStrikeNode::execute(Unit* caster,
                                 Unit* target,
                                 godot::Vector3 position) {
   if (caster == nullptr) {
     DBG_INFO("InstantStrike", "No caster provided");
-    return;
+    return false;
   }
 
   if (target == nullptr) {
     DBG_INFO("InstantStrike", "No target provided");
-    return;
+    return false;
   }
 
   if (!target->is_inside_tree()) {
     DBG_INFO("InstantStrike", "Target is not in tree");
-    return;
+    return false;
   }
 
-  // Get health component from target
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
+  // Chase target if out of range
+  bool ready_to_execute =
+      AbilityAPI::chase_and_prepare_execution(caster, target, get_range());
 
-  if (target_health == nullptr) {
-    DBG_INFO("InstantStrike", "Target has no HealthComponent");
-    return;
+  if (!ready_to_execute) {
+    DBG_INFO("InstantStrike",
+             String(caster->get_name()) + " chasing " + target->get_name());
+    return false;  // Deferred execution
   }
 
-  // Calculate and apply damage
+  // Calculate damage
   float damage = calculate_damage(caster, target);
-  target_health->apply_damage(damage, caster);
+
+  // Fire-and-forget: emit take_damage signal, don't wait for response
+  caster->relay(take_damage, damage, target);
 
   DBG_INFO("InstantStrike", String(caster->get_name()) + " dealt " +
-                          String::num(damage) + " damage to " +
-                          target->get_name());
+                                String::num(damage) + " damage to " +
+                                target->get_name());
+  return true;  // Successfully executed
 }
 
 bool InstantStrikeNode::can_execute_on_target(Unit* caster,
@@ -83,13 +87,8 @@ bool InstantStrikeNode::can_execute_on_target(Unit* caster,
     return false;
   }
 
-  // Check if target is in range
-  float distance =
-      caster->get_global_position().distance_to(target->get_global_position());
-  if (distance > get_range()) {
-    return false;
-  }
-
+  // Don't check range here - let execute() handle chasing
+  // This allows out-of-range targets to be accepted and chased
   return true;
 }
 

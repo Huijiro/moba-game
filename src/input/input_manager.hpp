@@ -14,6 +14,7 @@
 #include <godot_cpp/variant/vector3.hpp>
 
 #include "../common/casting_mode.hpp"
+#include "../common/unit_signals.hpp"
 
 namespace godot {
 class Object;

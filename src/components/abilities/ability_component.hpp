@@ -6,11 +6,9 @@
 #include <vector>
 
 #include "../unit_component.hpp"
-#include "ability_definition.hpp"
 #include "ability_node.hpp"
 #include "ability_types.hpp"
 
-using godot::Object;
 using godot::PackedScene;
 using godot::Ref;
 using godot::Vector3;
@@ -99,6 +97,9 @@ class AbilityComponent : public UnitComponent {
   // Interrupt active channel or cast (applies cooldown)
   void interrupt_casting();
 
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry) override;
+
   // ========== INTERNAL METHODS ==========
  private:
   // Get resource pool by ID, or return default if not found
@@ -121,6 +122,9 @@ class AbilityComponent : public UnitComponent {
 
   // Transition out of casting state
   void _finish_casting();
+
+  // Handle chase_range_reached signal - re-execute deferred abilities
+  void _on_chase_range_reached(godot::Object* target);
 };
 
 #endif  // GDEXTENSION_ABILITY_COMPONENT_H

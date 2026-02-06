@@ -5,14 +5,13 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
-#include "../../common/unit_order.hpp"
-
 using godot::NavigationAgent3D;
 using godot::PackedStringArray;
 using godot::Vector3;
 
 // Forward declaration
 class Unit;
+class LabelRegistry;
 
 class MovementComponent : public NavigationAgent3D {
   GDCLASS(MovementComponent, NavigationAgent3D)
@@ -25,11 +24,30 @@ class MovementComponent : public NavigationAgent3D {
   bool is_ready = false;
   int32_t frame_count = 0;
   Vector3 desired_location = Vector3(0, 0, 0);
+  float current_target_distance = 0.0f;
+
+  // Chase tracking - when set, continuously move toward this unit
+  Unit* chase_target = nullptr;
+  float chase_desired_range = 0.0f;  // How close to get to chase target
+  bool was_chase_in_range = false;   // Was range reached in previous frame
+
+  // Last valid facing direction - maintained when unit stops
+  Vector3 last_facing_direction = Vector3(0, 0, -1);  // Default: face forward
+
+  // Stop flag - when true, unit should not move or accept movement orders
+  bool is_stopped = false;
 
   // Private helper methods
   void _face_horizontal_direction(const Vector3& direction);
-  void _apply_navigation_target_distance(OrderType order);
   void _on_owner_unit_died(godot::Object* source);
+  void _on_move_requested(const Vector3& position);
+  void _on_attack_requested(godot::Object* target, const Vector3& position);
+  void _on_chase_requested(godot::Object* target, const Vector3& position);
+  void _on_chase_to_range_requested(godot::Object* target,
+                                    const Vector3& position,
+                                    float desired_range);
+  void _on_stop_requested();
+  void _on_interact_requested(godot::Object* target, const Vector3& position);
 
  public:
   MovementComponent();
@@ -50,15 +68,16 @@ class MovementComponent : public NavigationAgent3D {
 
   // Core movement processing
   // Returns horizontal velocity (Y component is always 0)
-  Vector3 process_movement(double delta,
-                           const Vector3& target_location,
-                           OrderType order);
+  Vector3 process_movement(double delta, const Vector3& target_location);
 
   // Utility
   bool is_at_destination() const;
 
   // Get owner Unit for context (replaces get_component_by_class logic)
   Unit* get_owner_unit() const;
+
+  // Debug label registration
+  void register_debug_labels(LabelRegistry* registry);
 };
 
 #endif  // GDEXTENSION_MOVEMENT_COMPONENT_H

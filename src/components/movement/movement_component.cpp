@@ -13,8 +13,11 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
+#include "../../debug/debug_utils.hpp"
 #include "../health/health_component.hpp"
+#include "../ui/label_registry.hpp"
 
 using godot::Basis;
 using godot::Callable;
@@ -23,7 +26,6 @@ using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
 using godot::Node;
-using godot::Object;
 using godot::PropertyInfo;
 using godot::StringName;
 using godot::Transform3D;
@@ -57,9 +59,22 @@ void MovementComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("is_at_destination"),
                        &MovementComponent::is_at_destination);
 
-  // Bind signal callback method
+  // Bind signal callback methods
   ClassDB::bind_method(D_METHOD("_on_owner_unit_died", "source"),
                        &MovementComponent::_on_owner_unit_died);
+  ClassDB::bind_method(D_METHOD("_on_move_requested", "position"),
+                       &MovementComponent::_on_move_requested);
+  ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
+                       &MovementComponent::_on_attack_requested);
+  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
+                       &MovementComponent::_on_chase_requested);
+  ClassDB::bind_method(D_METHOD("_on_chase_to_range_requested", "target",
+                                "position", "desired_range"),
+                       &MovementComponent::_on_chase_to_range_requested);
+  ClassDB::bind_method(D_METHOD("_on_stop_requested"),
+                       &MovementComponent::_on_stop_requested);
+  ClassDB::bind_method(D_METHOD("_on_interact_requested", "target", "position"),
+                       &MovementComponent::_on_interact_requested);
 }
 
 void MovementComponent::_ready() {
@@ -68,12 +83,42 @@ void MovementComponent::_ready() {
 
   Unit* owner = get_owner_unit();
   if (owner != nullptr) {
-    // Connect to health component death signal
-    HealthComponent* health_comp = owner->get_health_component();
-    if (health_comp != nullptr) {
-      health_comp->connect(StringName("died"),
-                           Callable(this, StringName("_on_owner_unit_died")));
+    // Register signals that this component uses
+    owner->register_signal(move_requested);
+    owner->register_signal(attack_requested);
+    owner->register_signal(chase_requested);
+    owner->register_signal(chase_to_range_requested);
+    owner->register_signal(chase_range_reached);
+    owner->register_signal(stop_requested);
+    owner->register_signal(interact_requested);
+
+    // Connect to health component death signal if it exists
+    // Iterate through siblings to find HealthComponent
+    for (int i = 0; i < owner->get_child_count(); ++i) {
+      Node* child = owner->get_child(i);
+      if (child == nullptr)
+        continue;
+      HealthComponent* health_comp = Object::cast_to<HealthComponent>(child);
+      if (health_comp != nullptr) {
+        health_comp->connect(StringName("died"),
+                             Callable(this, StringName("_on_owner_unit_died")));
+        break;
+      }
     }
+
+    // Connect to Unit's movement-related signals
+    owner->connect(move_requested,
+                   Callable(this, StringName("_on_move_requested")));
+    owner->connect(attack_requested,
+                   Callable(this, StringName("_on_attack_requested")));
+    owner->connect(chase_requested,
+                   Callable(this, StringName("_on_chase_requested")));
+    owner->connect(chase_to_range_requested,
+                   Callable(this, StringName("_on_chase_to_range_requested")));
+    owner->connect(stop_requested,
+                   Callable(this, StringName("_on_stop_requested")));
+    owner->connect(interact_requested,
+                   Callable(this, StringName("_on_interact_requested")));
   }
 }
 
@@ -88,11 +133,30 @@ void MovementComponent::_physics_process(double delta) {
     return;
   }
 
+  // Update desired location if actively chasing a target
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+
+    // Check if we've reached desired range for chase
+    float distance_to_target = body->get_global_position().distance_to(
+        chase_target->get_global_position());
+    bool now_in_range = distance_to_target <= chase_desired_range;
+
+    if (now_in_range && !was_chase_in_range) {
+      // Just reached range - emit signal
+      Unit* owner = get_owner_unit();
+      if (owner != nullptr) {
+        owner->relay(get_chase_range_reached(), chase_target);
+      }
+      was_chase_in_range = true;
+    } else if (!now_in_range) {
+      // Out of range again
+      was_chase_in_range = false;
+    }
+  }
+
   // Get movement velocity from our logic
-  // Note: Use MOVE as default order - Unit will set desired_location based on
-  // actual order
-  Vector3 movement_velocity =
-      process_movement(delta, desired_location, OrderType::MOVE);
+  Vector3 movement_velocity = process_movement(delta, desired_location);
 
   // Apply gravity and move
   Vector3 velocity = movement_velocity;
@@ -118,8 +182,7 @@ float MovementComponent::get_rotation_speed() const {
 }
 
 Vector3 MovementComponent::process_movement(double delta,
-                                            const Vector3& target_location,
-                                            OrderType order) {
+                                            const Vector3& target_location) {
   // Safety checks
   Unit* owner = get_owner_unit();
   if (owner == nullptr || !owner->is_inside_tree()) {
@@ -127,11 +190,8 @@ Vector3 MovementComponent::process_movement(double delta,
   }
 
   // If owner unit is dead, don't move
-  // Check if owner is valid and check its health status
-  HealthComponent* health_comp = owner->get_health_component();
-  if (health_comp != nullptr && health_comp->is_dead()) {
-    return Vector3(0, 0, 0);
-  }
+  // Death is handled via the "died" signal - when received, component queues
+  // itself for deletion
 
   // Ensure this component (which IS the NavigationAgent3D) is in tree before
   // using it
@@ -153,11 +213,16 @@ Vector3 MovementComponent::process_movement(double delta,
       return Vector3(0, 0, 0);
     }
     is_ready = true;
-    _apply_navigation_target_distance(order);
+    set_target_desired_distance(current_target_distance);
   }
 
-  // Update target distance based on order type
-  _apply_navigation_target_distance(order);
+  // Update target distance based on stored value (set by signal handlers)
+  set_target_desired_distance(current_target_distance);
+
+  // If stopped, don't update navigation target - just return zero velocity
+  if (is_stopped) {
+    return Vector3(0, 0, 0);
+  }
 
   // Update navigation target position
   Vector3 current_target = get_target_position();
@@ -178,6 +243,8 @@ Vector3 MovementComponent::process_movement(double delta,
   if (distance > 0.001f) {
     direction = displacement / distance;
     velocity = direction * speed;
+    // Update last facing direction when moving
+    last_facing_direction = direction;
   } else if (distance >= 0.0f) {
     // Calculate direction to the actual target (for rotation when near
     // destination)
@@ -186,6 +253,12 @@ Vector3 MovementComponent::process_movement(double delta,
     float target_distance = to_target.length();
     if (target_distance > 0.001f) {
       direction = to_target / target_distance;
+      // Update last facing direction if we have a valid target direction
+      last_facing_direction = direction;
+    } else {
+      // No valid target direction - use last facing direction to maintain
+      // rotation
+      direction = last_facing_direction;
     }
   }
 
@@ -225,33 +298,6 @@ void MovementComponent::_face_horizontal_direction(const Vector3& direction) {
   owner->set_transform(Transform3D(new_basis, owner->get_transform().origin));
 }
 
-void MovementComponent::_apply_navigation_target_distance(OrderType order) {
-  if (!is_ready || !is_inside_tree()) {
-    return;
-  }
-
-  switch (order) {
-    case OrderType::ATTACK: {
-      Unit* owner = get_owner_unit();
-      if (owner != nullptr && owner->is_inside_tree()) {
-        // Get attack range from unit's attack component
-        float attack_range = 2.5f;  // default
-        // Note: We can't directly access AttackComponent here to avoid circular
-        // dependency, but the Unit will handle attack range logic in its own
-        // physics_process. This just sets a reasonable default.
-        set_target_desired_distance(attack_range);
-      }
-      break;
-    }
-    case OrderType::MOVE:
-    case OrderType::INTERACT:
-    case OrderType::NONE:
-    default:
-      set_target_desired_distance(0.0f);
-      break;
-  }
-}
-
 void MovementComponent::set_desired_location(const Vector3& location) {
   desired_location = location;
 }
@@ -285,4 +331,89 @@ void MovementComponent::_on_owner_unit_died(godot::Object* source) {
   if (is_inside_tree()) {
     queue_free();
   }
+}
+
+void MovementComponent::_on_move_requested(const Vector3& position) {
+  // Static movement - no chase target
+  chase_target = nullptr;
+  is_stopped = false;  // Resume movement
+  set_desired_location(position);
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_attack_requested(godot::Object* target,
+                                             const Vector3& position) {
+  // Attack movement - chase target within attack range
+  // Store target and maintain attack range distance
+  chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
+  current_target_distance = 2.5f;
+}
+
+void MovementComponent::_on_chase_requested(godot::Object* target,
+                                            const Vector3& position) {
+  // Chase orders - follow target with no distance constraint
+  chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
+                                                     const Vector3& position,
+                                                     float desired_range) {
+  // Chase orders with desired range - follow target until in range
+  chase_target = Object::cast_to<Unit>(target);
+  is_stopped = false;  // Resume movement
+  chase_desired_range = desired_range;
+  was_chase_in_range = false;  // Reset range tracking
+  if (chase_target != nullptr && chase_target->is_inside_tree()) {
+    set_desired_location(chase_target->get_global_position());
+  } else {
+    // Fallback to position if target invalid
+    set_desired_location(position);
+  }
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::_on_stop_requested() {
+  // Stop order - set flag to prevent further movement updates
+  // This preserves the unit's current facing direction
+  chase_target = nullptr;
+  is_stopped = true;
+  current_target_distance = 0.0f;
+  was_chase_in_range = false;
+}
+
+void MovementComponent::_on_interact_requested(godot::Object* target,
+                                               const Vector3& position) {
+  // Interact movement - move to target position
+  chase_target = nullptr;
+  is_stopped = false;  // Resume movement
+  set_desired_location(position);
+  current_target_distance = 0.0f;
+}
+
+void MovementComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  registry->register_property("Movement", "speed", godot::String::num(speed));
+  registry->register_property(
+      "Movement", "dest",
+      DebugUtils::vector3_to_compact_string(desired_location));
+  registry->register_property("Movement", "at_dest",
+                              is_at_destination() ? "true" : "false");
 }

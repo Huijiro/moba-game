@@ -9,10 +9,12 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
-#include "../health/health_component.hpp"
-#include "projectile.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../health/health_component.hpp"
+#include "../ui/label_registry.hpp"
+#include "projectile.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -27,10 +29,13 @@ AttackComponent::AttackComponent() = default;
 AttackComponent::~AttackComponent() = default;
 
 void AttackComponent::_bind_methods() {
-  // Signal handler
-  ClassDB::bind_method(D_METHOD("_on_unit_order_changed", "previous_order",
-                                "new_order", "target"),
-                       &AttackComponent::_on_unit_order_changed);
+  // Signal handlers
+  ClassDB::bind_method(D_METHOD("_on_move_requested", "position"),
+                       &AttackComponent::_on_move_requested);
+  ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
+                       &AttackComponent::_on_attack_requested);
+  ClassDB::bind_method(D_METHOD("_on_stop_requested"),
+                       &AttackComponent::_on_stop_requested);
 
   // Bind all methods first
   ClassDB::bind_method(D_METHOD("set_base_attack_time", "bat"),
@@ -138,9 +143,18 @@ void AttackComponent::_ready() {
     return;
   }
 
-  // Connect to the Unit's order_changed signal
-  owner->connect("order_changed",
-                 godot::Callable(this, "_on_unit_order_changed"));
+  // Register signals that this component uses
+  owner->register_signal(move_requested);
+  owner->register_signal(attack_requested);
+  owner->register_signal(chase_requested);
+  owner->register_signal(stop_requested);
+
+  // Connect to the Unit's movement-related signals
+  // move_requested cancels any active attack
+  owner->connect(move_requested, godot::Callable(this, "_on_move_requested"));
+  owner->connect(attack_requested,
+                 godot::Callable(this, "_on_attack_requested"));
+  owner->connect(stop_requested, godot::Callable(this, "_on_stop_requested"));
 }
 
 void AttackComponent::_physics_process(double delta) {
@@ -161,11 +175,8 @@ void AttackComponent::_physics_process(double delta) {
     if (attack_windup_timer >= attack_point) {
       if (current_attack_target != nullptr &&
           current_attack_target->is_inside_tree()) {
-        HealthComponent* target_health = Object::cast_to<HealthComponent>(
-            current_attack_target->get_component_by_class("HealthComponent"));
-
-        if (target_health != nullptr && !target_health->is_dead()) {
-          // Fire the attack
+        // Fire the attack if target is still valid
+        if (current_attack_target->is_inside_tree()) {
           if (delivery_type == AttackDelivery::MELEE) {
             _fire_melee(current_attack_target);
           } else if (delivery_type == AttackDelivery::PROJECTILE) {
@@ -186,15 +197,6 @@ void AttackComponent::_physics_process(double delta) {
   // Handle active attack target
   if (active_attack_target != nullptr &&
       active_attack_target->is_inside_tree()) {
-    HealthComponent* target_health = Object::cast_to<HealthComponent>(
-        active_attack_target->get_component_by_class("HealthComponent"));
-
-    if (target_health == nullptr || target_health->is_dead()) {
-      // Target is dead, clear the order
-      active_attack_target = nullptr;
-      return;
-    }
-
     // Check distance to target
     Unit* owner = get_unit();
     if (owner != nullptr) {
@@ -207,8 +209,10 @@ void AttackComponent::_physics_process(double delta) {
           try_fire_at(active_attack_target, delta);
         }
       } else {
-        // Out of range: issue chase order to move toward target
-        owner->issue_chase_order(active_attack_target);
+        // Out of range: emit attack request to move toward target within attack
+        // range
+        owner->relay(attack_requested, active_attack_target,
+                     active_attack_target->get_global_position());
       }
     }
   }
@@ -312,7 +316,8 @@ bool AttackComponent::try_fire_at(Unit* target, double delta) {
 
     if (owner_unit != nullptr) {
       DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                              " started attacking " + target->get_name());
+                                      " started attacking " +
+                                      target->get_name());
     }
 
     emit_signal("attack_started", target);
@@ -332,22 +337,15 @@ void AttackComponent::_fire_melee(Unit* target) {
     return;
   }
 
-  HealthComponent* target_health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (target_health == nullptr) {
-    UtilityFunctions::push_error(
-        "[AttackComponent] Target missing HealthComponent");
-    return;
-  }
+  // Relay damage event through target unit
+  target->relay("take_damage", attack_damage, owner_unit);
 
   if (owner_unit != nullptr) {
-    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                            " hit " + target->get_name() + " for " +
-                            String::num(attack_damage) + " damage (MELEE)");
+    DBG_INFO("AttackComponent",
+             "" + owner_unit->get_name() + " hit " + target->get_name() +
+                 " for " + String::num(attack_damage) + " damage (MELEE)");
   }
 
-  target_health->apply_damage(attack_damage, owner_unit);
   emit_signal("attack_hit", target, attack_damage);
 }
 
@@ -381,9 +379,10 @@ void AttackComponent::_fire_projectile(Unit* target) {
   }
 
   if (owner_unit != nullptr) {
-    DBG_INFO("AttackComponent", "" + owner_unit->get_name() +
-                            " fired projectile at " + target->get_name() +
-                            " (damage: " + String::num(attack_damage) + ")");
+    DBG_INFO("AttackComponent",
+             "" + owner_unit->get_name() + " fired projectile at " +
+                 target->get_name() +
+                 " (damage: " + String::num(attack_damage) + ")");
   }
 
   // Configure projectile with pre-calculated damage
@@ -392,30 +391,38 @@ void AttackComponent::_fire_projectile(Unit* target) {
   emit_signal("attack_hit", target, attack_damage);
 }
 
-void AttackComponent::_on_unit_order_changed(int previous_order,
-                                             int new_order,
-                                             Object* target) {
-  // OrderType::ATTACK = 2
-  if (new_order == 2) {
-    Unit* target_unit = Object::cast_to<Unit>(target);
-    if (target_unit != nullptr) {
-      // Set the active attack target
-      active_attack_target = target_unit;
-      // Try to fire at the target
-      // The _physics_process will handle cooldown timing and repeat attacks
-      try_fire_at(target_unit, 0.0);
-    }
-  } else if (new_order == 3) {
-    // OrderType::CHASE = 3
-    Unit* target_unit = Object::cast_to<Unit>(target);
-    if (target_unit != nullptr) {
-      // Keep the attack target active for when we get back in range
-      if (active_attack_target == nullptr) {
-        active_attack_target = target_unit;
-      }
-    }
-  } else {
-    // Clear attack order when order changes to something else
-    active_attack_target = nullptr;
+void AttackComponent::_on_attack_requested(godot::Object* target,
+                                           const Vector3& position) {
+  // Handle attack request
+  Unit* target_unit = Object::cast_to<Unit>(target);
+  if (target_unit != nullptr) {
+    // Set the active attack target
+    active_attack_target = target_unit;
+    // Try to fire at the target if in range
+    // The _physics_process will handle cooldown timing and repeat attacks
+    try_fire_at(target_unit, 0.0);
   }
+}
+
+void AttackComponent::_on_move_requested(const Vector3& position) {
+  // Cancel any active attack when player issues a move command
+  // Movement takes priority over attacking
+  active_attack_target = nullptr;
+}
+
+void AttackComponent::_on_stop_requested() {
+  // Clear attack order when stopping
+  active_attack_target = nullptr;
+}
+
+void AttackComponent::register_debug_labels(LabelRegistry* registry) {
+  if (!registry) {
+    return;
+  }
+
+  registry->register_property("Attack", "cooldown",
+                              godot::String::num(time_until_next_attack));
+  registry->register_property(
+      "Attack", "target",
+      current_attack_target ? current_attack_target->get_unit_name() : "none");
 }

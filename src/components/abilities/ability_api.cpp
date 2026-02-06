@@ -4,8 +4,8 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
-#include "../health/health_component.hpp"
 #include "../../debug/debug_macros.hpp"
 
 using godot::Node;
@@ -20,14 +20,8 @@ float AbilityAPI::apply_damage(Unit* target, float damage, Unit* source) {
     return 0.0f;
   }
 
-  HealthComponent* health = Object::cast_to<HealthComponent>(
-      target->get_component_by_class("HealthComponent"));
-
-  if (health == nullptr) {
-    return 0.0f;
-  }
-
-  health->apply_damage(damage, source);
+  // Apply damage via relay signal (fire-and-forget)
+  target->relay(take_damage, damage, source);
   return damage;
 }
 
@@ -171,6 +165,51 @@ float AbilityAPI::distance_between(Unit* unit_a, Unit* unit_b) {
 
   return unit_a->get_global_position().distance_to(
       unit_b->get_global_position());
+}
+
+bool AbilityAPI::move_to_ability_range(Unit* caster,
+                                       Unit* target,
+                                       float ability_range) {
+  if (caster == nullptr || target == nullptr || !target->is_inside_tree()) {
+    return false;
+  }
+
+  float distance = distance_between(caster, target);
+
+  // Already in range
+  if (distance <= ability_range) {
+    return true;
+  }
+
+  // Not in range - issue movement order to move towards target
+  caster->relay(get_move_requested(), target->get_global_position());
+
+  return false;
+}
+
+bool AbilityAPI::chase_and_prepare_execution(Unit* caster,
+                                             Unit* target,
+                                             float ability_range) {
+  if (caster == nullptr || target == nullptr || !target->is_inside_tree()) {
+    return false;
+  }
+
+  float distance = distance_between(caster, target);
+
+  // Already in range - ready to execute
+  if (distance <= ability_range) {
+    return true;
+  }
+
+  // Not in range - initiate chase with range goal using
+  // chase_to_range_requested signal Movement will emit chase_range_reached when
+  // unit gets within ability_range
+  caster->relay(get_chase_to_range_requested(), target,
+                target->get_global_position(), ability_range);
+
+  // Return false to indicate we're chasing, not executing
+  // Caller should return early without executing the ability
+  return false;
 }
 
 void AbilityAPI::_search_units_recursive(Node* node,

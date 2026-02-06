@@ -38,10 +38,10 @@ void FireballNode::_bind_methods() {
                        &FireballNode::calculate_damage);
 }
 
-void FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
+bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
   if (caster == nullptr) {
     DBG_INFO("Fireball", "No caster provided");
-    return;
+    return false;
   }
 
   // For skillshot, position is where the projectile should travel to
@@ -57,10 +57,12 @@ void FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
   // Spawn the projectile
   SkillshotProjectile* projectile = _spawn_projectile(caster, target_position);
   if (projectile != nullptr) {
-    DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() + " towards (" +
-                            String::num(target_position.x, 2) + ", " +
-                            String::num(target_position.z, 2) + ")");
+    DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() +
+                             " towards (" + String::num(target_position.x, 2) +
+                             ", " + String::num(target_position.z, 2) + ")");
+    return true;
   }
+  return false;
 }
 
 bool FireballNode::can_execute_on_target(Unit* caster, Unit* target) const {

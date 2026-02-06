@@ -7,8 +7,8 @@
 #include <godot_cpp/variant/variant.hpp>
 
 #include "../../core/unit.hpp"
-#include "../health/health_component.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -48,26 +48,13 @@ void Projectile::_physics_process(double delta) {
 
   // Check if we've arrived (close enough)
   if (distance_to_target <= hit_radius) {
-    // Check if target is still alive
-    HealthComponent* target_health = Object::cast_to<HealthComponent>(
-        target->get_component_by_class("HealthComponent"));
-
-    if (target_health != nullptr && !target_health->is_dead()) {
-      // Apply damage
-      if (attacker != nullptr) {
-        DBG_INFO("Projectile", "" + attacker->get_name() +
-                                "'s projectile hit " + target->get_name() +
-                                " for " + godot::String::num(damage) +
-                                " damage");
-      }
-      target_health->apply_damage(damage, attacker);
-    } else if (target_health != nullptr && target_health->is_dead()) {
-      if (attacker != nullptr) {
-        DBG_INFO("Projectile", "" + attacker->get_name() +
-                                "'s projectile reached " + target->get_name() +
-                                " but target was already dead");
-      }
+    // Apply damage via relay signal
+    if (attacker != nullptr) {
+      DBG_INFO("Projectile", "" + attacker->get_name() + "'s projectile hit " +
+                                 target->get_name() + " for " +
+                                 godot::String::num(damage) + " damage");
     }
+    target->relay("take_damage", damage, attacker);
 
     queue_free();
     return;
