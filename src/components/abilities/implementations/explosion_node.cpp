@@ -13,7 +13,6 @@ using godot::Array;
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Node;
-using godot::Object;
 using godot::SceneTree;
 using godot::String;
 using godot::UtilityFunctions;

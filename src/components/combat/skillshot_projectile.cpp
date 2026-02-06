@@ -17,7 +17,6 @@ using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
 using godot::Node;
-using godot::Object;
 using godot::PropertyInfo;
 using godot::UtilityFunctions;
 using godot::Variant;

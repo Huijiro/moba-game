@@ -26,7 +26,6 @@ using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
 using godot::Node;
-using godot::Object;
 using godot::PropertyInfo;
 using godot::StringName;
 using godot::Transform3D;

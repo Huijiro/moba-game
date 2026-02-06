@@ -9,7 +9,6 @@
 #include "ability_node.hpp"
 #include "ability_types.hpp"
 
-using godot::Object;
 using godot::PackedScene;
 using godot::Ref;
 using godot::Vector3;
