@@ -261,18 +261,20 @@ Isometric camera controller following the player unit.
 
 ### ⚠️ Important: Do NOT Modify Scene Files Unless Explicitly Asked
 
-**AI agents should NEVER modify .tscn (scene) files** except when explicitly requested by the user. Scene files are frequently modified by the Godot editor itself, and auto-modifications cause unnecessary git diffs and can conflict with user intentions.
+**AI agents should NEVER modify .tscn (scene) files** except when explicitly requested by the user. Scene files are frequently modified by the Godot editor itself, and modifications by agents cause git diffs that may conflict with user intentions.
 
 **Correct approach:**
 1. If a change requires a scene file modification, explain what needs to be changed
 2. Let the user make the scene changes in Godot editor
 3. Only modify scene files if the user explicitly asks: "Update the scene to..." or "Add this component to the scene"
+4. **IMPORTANT:** DO commit scene file changes made by the user - just don't modify them yourself. If the user modified a scene in the editor, commit those changes normally.
+5. If you accidentally restore a user's scene changes, apologize and ask them to re-make those changes in the editor.
 
 **Example of wrong behavior:**
 ```
 User changes a scene property in Godot
 Agent rebuilds and sees the .tscn file changed
-Agent commits the scene file changes - WRONG ❌
+Agent modifies the scene file further - WRONG ❌
 ```
 
 **Example of correct behavior:**
@@ -281,7 +283,7 @@ Agent: "To display the mana bar, you need to add a ResourceBar component to
         head_bar.tscn with pool_id set to 'mana'. Would you like me to describe 
         the steps, or will you make the changes in the editor?"
 User: "I'll do it in the editor"
-Agent: Doesn't modify the scene file, waits for user ✓
+Agent: User makes changes, agent commits the scene file changes ✓
 ```
 
 ## Common Patterns and Best Practices
