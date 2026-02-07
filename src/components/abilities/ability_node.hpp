@@ -141,7 +141,11 @@ class AbilityNode : public Node {
   /// Trigger a VFX effect by name with optional parameters
   /// VFX nodes must be children of this ability node
   /// Parameters are passed as Dictionary to VFXNode::play()
-  bool play_vfx(const String& vfx_name, const godot::Dictionary& params = {});
+  /// caster is required for spawning VFX in the scene tree
+  /// Returns the spawned VFX node (or nullptr if failed)
+  godot::Node* play_vfx(Unit* caster,
+                        const String& vfx_name,
+                        const godot::Dictionary& params = {});
 
   /// Register VFX effect for this ability
   /// Called automatically when ability is loaded

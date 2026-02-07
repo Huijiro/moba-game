@@ -1,10 +1,12 @@
 #include "ability_node.hpp"
 
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
@@ -161,7 +163,7 @@ void AbilityNode::_bind_methods() {
                "get_base_damage");
 
   // ========== VFX SYSTEM ==========
-  ClassDB::bind_method(D_METHOD("play_vfx", "vfx_name", "params"),
+  ClassDB::bind_method(D_METHOD("play_vfx", "caster", "vfx_name", "params"),
                        &AbilityNode::play_vfx, DEFVAL(godot::Dictionary()));
   ClassDB::bind_method(D_METHOD("_register_vfx"), &AbilityNode::_register_vfx);
 }
@@ -393,14 +395,28 @@ float AbilityNode::calculate_damage(Unit* caster, Unit* target) const {
   return base_damage;
 }
 
-bool AbilityNode::play_vfx(const String& vfx_name,
-                           const godot::Dictionary& params) {
+godot::Node* AbilityNode::play_vfx(Unit* caster,
+                                   const String& vfx_name,
+                                   const godot::Dictionary& params) {
+  DBG_INFO("AbilityNode",
+           "play_vfx called for: " + ability_name + "." + vfx_name);
+
+  // Validate caster
+  if (caster == nullptr || !caster->is_inside_tree()) {
+    DBG_WARN("AbilityNode", "No valid caster in tree to spawn VFX: " +
+                                ability_name + "." + vfx_name);
+    return nullptr;
+  }
+
   // Find VFX template child node with the given name
   Node* vfx_template = find_child(vfx_name, true, false);
   if (vfx_template == nullptr) {
     DBG_WARN("AbilityNode", "VFX not found: " + ability_name + "." + vfx_name);
-    return false;
+    return nullptr;
   }
+
+  DBG_INFO("AbilityNode", "Found VFX template: " + vfx_template->get_name() +
+                              " (" + vfx_template->get_class() + ")");
 
   // Duplicate the VFX node so each cast gets a fresh instance
   // This allows the VFX to be reparented or destroyed without affecting future
@@ -409,19 +425,23 @@ bool AbilityNode::play_vfx(const String& vfx_name,
   if (vfx_instance == nullptr) {
     DBG_WARN("AbilityNode",
              "Failed to duplicate VFX: " + ability_name + "." + vfx_name);
-    return false;
+    return nullptr;
   }
 
-  // Add the duplicated VFX to the scene tree
-  Node* parent = get_parent();
-  if (parent != nullptr) {
-    parent->add_child(vfx_instance);
-  } else {
-    DBG_WARN("AbilityNode",
-             "AbilityNode has no parent, cannot add VFX to tree");
+  // Add VFX to the same parent as the caster
+  // This keeps VFX independent but at the same hierarchy level as gameplay
+  // objects
+  Node* vfx_parent = caster->get_parent();
+  if (vfx_parent == nullptr) {
+    DBG_WARN("AbilityNode", "Caster has no parent, cannot spawn VFX: " +
+                                ability_name + "." + vfx_name);
     vfx_instance->queue_free();
-    return false;
+    return nullptr;
   }
+
+  DBG_INFO("AbilityNode",
+           "Spawning VFX as sibling of caster at: " + vfx_parent->get_name());
+  vfx_parent->add_child(vfx_instance);
 
   // Cast to Node3D and play
   auto vfx = Object::cast_to<godot::Node3D>(vfx_instance);
@@ -429,13 +449,13 @@ bool AbilityNode::play_vfx(const String& vfx_name,
     DBG_WARN("AbilityNode",
              "VFX instance is not Node3D: " + ability_name + "." + vfx_name);
     vfx_instance->queue_free();
-    return false;
+    return nullptr;
   }
 
   // Call play method with parameters
   vfx->call("play", params);
   DBG_INFO("AbilityNode", "Triggered VFX: " + ability_name + "." + vfx_name);
-  return true;
+  return vfx_instance;
 }
 
 void AbilityNode::_register_vfx() {

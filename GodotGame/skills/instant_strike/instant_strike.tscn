@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://cfml5thydml2a"]
 
 [ext_resource type="Texture2D" uid="uid://xx3rfwd40dxw" path="res://assets/placeholder/PLACEHOLDER_strike.png" id="1_h1err"]
+[ext_resource type="PackedScene" uid="uid://d3tgkn2i2i4ps" path="res://skills/instant_strike/impact.tscn" id="2_strike"]
 
 [node name="InstantStrike" type="InstantStrikeNode" unique_id=526675317]
 icon = ExtResource("1_h1err")
+
+[node name="impact" parent="." unique_id=1770922579 instance=ExtResource("2_strike")]

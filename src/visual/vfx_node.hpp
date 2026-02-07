@@ -1,11 +1,18 @@
 #ifndef GDEXTENSION_VFX_NODE_H
 #define GDEXTENSION_VFX_NODE_H
 
+#include <functional>
+#include <godot_cpp/classes/animation_player.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
+#include <map>
 
+using godot::AnimationPlayer;
+using godot::Array;
 using godot::Dictionary;
 using godot::Node3D;
+using godot::String;
 
 /// Base class for all VFX effects
 /// VFX nodes are placed as children in ability scenes and triggered by
@@ -39,10 +46,24 @@ class VFXNode : public Node3D {
   // Timer for auto-cleanup
   float elapsed_time = 0.0f;
 
+  // Animation-driven callback system
+  std::map<String, std::function<void()>> callbacks;  // Signal name → callback
+  Array expected_signals;  // Signals animation should emit
+  AnimationPlayer* animation_player_cache = nullptr;  // Cached reference
+
   // Called when animation finishes - subclasses can override for cleanup
   virtual void _on_finished();
 
+  // Animation signal callback system
+  void _on_animation_signal(
+      String signal_name);            // Receives signal from AnimationPlayer
+  void validate_animation_signals();  // Warn if signals don't match
+  AnimationPlayer* get_animation_player();  // Get/cache AnimationPlayer
+  void clear_callbacks();                   // Clear all callbacks
+
  public:
+  // Public callback registration - used by abilities to register callbacks
+  void register_callback(String signal_name, std::function<void()> callback);
   VFXNode();
   ~VFXNode();
 

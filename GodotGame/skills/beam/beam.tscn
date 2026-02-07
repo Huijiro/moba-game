@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://cgx5icaowkcb4"]
 
 [ext_resource type="Texture2D" uid="uid://dc1kd405qlyku" path="res://assets/placeholder/PLACEHOLDER_beam.png" id="1_4n3qg"]
+[ext_resource type="PackedScene" uid="uid://dn4c3kx8b2prl" path="res://skills/beam/beam_vfx.tscn" id="2_beam"]
 
 [node name="Beam" type="BeamNode" unique_id=526675320]
 icon = ExtResource("1_4n3qg")
+
+[node name="beam_vfx" parent="." unique_id=1770922579 instance=ExtResource("2_beam")]

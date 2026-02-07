@@ -1,6 +1,7 @@
 #ifndef GDEXTENSION_SKILLSHOT_PROJECTILE_H
 #define GDEXTENSION_SKILLSHOT_PROJECTILE_H
 
+#include <functional>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
@@ -43,6 +44,11 @@ class SkillshotProjectile : public Node3D {
   void _find_and_damage_units();
 
  public:
+  // Callback when projectile detonates (optional, set by ability system)
+  std::function<void(Unit*, const Vector3&)> on_detonated = nullptr;
+
+  // Get the caster for external callbacks
+  Unit* get_caster() const { return caster; }
   SkillshotProjectile();
   ~SkillshotProjectile();
 

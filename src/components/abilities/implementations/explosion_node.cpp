@@ -8,6 +8,7 @@
 
 #include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
+#include "../../../visual/vfx_node.hpp"
 
 using godot::Array;
 using godot::ClassDB;
@@ -22,12 +23,13 @@ ExplosionNode::ExplosionNode() {
   // Set sensible defaults for explosion
   set_ability_name("Explosion");
   set_description(
-      "Instant AoE ability dealing damage to all units in radius around "
-      "caster");
+      "Cast an explosion at target location, dealing AoE damage to all units "
+      "in radius");
   set_cast_type(static_cast<int>(CastType::INSTANT));
-  set_targeting_type(static_cast<int>(TargetingType::AREA));
+  set_targeting_type(static_cast<int>(TargetingType::POINT_TARGET));
   set_base_damage(60.0f);
   set_aoe_radius(8.0f);
+  set_range(20.0f);  // Max distance to cast explosion
   set_cooldown(10.0f);
 }
 
@@ -56,8 +58,8 @@ bool ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
     return false;
   }
 
-  // For self-cast abilities, the impact point is the caster's position
-  Vector3 impact_point = caster->get_global_position();
+  // For point-target abilities, use the clicked position
+  Vector3 impact_point = position;
 
   // Get the root node to search from
   // SceneTree::get_root() returns a Window, but we need to search the scene
@@ -71,43 +73,64 @@ bool ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
     return false;
   }
 
-  // Calculate radius squared for distance checks
-  float radius = get_aoe_radius();
-  float radius_sq = radius * radius;
+  // Trigger explosion VFX at impact position with animation-driven damage
+  // callback
+  godot::Dictionary explosion_params;
+  explosion_params["position"] = impact_point;
+  explosion_params["scale"] = get_aoe_radius();  // Scale matches AoE radius
+  explosion_params["animation_name"] = "explosion_anticipation_boom";
+  explosion_params["expected_signals"] = Array{"explosion_damage"};
+  explosion_params["intensity"] = 0.9f;
+  explosion_params["duration"] = 0.8f;
 
-  // Find all units in the area
-  Array units_in_area;
-  _search_units_in_tree(root, impact_point, radius_sq, units_in_area);
-
-  if (units_in_area.is_empty()) {
-    DBG_WARN("Explosion", "No units found in explosion area");
+  // Spawn VFX
+  Node* vfx_node = play_vfx(caster, "explosion", explosion_params);
+  if (vfx_node == nullptr) {
+    DBG_WARN("Explosion", "Failed to spawn explosion VFX");
     return false;
   }
 
-  // Apply damage to all units in area
-  int hit_count = 0;
-  for (int i = 0; i < units_in_area.size(); i++) {
-    Unit* affected_unit = Object::cast_to<Unit>(units_in_area[i]);
-    if (affected_unit == nullptr || !affected_unit->is_inside_tree()) {
-      continue;
-    }
+  // Register the callback on the VFX node
+  // The callback will fire when animation emits "explosion_damage" signal
+  auto vfx = Object::cast_to<VFXNode>(vfx_node);
+  if (vfx != nullptr) {
+    vfx->register_callback("explosion_damage", [this, caster, root,
+                                                impact_point]() {
+      // Calculate radius squared for distance checks
+      float radius = get_aoe_radius();
+      float radius_sq = radius * radius;
 
-    // Don't damage the caster
-    if (affected_unit == caster) {
-      continue;
-    }
+      // Find all units in the area
+      Array units_in_area;
+      _search_units_in_tree(root, impact_point, radius_sq, units_in_area);
 
-    // Apply damage via fire-and-forget signal
-    float damage = calculate_damage(caster, affected_unit);
-    caster->relay(take_damage, damage, affected_unit);
-    hit_count++;
+      // Apply damage to all units in area
+      int hit_count = 0;
+      for (int i = 0; i < units_in_area.size(); i++) {
+        Unit* affected_unit = Object::cast_to<Unit>(units_in_area[i]);
+        if (affected_unit == nullptr || !affected_unit->is_inside_tree()) {
+          continue;
+        }
 
-    DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) +
-                               " for " + String::num(damage) + " damage");
+        // Don't damage the caster
+        if (affected_unit == caster) {
+          continue;
+        }
+
+        // Apply damage via fire-and-forget signal
+        float damage = calculate_damage(caster, affected_unit);
+        affected_unit->relay("take_damage", damage, caster);
+        hit_count++;
+
+        DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) +
+                                   " for " + String::num(damage) + " damage");
+      }
+
+      DBG_INFO("Explosion", String(caster->get_name()) + " detonated, hit " +
+                                String::num(hit_count) + " units");
+    });
   }
 
-  DBG_INFO("Explosion", String(caster->get_name()) + " detonated, hit " +
-                            String::num(hit_count) + " units");
   return true;
 }
 

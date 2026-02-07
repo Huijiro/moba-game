@@ -36,6 +36,9 @@ class ExplosionVFX : public VFXNode {
   float explosion_intensity = 1.0f;
   float effect_duration = 1.0f;
 
+  // Validate that mesh size doesn't exceed hitbox
+  void _validate_mesh_size();
+
  public:
   ExplosionVFX();
   ~ExplosionVFX();

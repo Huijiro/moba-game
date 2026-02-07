@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://dn4c3kx8b2prl"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beam"]
+transparency = 1
+albedo_color = Color(0, 1, 1, 0.5)
+
+[sub_resource type="BoxMesh" id="BoxMesh_beam"]
+material = SubResource("StandardMaterial3D_beam")
+size = Vector3(0.5, 4.0, 0.5)
+
+[sub_resource type="Animation" id="Animation_reset"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("MeshInstance3D:mesh:material:albedo_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 1, 1, 0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_beam"]
+resource_name = "beam_tick"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("MeshInstance3D:mesh:material:albedo_color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0, 1, 1, 0.5), Color(0.5, 1, 1, 0.8), Color(0, 1, 1, 0.5)]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.1),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [&"beam_hit"],
+"method": &"emit_signal"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_beam"]
+_data = {
+&"RESET": SubResource("Animation_reset"),
+&"beam_tick": SubResource("Animation_beam")
+}
+
+[node name="beam_vfx" type="AreaEffectVFX" unique_id=1770922579]
+duration = 0.2
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1653806995]
+mesh = SubResource("BoxMesh_beam")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=645695221]
+libraries/ = SubResource("AnimationLibrary_beam")

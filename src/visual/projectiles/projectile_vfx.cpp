@@ -57,6 +57,15 @@ void ProjectileVFX::_process(double delta) {
 void ProjectileVFX::play(const Dictionary& params) {
   DBG_INFO("ProjectileVFX", "Starting projectile VFX");
 
+  // Extract animation parameters
+  if (params.has("expected_signals")) {
+    expected_signals = params["expected_signals"];
+  }
+
+  // Get animation name from params or use default
+  godot::String animation_name =
+      params.get("animation_name", "projectile_flight");
+
   // Extract the projectile node to follow
   tracked_projectile = params.get("projectile", nullptr);
   if (tracked_projectile == nullptr) {
@@ -85,6 +94,13 @@ void ProjectileVFX::play(const Dictionary& params) {
     projectile_node->add_child(this);
     DBG_INFO("ProjectileVFX",
              "Made VFX a child of projectile for synchronized movement");
+  }
+
+  // Start animation if AnimationPlayer exists
+  godot::AnimationPlayer* ap = get_animation_player();
+  if (ap != nullptr && !animation_name.is_empty()) {
+    ap->play(animation_name);
+    DBG_INFO("ProjectileVFX", "Started animation: " + animation_name);
   }
 
   DBG_INFO("ProjectileVFX",

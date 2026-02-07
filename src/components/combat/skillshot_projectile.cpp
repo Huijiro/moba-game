@@ -26,6 +26,10 @@ SkillshotProjectile::SkillshotProjectile() = default;
 SkillshotProjectile::~SkillshotProjectile() = default;
 
 void SkillshotProjectile::_bind_methods() {
+  // Signals
+  ADD_SIGNAL(godot::MethodInfo(
+      "detonated", godot::PropertyInfo(Variant::VECTOR3, "position")));
+
   ClassDB::bind_method(D_METHOD("set_speed", "speed"),
                        &SkillshotProjectile::set_speed);
   ClassDB::bind_method(D_METHOD("get_speed"), &SkillshotProjectile::get_speed);
@@ -134,6 +138,11 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
   }
 
   Vector3 explosion_center = get_global_position();
+
+  // Call detonation callback if set
+  if (on_detonated != nullptr && caster != nullptr) {
+    on_detonated(caster, explosion_center);
+  }
 
   // If we have a specific hit target (from collision), damage only that unit
   if (hit_target != nullptr && hit_target->is_inside_tree()) {
