@@ -12,4 +12,8 @@ target_sources(
   ./cooldown_icon.cpp
   ./cooldown_display_component.hpp
   ./cooldown_display_component.cpp
+  ./main_health_display.hpp
+  ./main_health_display.cpp
+  ./main_resource_display.hpp
+  ./main_resource_display.cpp
 )
