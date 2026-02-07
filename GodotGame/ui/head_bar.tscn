@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://b2fxvqyx8ytdlr"]
 
-[node name="HeadBar" type="HeadBar"]
+[node name="HeadBar" type="HeadBar" node_paths=PackedStringArray("unit_name_label_path", "health_bar_path")]
+unit_name_label_path = "UnitNameLabel"
+health_bar_path = "HealthBar"
 
 [node name="UnitNameLabel" type="Label" parent="."]
 offset_left = -50.0
