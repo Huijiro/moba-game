@@ -53,12 +53,6 @@ void AbilityNode::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "resource_cost"),
                "set_resource_cost", "get_resource_cost");
 
-  ClassDB::bind_method(D_METHOD("set_mana_cost", "cost"),
-                       &AbilityNode::set_mana_cost);
-  ClassDB::bind_method(D_METHOD("get_mana_cost"), &AbilityNode::get_mana_cost);
-  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mana_cost"), "set_mana_cost",
-               "get_mana_cost");
-
   ClassDB::bind_method(D_METHOD("set_cooldown", "cooldown"),
                        &AbilityNode::set_cooldown);
   ClassDB::bind_method(D_METHOD("get_cooldown"), &AbilityNode::get_cooldown);
@@ -250,16 +244,6 @@ void AbilityNode::set_resource_cost(float cost) {
 }
 
 float AbilityNode::get_resource_cost() const {
-  return resource_cost;
-}
-
-void AbilityNode::set_mana_cost(float cost) {
-  // Legacy: mana_cost now maps to resource_cost
-  resource_cost = cost >= 0.0f ? cost : 0.0f;
-}
-
-float AbilityNode::get_mana_cost() const {
-  // Legacy: return resource_cost for backwards compatibility
   return resource_cost;
 }
 

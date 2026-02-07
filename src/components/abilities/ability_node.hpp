@@ -84,10 +84,6 @@ class AbilityNode : public Node {
   void set_resource_cost(float cost);
   float get_resource_cost() const;
 
-  // Legacy mana cost (for backwards compatibility)
-  void set_mana_cost(float cost);
-  float get_mana_cost() const;
-
   void set_cooldown(float duration);
   float get_cooldown() const;
 

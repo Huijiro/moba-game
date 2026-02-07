@@ -22,7 +22,13 @@
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
 #include "components/resources/resource_pool_component.hpp"
+#include "components/ui/cooldown_display_component.hpp"
+#include "components/ui/cooldown_icon.hpp"
+#include "components/ui/head_bar.hpp"
 #include "components/ui/label_component.hpp"
+#include "components/ui/main_health_display.hpp"
+#include "components/ui/main_resource_display.hpp"
+#include "components/ui/resource_bar.hpp"
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
@@ -50,6 +56,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(HealthComponent)
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(LabelComponent)
+  GDREGISTER_CLASS(HeadBar)
+  GDREGISTER_CLASS(ResourceBar)
+  GDREGISTER_CLASS(CooldownIcon)
+  GDREGISTER_CLASS(CooldownDisplayComponent)
+  GDREGISTER_CLASS(MainHealthDisplay)
+  GDREGISTER_CLASS(MainResourceDisplay)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
   GDREGISTER_CLASS(SkillshotProjectile)

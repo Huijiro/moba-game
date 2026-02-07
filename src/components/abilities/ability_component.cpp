@@ -93,6 +93,8 @@ void AbilityComponent::_bind_methods() {
   ADD_SIGNAL(godot::MethodInfo("ability_channel_tick",
                                PropertyInfo(Variant::INT, "slot"),
                                PropertyInfo(Variant::OBJECT, "target")));
+  ADD_SIGNAL(godot::MethodInfo("cooldown_changed",
+                               PropertyInfo(Variant::INT, "slot")));
 
   // Bind signal handler for chase range reached
   ClassDB::bind_method(D_METHOD("_on_chase_range_reached", "target"),

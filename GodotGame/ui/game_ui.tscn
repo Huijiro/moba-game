@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://dgttn65hir8o3"]
+
+[ext_resource type="Texture2D" uid="uid://dneif043gwqqa" path="res://assets/placeholder/PLACEHOLDER_empty_ability.png" id="1_dcmab"]
+
+[node name="GameUI" type="CanvasLayer" unique_id=128704472]
+
+[node name="Screen" type="Control" parent="." unique_id=199309830]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="Screen" unique_id=569906917]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Screen/PanelContainer" unique_id=1693884987]
+layout_mode = 2
+
+[node name="MainHealthDisplay" type="MainHealthDisplay" parent="Screen/PanelContainer/VBoxContainer" unique_id=614404723]
+health_label_path = NodePath("ProgressBar/Label")
+layout_mode = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay" unique_id=144498464]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+show_percentage = false
+
+[node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay/ProgressBar" unique_id=274842894]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -43.0
+offset_top = -11.5
+offset_right = 43.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "[HEALTH]%"
+
+[node name="MainResourceDisplay" type="MainResourceDisplay" parent="Screen/PanelContainer/VBoxContainer" unique_id=1447455656]
+resource_bar_path = NodePath("Resource")
+resource_label_path = NodePath("Resource/Label")
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Resource" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainResourceDisplay" unique_id=296001814]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+size_flags_vertical = 1
+show_percentage = false
+
+[node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainResourceDisplay/Resource" unique_id=98607796]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -53.5
+offset_top = -11.5
+offset_right = 53.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "[RESOURCE]%"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Screen/PanelContainer/VBoxContainer" unique_id=743492209]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ability_1" type="CooldownIcon" parent="Screen/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1304903463]
+layout_mode = 2
+texture = ExtResource("1_dcmab")
+
+[node name="ability_2" type="CooldownIcon" parent="Screen/PanelContainer/VBoxContainer/HBoxContainer" unique_id=892743385]
+ability_slot = 1
+layout_mode = 2
+texture = ExtResource("1_dcmab")
+
+[node name="ability_3" type="CooldownIcon" parent="Screen/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1577367983]
+ability_slot = 2
+layout_mode = 2
+texture = ExtResource("1_dcmab")
+
+[node name="ability_4" type="CooldownIcon" parent="Screen/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1287550981]
+ability_slot = 3
+layout_mode = 2
+texture = ExtResource("1_dcmab")

@@ -4,4 +4,16 @@ target_sources(
   ./label_registry.cpp
   ./label_component.hpp
   ./label_component.cpp
+  ./head_bar.hpp
+  ./head_bar.cpp
+  ./resource_bar.hpp
+  ./resource_bar.cpp
+  ./cooldown_icon.hpp
+  ./cooldown_icon.cpp
+  ./cooldown_display_component.hpp
+  ./cooldown_display_component.cpp
+  ./main_health_display.hpp
+  ./main_health_display.cpp
+  ./main_resource_display.hpp
+  ./main_resource_display.cpp
 )

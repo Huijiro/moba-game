@@ -60,7 +60,7 @@ bool BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
   float tick_damage = calculate_damage(caster, target);
 
   // Fire-and-forget: emit take_damage signal, don't wait for response
-  caster->relay(take_damage, tick_damage, target);
+  target->relay(take_damage, tick_damage, caster);
 
   DBG_INFO("Beam", String(caster->get_name()) + " hit " + target->get_name() +
                        " for " + String::num(tick_damage) + " damage (tick)");

@@ -1,3 +1,6 @@
-[gd_scene format=3 uid="uid://cgx5ib9owkcb5"]
+[gd_scene format=3 uid="uid://cgx5icaowkcb5"]
+
+[ext_resource type="Texture2D" uid="uid://xn18eygx5mm" path="res://assets/placeholder/PLACEHOLDER_explosion.png" id="1_7mily"]
 
 [node name="Explosion" type="ExplosionNode" unique_id=526675321]
+icon = ExtResource("1_7mily")

@@ -1,3 +1,6 @@
-[gd_scene format=3 uid="uid://cgx5ib9owkcb4"]
+[gd_scene format=3 uid="uid://cgx5icaowkcb4"]
+
+[ext_resource type="Texture2D" uid="uid://dc1kd405qlyku" path="res://assets/placeholder/PLACEHOLDER_beam.png" id="1_4n3qg"]
 
 [node name="Beam" type="BeamNode" unique_id=526675320]
+icon = ExtResource("1_4n3qg")

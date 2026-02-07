@@ -1,3 +1,6 @@
 [gd_scene format=3 uid="uid://cfml5thydml2a"]
 
+[ext_resource type="Texture2D" uid="uid://xx3rfwd40dxw" path="res://assets/placeholder/PLACEHOLDER_strike.png" id="1_h1err"]
+
 [node name="InstantStrike" type="InstantStrikeNode" unique_id=526675317]
+icon = ExtResource("1_h1err")
