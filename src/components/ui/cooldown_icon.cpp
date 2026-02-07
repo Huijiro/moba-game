@@ -149,20 +149,38 @@ void CooldownIcon::_process(double delta) {
     return;
   }
 
-  if (!on_cooldown) {
+  if (!ability_component) {
     return;
   }
 
-  // Update cooldown elapsed time
-  cooldown_elapsed += delta;
+  // Query the actual cooldown remaining from the ability component
+  float cooldown_remaining =
+      ability_component->get_cooldown_remaining(ability_slot);
 
   // Check if cooldown is complete
-  if (cooldown_elapsed >= cooldown_duration) {
-    on_cooldown = false;
-    cooldown_elapsed = 0.0f;
-    cooldown_duration = 0.0f;
-    queue_redraw();
+  if (cooldown_remaining <= 0.0f) {
+    if (on_cooldown) {
+      on_cooldown = false;
+      cooldown_elapsed = 0.0f;
+      cooldown_duration = 0.0f;
+      queue_redraw();
+    }
     return;
+  }
+
+  // If we're now on cooldown and weren't before, update state
+  if (!on_cooldown) {
+    on_cooldown = true;
+    // Get the full duration from the ability node
+    AbilityNode* ability = ability_component->get_ability(ability_slot);
+    if (ability) {
+      cooldown_duration = ability->get_cooldown();
+    }
+  }
+
+  // Calculate elapsed from the remaining and duration
+  if (cooldown_duration > 0.0f) {
+    cooldown_elapsed = cooldown_duration - cooldown_remaining;
   }
 
   // Redraw to update the cooldown overlay

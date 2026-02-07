@@ -29,6 +29,7 @@ grow_vertical = 0
 layout_mode = 2
 
 [node name="MainHealthDisplay" type="MainHealthDisplay" parent="Screen/PanelContainer/VBoxContainer" unique_id=614404723]
+health_label_path = NodePath("ProgressBar/Label")
 layout_mode = 2
 
 [node name="ProgressBar" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay" unique_id=144498464]
@@ -52,6 +53,8 @@ grow_vertical = 2
 text = "[HEALTH]%"
 
 [node name="MainResourceDisplay" type="MainResourceDisplay" parent="Screen/PanelContainer/VBoxContainer" unique_id=1447455656]
+resource_bar_path = NodePath("Resource")
+resource_label_path = NodePath("Resource/Label")
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
