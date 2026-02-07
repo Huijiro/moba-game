@@ -150,6 +150,9 @@ void AbilityComponent::_ready() {
         if (instance != nullptr) {
           ability = Object::cast_to<AbilityNode>(instance);
           if (ability != nullptr) {
+            // Add ability to scene tree as child of this component
+            // This ensures it's not a root node and is properly managed
+            add_child(ability);
             instantiated_abilities.append(ability);
             DBG_INFO("AbilityComponent", "Instantiated ability " +
                                              String::num(i) + ": " +
