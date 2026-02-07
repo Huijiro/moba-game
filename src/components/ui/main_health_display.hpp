@@ -1,9 +1,11 @@
 #ifndef GDEXTENSION_MAIN_HEALTH_DISPLAY_H
 #define GDEXTENSION_MAIN_HEALTH_DISPLAY_H
 
+#include <godot_cpp/classes/container.hpp>
 #include <godot_cpp/classes/label.hpp>
 #include <godot_cpp/classes/progress_bar.hpp>
 
+using godot::Container;
 using godot::Label;
 using godot::ProgressBar;
 
@@ -24,8 +26,8 @@ class HealthComponent;
 /// 2. Gets HealthComponent from that unit
 /// 3. Connects to health_changed signal
 /// 4. Updates bar value and label text in real-time
-class MainHealthDisplay : public godot::Control {
-  GDCLASS(MainHealthDisplay, godot::Control)
+class MainHealthDisplay : public Container {
+  GDCLASS(MainHealthDisplay, Container)
 
  protected:
   static void _bind_methods();

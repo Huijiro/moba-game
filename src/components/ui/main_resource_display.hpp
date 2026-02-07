@@ -1,10 +1,12 @@
 #ifndef GDEXTENSION_MAIN_RESOURCE_DISPLAY_H
 #define GDEXTENSION_MAIN_RESOURCE_DISPLAY_H
 
+#include <godot_cpp/classes/container.hpp>
 #include <godot_cpp/classes/label.hpp>
 #include <godot_cpp/classes/progress_bar.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 
+using godot::Container;
 using godot::Label;
 using godot::ProgressBar;
 using godot::StringName;
@@ -27,8 +29,8 @@ class ResourcePoolComponent;
 /// 2. Gets ResourcePoolComponent with matching pool_id
 /// 3. Connects to value_changed signal
 /// 4. Updates bar value and label text in real-time
-class MainResourceDisplay : public godot::Control {
-  GDCLASS(MainResourceDisplay, godot::Control)
+class MainResourceDisplay : public Container {
+  GDCLASS(MainResourceDisplay, Container)
 
  protected:
   static void _bind_methods();
