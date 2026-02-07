@@ -10,7 +10,7 @@
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
-#include "../../visual/projectile_visual.hpp"
+
 #include "../health/health_component.hpp"
 
 using godot::ClassDB;
@@ -69,11 +69,7 @@ void SkillshotProjectile::_physics_process(double delta) {
   set_global_position(current_pos + velocity * static_cast<float>(delta));
   travel_distance += speed * delta;
 
-  // Update visual representation
   Vector3 new_pos = get_global_position();
-  if (projectile_visual != nullptr) {
-    projectile_visual->on_travel(new_pos, travel_distance);
-  }
 
   // Debug visualization: Draw projectile collision radius
   VisualDebugger* debugger = VisualDebugger::get_singleton();

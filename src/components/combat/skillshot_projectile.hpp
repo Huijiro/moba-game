@@ -9,7 +9,6 @@ using godot::Vector3;
 
 class Unit;
 class AbilityDefinition;
-class ProjectileVisual;
 
 /// Skillshot projectile - travels in a direction and detonates on impact or
 /// distance Used for directional abilities like Fireball
@@ -34,9 +33,6 @@ class SkillshotProjectile : public Node3D {
   float travel_distance = 0.0f;  // Distance traveled so far
 
   Vector3 direction = Vector3(0, 0, -1);  // Direction of travel
-
-  ProjectileVisual* projectile_visual =
-      nullptr;  // Optional visual representation
 
   // Called when projectile hits something
   // If hit_target is provided, only damage that unit (single-target hit)

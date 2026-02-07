@@ -35,8 +35,6 @@
 #include "debug/debug_logger.hpp"
 #include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
-#include "visual/projectile_visual.hpp"
-#include "visual/visual_effect.hpp"
 
 using namespace godot;
 
@@ -74,8 +72,6 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(DebugLogger)
-  GDREGISTER_CLASS(VisualEffect)
-  GDREGISTER_CLASS(ProjectileVisual)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {
