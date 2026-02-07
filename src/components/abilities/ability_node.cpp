@@ -395,18 +395,40 @@ float AbilityNode::calculate_damage(Unit* caster, Unit* target) const {
 
 bool AbilityNode::play_vfx(const String& vfx_name,
                            const godot::Dictionary& params) {
-  // Find VFX child node with the given name
-  Node* vfx_node = find_child(vfx_name, true, false);
-  if (vfx_node == nullptr) {
+  // Find VFX template child node with the given name
+  Node* vfx_template = find_child(vfx_name, true, false);
+  if (vfx_template == nullptr) {
     DBG_WARN("AbilityNode", "VFX not found: " + ability_name + "." + vfx_name);
     return false;
   }
 
-  // Cast to VFXNode and play
-  auto vfx = Object::cast_to<godot::Node3D>(vfx_node);
+  // Duplicate the VFX node so each cast gets a fresh instance
+  // This allows the VFX to be reparented or destroyed without affecting future
+  // casts
+  Node* vfx_instance = vfx_template->duplicate(false);
+  if (vfx_instance == nullptr) {
+    DBG_WARN("AbilityNode",
+             "Failed to duplicate VFX: " + ability_name + "." + vfx_name);
+    return false;
+  }
+
+  // Add the duplicated VFX to the scene tree
+  Node* parent = get_parent();
+  if (parent != nullptr) {
+    parent->add_child(vfx_instance);
+  } else {
+    DBG_WARN("AbilityNode",
+             "AbilityNode has no parent, cannot add VFX to tree");
+    vfx_instance->queue_free();
+    return false;
+  }
+
+  // Cast to Node3D and play
+  auto vfx = Object::cast_to<godot::Node3D>(vfx_instance);
   if (vfx == nullptr) {
     DBG_WARN("AbilityNode",
-             "VFX node is not Node3D: " + ability_name + "." + vfx_name);
+             "VFX instance is not Node3D: " + ability_name + "." + vfx_name);
+    vfx_instance->queue_free();
     return false;
   }
 
