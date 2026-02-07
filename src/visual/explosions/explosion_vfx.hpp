@@ -39,6 +39,10 @@ class ExplosionVFX : public VFXNode {
   // Validate that mesh size doesn't exceed hitbox
   void _validate_mesh_size();
 
+  // Signal handlers for animation-emitted signals
+  // Each signal handler calls _on_animation_signal with the signal name
+  void _on_explosion_damage_signal();
+
  public:
   ExplosionVFX();
   ~ExplosionVFX();

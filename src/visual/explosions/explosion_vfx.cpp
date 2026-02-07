@@ -20,7 +20,8 @@ ExplosionVFX::ExplosionVFX() = default;
 ExplosionVFX::~ExplosionVFX() = default;
 
 void ExplosionVFX::_bind_methods() {
-  // Inherit from VFXNode, no additional methods needed
+  ClassDB::bind_method(D_METHOD("_on_explosion_damage_signal"),
+                       &ExplosionVFX::_on_explosion_damage_signal);
 }
 
 void ExplosionVFX::play(const Dictionary& params) {
@@ -89,11 +90,19 @@ void ExplosionVFX::play(const Dictionary& params) {
                                      signal_name + " - CREATED");
       }
 
-      // Connect dynamic signal to _on_animation_signal handler
-      connect(signal_name, Callable(this, "_on_animation_signal"));
-
-      DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
-                                   signal_name + " - CONNECTED");
+      // Connect dynamic signal to appropriate handler
+      // Use the parameterless handler instead of _on_animation_signal
+      if (signal_name == "explosion_damage") {
+        connect(signal_name, Callable(this, "_on_explosion_damage_signal"));
+        DBG_INFO("ExplosionVFX",
+                 "[Signal " + godot::String::num(i) + "] " + signal_name +
+                     " - CONNECTED to _on_explosion_damage_signal");
+      } else {
+        // Fallback for other signals (can add more specific handlers later)
+        DBG_WARN("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
+                                     signal_name +
+                                     " - NO HANDLER for this signal type");
+      }
     }
 
     DBG_INFO("ExplosionVFX",
@@ -162,4 +171,9 @@ void ExplosionVFX::_validate_mesh_size() {
                  "). Visual extends beyond collision area. "
                  "Increase 'scale' parameter or reduce mesh size.");
   }
+}
+
+void ExplosionVFX::_on_explosion_damage_signal() {
+  DBG_INFO("ExplosionVFX", "explosion_damage signal received");
+  _on_animation_signal("explosion_damage");
 }
