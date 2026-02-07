@@ -1,7 +1,0 @@
-[gd_resource type="SkillshotEffect" format=3]
-
-[resource]
-projectile_speed = 30.0
-projectile_max_distance = 20.0
-explosion_radius = 5.0
-projectile_hit_radius = 0.5

@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://bb0bs3kernx7b"]
+[gd_scene format=3 uid="uid://0hokakonurro"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_explosion"]
 transparency = 1
@@ -9,12 +9,12 @@ material = SubResource("StandardMaterial3D_explosion")
 radius = 1.0
 height = 2.0
 
-[sub_resource type="Animation" id="Animation_vra24"]
+[sub_resource type="Animation" id="Animation_reset"]
 length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Explosion:scale")
+tracks/0/path = NodePath("MeshInstance3D:scale")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -26,7 +26,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Explosion:mesh:material:albedo_color")
+tracks/1/path = NodePath("MeshInstance3D:mesh:material:albedo_color")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -35,25 +35,14 @@ tracks/1/keys = {
 "update": 0,
 "values": [Color(1, 0.5019608, 0, 0.40392157)]
 }
-tracks/2/type = "value"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("Lazer:scale")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(1, 1, 1)]
-}
 
-[sub_resource type="Animation" id="Animation_8rfdh"]
+[sub_resource type="Animation" id="Animation_explosion"]
 resource_name = "explosion_anticipation_boom"
+length = 1.0
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Explosion:scale")
+tracks/0/path = NodePath("MeshInstance3D:scale")
 tracks/0/interp = 2
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -65,7 +54,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Explosion:mesh:material:albedo_color")
+tracks/1/path = NodePath("MeshInstance3D:mesh:material:albedo_color")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -88,40 +77,18 @@ tracks/2/keys = {
 "method": &"emit_signal"
 }]
 }
-tracks/3/type = "value"
-tracks/3/imported = false
-tracks/3/enabled = true
-tracks/3/path = NodePath("Lazer:scale")
-tracks/3/interp = 1
-tracks/3/loop_wrap = true
-tracks/3/keys = {
-"times": PackedFloat32Array(0, 0.16),
-"transitions": PackedFloat32Array(1, 1),
-"update": 0,
-"values": [Vector3(1, 1, 1), Vector3(0, 1, 0)]
-}
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_4u2pf"]
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_explosion"]
 _data = {
-&"RESET": SubResource("Animation_vra24"),
-&"explosion_anticipation_boom": SubResource("Animation_8rfdh")
+&"RESET": SubResource("Animation_reset"),
+&"explosion_anticipation_boom": SubResource("Animation_explosion")
 }
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vra24"]
-transparency = 1
-albedo_color = Color(1, 0.45882353, 0, 0.59607846)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_8rfdh"]
-material = SubResource("StandardMaterial3D_vra24")
 
 [node name="explosion" type="ExplosionVFX" unique_id=1770922579]
 duration = 0.6
 
-[node name="Explosion" type="MeshInstance3D" parent="." unique_id=1653806995]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1653806995]
 mesh = SubResource("SphereMesh_explosion")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=645695221]
-libraries/ = SubResource("AnimationLibrary_4u2pf")
-
-[node name="Lazer" type="MeshInstance3D" parent="." unique_id=695716720]
-mesh = SubResource("CylinderMesh_8rfdh")
+libraries/ = SubResource("AnimationLibrary_explosion")

@@ -3,17 +3,13 @@
 
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../../core/unit.hpp"
-#include "../../../visual/vfx_node.hpp"
 #include "../../combat/skillshot_projectile.hpp"
 
-using godot::Array;
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Node;
 using godot::String;
 using godot::UtilityFunctions;
 using godot::Vector3;
@@ -64,44 +60,6 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
     DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() +
                              " towards (" + String::num(target_position.x, 2) +
                              ", " + String::num(target_position.z, 2) + ")");
-
-    // Set detonation callback to trigger explosion VFX
-    // Capture projectile pointer to access its AoE radius
-    projectile->on_detonated = [this, projectile](Unit* caster_unit,
-                                                  const Vector3& position) {
-      // Trigger explosion VFX at impact position
-      // Scale the VFX based on the projectile's AoE radius (base radius is 1.0)
-      float aoe_radius = projectile->get_aoe_radius();
-      godot::Dictionary explosion_params;
-      explosion_params["position"] = position;
-      explosion_params["scale"] = aoe_radius;  // Scale matches AoE radius
-      explosion_params["animation_name"] = "explosion_anticipation_boom";
-      explosion_params["expected_signals"] = Array{"explosion_damage"};
-      explosion_params["intensity"] = 0.8f;
-      explosion_params["duration"] = 0.6f;
-
-      if (caster_unit != nullptr) {
-        Node* vfx_node = play_vfx(caster_unit, "explosion", explosion_params);
-
-        // Register explosion damage callback
-        if (vfx_node != nullptr) {
-          auto vfx = Object::cast_to<VFXNode>(vfx_node);
-          if (vfx != nullptr) {
-            vfx->register_callback("explosion_damage", [projectile]() {
-              DBG_INFO("Fireball",
-                       "Explosion damage triggered from projectile "
-                       "detonation");
-              // Damage is already applied by SkillshotProjectile::_detonate()
-              // This callback is here for visual synchronization with animation
-            });
-          }
-        }
-
-        DBG_INFO("Fireball",
-                 "Explosion VFX triggered at detonation point with scale " +
-                     String::num(aoe_radius));
-      }
-    };
 
     // Trigger projectile VFX to follow the actual projectile
     godot::Dictionary vfx_params;
