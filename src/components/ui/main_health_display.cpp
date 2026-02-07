@@ -1,8 +1,8 @@
 #include "main_health_display.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/v_box_container.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 #include "../../core/match_manager.hpp"
@@ -13,14 +13,29 @@
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
+using godot::PropertyInfo;
 using godot::String;
-using godot::VBoxContainer;
+using godot::Variant;
 
 MainHealthDisplay::MainHealthDisplay() = default;
 
 MainHealthDisplay::~MainHealthDisplay() = default;
 
 void MainHealthDisplay::_bind_methods() {
+  ClassDB::bind_method(D_METHOD("set_health_bar_path", "path"),
+                       &MainHealthDisplay::set_health_bar_path);
+  ClassDB::bind_method(D_METHOD("get_health_bar_path"),
+                       &MainHealthDisplay::get_health_bar_path);
+  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "health_bar_path"),
+               "set_health_bar_path", "get_health_bar_path");
+
+  ClassDB::bind_method(D_METHOD("set_health_label_path", "path"),
+                       &MainHealthDisplay::set_health_label_path);
+  ClassDB::bind_method(D_METHOD("get_health_label_path"),
+                       &MainHealthDisplay::get_health_label_path);
+  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "health_label_path"),
+               "set_health_label_path", "get_health_label_path");
+
   ClassDB::bind_method(D_METHOD("_on_health_changed", "current", "max"),
                        &MainHealthDisplay::_on_health_changed);
 }
@@ -69,19 +84,20 @@ void MainHealthDisplay::_ready() {
     return;
   }
 
-  // Create a VBoxContainer to hold the bar and label
-  VBoxContainer* container = memnew(VBoxContainer);
-  add_child(container);
+  // Find child nodes
+  health_bar = Object::cast_to<ProgressBar>(get_node_or_null(health_bar_path));
+  if (!health_bar) {
+    DBG_WARN("MainHealthDisplay",
+             "HealthBar not found at path: " + String(health_bar_path));
+    return;
+  }
 
-  // Create the ProgressBar
-  health_bar = memnew(ProgressBar);
-  container->add_child(health_bar);
-  health_bar->set_show_percentage(false);
-
-  // Create the Label
-  health_label = memnew(Label);
-  container->add_child(health_label);
-  health_label->set_text("0/0");
+  health_label = Object::cast_to<Label>(get_node_or_null(health_label_path));
+  if (!health_label) {
+    DBG_WARN("MainHealthDisplay",
+             "HealthLabel not found at path: " + String(health_label_path));
+    return;
+  }
 
   // Connect to health signal
   health_component->connect(
@@ -106,4 +122,20 @@ void MainHealthDisplay::_on_health_changed(float current, float max) {
         String::num((int)current) + " / " + String::num((int)max);
     health_label->set_text(health_text);
   }
+}
+
+void MainHealthDisplay::set_health_bar_path(godot::NodePath path) {
+  health_bar_path = path;
+}
+
+godot::NodePath MainHealthDisplay::get_health_bar_path() const {
+  return health_bar_path;
+}
+
+void MainHealthDisplay::set_health_label_path(godot::NodePath path) {
+  health_label_path = path;
+}
+
+godot::NodePath MainHealthDisplay::get_health_label_path() const {
+  return health_label_path;
 }

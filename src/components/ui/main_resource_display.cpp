@@ -1,7 +1,6 @@
 #include "main_resource_display.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/v_box_container.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/string.hpp>
@@ -17,7 +16,6 @@ using godot::Engine;
 using godot::PropertyInfo;
 using godot::String;
 using godot::Variant;
-using godot::VBoxContainer;
 
 MainResourceDisplay::MainResourceDisplay() = default;
 
@@ -30,6 +28,20 @@ void MainResourceDisplay::_bind_methods() {
                        &MainResourceDisplay::get_pool_id);
   ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "pool_id"), "set_pool_id",
                "get_pool_id");
+
+  ClassDB::bind_method(D_METHOD("set_resource_bar_path", "path"),
+                       &MainResourceDisplay::set_resource_bar_path);
+  ClassDB::bind_method(D_METHOD("get_resource_bar_path"),
+                       &MainResourceDisplay::get_resource_bar_path);
+  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "resource_bar_path"),
+               "set_resource_bar_path", "get_resource_bar_path");
+
+  ClassDB::bind_method(D_METHOD("set_resource_label_path", "path"),
+                       &MainResourceDisplay::set_resource_label_path);
+  ClassDB::bind_method(D_METHOD("get_resource_label_path"),
+                       &MainResourceDisplay::get_resource_label_path);
+  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "resource_label_path"),
+               "set_resource_label_path", "get_resource_label_path");
 
   ClassDB::bind_method(D_METHOD("_on_resource_changed", "current", "max"),
                        &MainResourceDisplay::_on_resource_changed);
@@ -87,19 +99,22 @@ void MainResourceDisplay::_ready() {
     return;
   }
 
-  // Create a VBoxContainer to hold the bar and label
-  VBoxContainer* container = memnew(VBoxContainer);
-  add_child(container);
+  // Find child nodes
+  resource_bar =
+      Object::cast_to<ProgressBar>(get_node_or_null(resource_bar_path));
+  if (!resource_bar) {
+    DBG_WARN("MainResourceDisplay",
+             "ResourceBar not found at path: " + String(resource_bar_path));
+    return;
+  }
 
-  // Create the ProgressBar
-  resource_bar = memnew(ProgressBar);
-  container->add_child(resource_bar);
-  resource_bar->set_show_percentage(false);
-
-  // Create the Label
-  resource_label = memnew(Label);
-  container->add_child(resource_label);
-  resource_label->set_text("0/0");
+  resource_label =
+      Object::cast_to<Label>(get_node_or_null(resource_label_path));
+  if (!resource_label) {
+    DBG_WARN("MainResourceDisplay",
+             "ResourceLabel not found at path: " + String(resource_label_path));
+    return;
+  }
 
   // Connect to resource signal
   resource_pool->connect(
@@ -133,4 +148,20 @@ void MainResourceDisplay::set_pool_id(StringName id) {
 
 StringName MainResourceDisplay::get_pool_id() const {
   return pool_id;
+}
+
+void MainResourceDisplay::set_resource_bar_path(godot::NodePath path) {
+  resource_bar_path = path;
+}
+
+godot::NodePath MainResourceDisplay::get_resource_bar_path() const {
+  return resource_bar_path;
+}
+
+void MainResourceDisplay::set_resource_label_path(godot::NodePath path) {
+  resource_label_path = path;
+}
+
+godot::NodePath MainResourceDisplay::get_resource_label_path() const {
+  return resource_label_path;
 }
