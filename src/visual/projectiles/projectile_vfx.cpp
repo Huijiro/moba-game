@@ -37,9 +37,19 @@ void ProjectileVFX::_process(double delta) {
   if (tracked_projectile != nullptr) {
     Node3D* projectile_node = Object::cast_to<Node3D>(tracked_projectile);
     if (projectile_node != nullptr && projectile_node->is_inside_tree()) {
-      set_global_position(projectile_node->get_global_position());
-      // Optionally match rotation too for better visuals
-      set_global_rotation(projectile_node->get_global_rotation());
+      // Only update position if we're in the tree
+      if (is_inside_tree()) {
+        set_global_position(projectile_node->get_global_position());
+        // Optionally match rotation too for better visuals
+        set_global_rotation(projectile_node->get_global_rotation());
+      }
+    } else if (projectile_node != nullptr &&
+               !projectile_node->is_inside_tree()) {
+      // Projectile is no longer in tree, clean up
+      DBG_INFO("ProjectileVFX",
+               "Projectile no longer in tree, cleaning up VFX");
+      _on_finished();
+      return;
     }
   }
 
@@ -67,8 +77,14 @@ void ProjectileVFX::play(const Dictionary& params) {
   // Mark as playing
   is_playing_internal = true;
 
-  // Set initial position to match projectile
-  set_global_position(projectile_node->get_global_position());
+  // Only set position if we're in the tree
+  if (is_inside_tree() && projectile_node->is_inside_tree()) {
+    set_global_position(projectile_node->get_global_position());
+  } else {
+    DBG_WARN(
+        "ProjectileVFX",
+        "VFX or projectile not in tree yet, position will update in _process");
+  }
 
   DBG_INFO("ProjectileVFX",
            "Following projectile: " + projectile_node->get_name() +
