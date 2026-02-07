@@ -1,6 +1,7 @@
 #include "head_bar.hpp"
 
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -55,19 +56,41 @@ void HeadBar::_ready() {
   }
 
   // 1. Find parent Unit
-  owner_unit = Object::cast_to<Unit>(get_parent());
+  Node* parent = get_parent();
+  owner_unit = Object::cast_to<Unit>(parent);
   if (!owner_unit) {
     DBG_WARN("HeadBar", "Parent is not a Unit");
     return;
   }
 
-  // 2. Get camera from viewport
+  // 2. Find GameUI CanvasLayer and reparent to it
+  godot::CanvasLayer* game_ui = nullptr;
+  Node* current = parent;
+  while (current) {
+    game_ui = Object::cast_to<godot::CanvasLayer>(
+        current->get_node_or_null("GameUI"));
+    if (game_ui) {
+      break;
+    }
+    current = current->get_parent();
+  }
+
+  if (game_ui) {
+    get_parent()->remove_child(this);
+    game_ui->add_child(this);
+    DBG_DEBUG("HeadBar", "Reparented to GameUI CanvasLayer");
+  } else {
+    DBG_WARN("HeadBar", "GameUI CanvasLayer not found in scene");
+    return;
+  }
+
+  // 4. Get camera from viewport
   auto viewport = get_viewport();
   if (viewport) {
     camera = viewport->get_camera_3d();
   }
 
-  // 3. Get HealthComponent from parent
+  // 5. Get HealthComponent from parent
   health_component = Object::cast_to<HealthComponent>(
       owner_unit->get_component_by_class("HealthComponent"));
   if (health_component) {
@@ -79,7 +102,7 @@ void HeadBar::_ready() {
     DBG_WARN("HeadBar", "No HealthComponent found on parent Unit");
   }
 
-  // 4. Find all ResourcePoolComponents on Unit and discover matching child bars
+  // 6. Find all ResourcePoolComponents on Unit and discover matching child bars
   for (int i = 0; i < owner_unit->get_child_count(); i++) {
     ResourcePoolComponent* pool =
         Object::cast_to<ResourcePoolComponent>(owner_unit->get_child(i));
@@ -112,7 +135,7 @@ void HeadBar::_ready() {
     // If not found: gracefully skip (no error)
   }
 
-  // 5. Find unit name label and set text
+  // 7. Find unit name label and set text
   unit_name_label =
       Object::cast_to<Label>(get_node_or_null(unit_name_label_path));
   if (unit_name_label) {
@@ -123,7 +146,7 @@ void HeadBar::_ready() {
                             String(unit_name_label_path));
   }
 
-  // 6. Find health bar
+  // 8. Find health bar
   health_bar = Object::cast_to<ProgressBar>(get_node_or_null(health_bar_path));
   if (!health_bar) {
     DBG_WARN("HeadBar",
@@ -138,13 +161,14 @@ void HeadBar::_process(double delta) {
     return;
   }
 
-  if (!owner_unit) {
+  if (!owner_unit || !camera) {
     return;
   }
 
-  // Position the HeadBar 3 units above the unit
-  Vector3 target_pos = owner_unit->get_global_position() + Vector3(0, 3, 0);
-  set_global_position(target_pos);
+  // Convert unit's world position to screen position
+  Vector3 world_pos = owner_unit->get_global_position() + Vector3(0, 3, 0);
+  godot::Vector2 screen_pos = camera->unproject_position(world_pos);
+  set_global_position(screen_pos);
 }
 
 void HeadBar::_on_health_changed(float current, float max) {

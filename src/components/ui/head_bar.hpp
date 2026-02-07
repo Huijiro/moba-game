@@ -2,18 +2,20 @@
 #define GDEXTENSION_HEAD_BAR_H
 
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/label.hpp>
-#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/progress_bar.hpp>
+#include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 #include <map>
 #include <vector>
 
 using godot::Camera3D;
+using godot::Control;
 using godot::Label;
-using godot::Node3D;
 using godot::ProgressBar;
 using godot::StringName;
+using godot::Vector2;
 using godot::Vector3;
 
 class Unit;
@@ -38,8 +40,8 @@ class ResourcePoolComponent;
 /// 3. Updates ProgressBar values only
 /// 4. Dynamically discovers ResourcePoolComponents and matches them to
 /// Resource* children
-class HeadBar : public Node3D {
-  GDCLASS(HeadBar, Node3D)
+class HeadBar : public Control {
+  GDCLASS(HeadBar, Control)
 
  protected:
   static void _bind_methods();
