@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
@@ -168,8 +169,34 @@ void HeadBar::_process(double delta) {
     return;
   }
 
-  // Convert unit's world position to screen position
-  Vector3 world_pos = owner_unit->get_global_position() + Vector3(0, 3, 0);
+  // Find MeshInstance3D to get AABB for positioning
+  godot::MeshInstance3D* mesh_instance = nullptr;
+  for (int i = 0; i < owner_unit->get_child_count(); i++) {
+    mesh_instance =
+        Object::cast_to<godot::MeshInstance3D>(owner_unit->get_child(i));
+    if (mesh_instance) {
+      break;
+    }
+  }
+
+  Vector3 unit_pos = owner_unit->get_global_position();
+  Vector3 world_pos =
+      unit_pos + Vector3(0, 3, 0);  // Default position above unit
+
+  // If we found a mesh, use its AABB to position more precisely
+  if (mesh_instance) {
+    godot::AABB aabb = mesh_instance->get_aabb();
+    Vector3 aabb_center = aabb.get_center();
+
+    // Position above the top of the AABB, centered on X/Z
+    // The mesh instance has a transform, so we need to account for that
+    Vector3 mesh_offset = mesh_instance->get_position();
+    Vector3 aabb_top_center =
+        mesh_offset + Vector3(aabb_center.x, aabb.size.y / 2.0f, aabb_center.z);
+    world_pos = unit_pos + aabb_top_center + Vector3(0, 0.5f, 0);
+  }
+
+  // Convert to screen position
   godot::Vector2 screen_pos = camera->unproject_position(world_pos);
   set_global_position(screen_pos);
 }
