@@ -3,11 +3,13 @@
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/aabb.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/color.hpp>
 
 #include "../../debug/debug_macros.hpp"
 
 using godot::AABB;
+using godot::Callable;
 using godot::ClassDB;
 using godot::Color;
 using godot::D_METHOD;
@@ -69,6 +71,14 @@ void ExplosionVFX::play(const Dictionary& params) {
   // Start the animation
   AnimationPlayer* ap = get_animation_player();
   if (ap != nullptr) {
+    // Connect expected signals to callback handler
+    for (int i = 0; i < expected_signals.size(); i++) {
+      godot::String signal_name = expected_signals[i];
+      // Connect dynamic signal to _on_animation_signal handler
+      connect(signal_name, Callable(this, "_on_animation_signal"));
+      DBG_INFO("ExplosionVFX", "Connected to signal: " + signal_name);
+    }
+
     ap->play(animation_name);
     DBG_INFO("ExplosionVFX", "Started animation: " + animation_name);
   } else {

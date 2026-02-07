@@ -33,6 +33,8 @@ void VFXNode::_bind_methods() {
 
   // Internal callbacks
   ClassDB::bind_method(D_METHOD("_on_finished"), &VFXNode::_on_finished);
+  ClassDB::bind_method(D_METHOD("_on_animation_signal", "signal_name"),
+                       &VFXNode::_on_animation_signal);
   // Note: _process is a virtual method, don't bind it as a regular method
 }
 
