@@ -186,14 +186,16 @@ void HeadBar::_process(double delta) {
   // If we found a mesh, use its AABB to position more precisely
   if (mesh_instance) {
     godot::AABB aabb = mesh_instance->get_aabb();
-    Vector3 aabb_center = aabb.get_center();
 
-    // Position above the top of the AABB, centered on X/Z
-    // The mesh instance has a transform, so we need to account for that
-    Vector3 mesh_offset = mesh_instance->get_position();
-    Vector3 aabb_top_center =
-        mesh_offset + Vector3(aabb_center.x, aabb.size.y / 2.0f, aabb_center.z);
-    world_pos = unit_pos + aabb_top_center + Vector3(0, 0.5f, 0);
+    // Get the top of the AABB (max Y value)
+    float mesh_top_y = aabb.size.y;
+
+    // Mesh instance local position
+    Vector3 mesh_local_pos = mesh_instance->get_position();
+
+    // Calculate world position: unit center + mesh offset + top of mesh +
+    // offset above
+    world_pos = unit_pos + mesh_local_pos + Vector3(0, mesh_top_y + 0.5f, 0);
   }
 
   // Convert to screen position
