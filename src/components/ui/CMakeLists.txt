@@ -8,6 +8,8 @@ target_sources(
   ./head_bar.cpp
   ./resource_bar.hpp
   ./resource_bar.cpp
+  ./cooldown_icon.hpp
+  ./cooldown_icon.cpp
   ./cooldown_display_component.hpp
   ./cooldown_display_component.cpp
 )

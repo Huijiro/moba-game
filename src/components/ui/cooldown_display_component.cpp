@@ -41,27 +41,56 @@ void CooldownDisplayComponent::_bind_methods() {
 }
 
 void CooldownDisplayComponent::_ready() {
+  DBG_INFO("CooldownDisplay", "CooldownDisplayComponent _ready called");
+  DBG_INFO("CooldownDisplay",
+           "  Visible: " + String(is_visible() ? "yes" : "no") +
+               ", Class: " + String(get_class()));
+
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
   }
 
-  // 1. Find MatchManager in scene - search up the tree from this node
-  Node* current = get_parent();
-  while (current) {
-    match_manager = Object::cast_to<MatchManager>(current);
-    if (match_manager) {
-      break;
+  // Make sure this node is visible
+  show();
+  DBG_INFO("CooldownDisplay",
+           "  After show - Visible: " + String(is_visible() ? "yes" : "no"));
+
+  // Debug parent hierarchy
+  Node* parent = get_parent();
+  if (parent) {
+    DBG_INFO("CooldownDisplay", "  Parent: " + parent->get_name() +
+                                    " (class: " + String(parent->get_class()) +
+                                    ")");
+    if (Object::cast_to<godot::CanvasLayer>(parent)) {
+      godot::CanvasLayer* canvas = Object::cast_to<godot::CanvasLayer>(parent);
+      DBG_INFO("CooldownDisplay",
+               "    CanvasLayer visible: " +
+                   String(canvas->is_visible() ? "yes" : "no"));
     }
+  }
+
+  // 1. Find MatchManager in scene
+  // Search up to find the scene root, then look for MatchManager sibling
+  Node* current = this;
+  Node* scene_root = nullptr;
+
+  while (current && current->get_parent()) {
+    scene_root = current;
     current = current->get_parent();
   }
 
-  // If not found in parent chain, try direct name lookup
-  if (!match_manager) {
-    Node* manager_node = get_node_or_null("/root/MatchManager");
-    match_manager = Object::cast_to<MatchManager>(manager_node);
+  // Try to find MatchManager as child of scene root
+  if (scene_root) {
+    for (int i = 0; i < scene_root->get_child_count(); i++) {
+      match_manager = Object::cast_to<MatchManager>(scene_root->get_child(i));
+      if (match_manager) {
+        break;
+      }
+    }
   }
+
   if (!match_manager) {
-    DBG_WARN("CooldownDisplay", "MatchManager not found in scene root");
+    DBG_WARN("CooldownDisplay", "MatchManager not found in scene");
     return;
   }
 
