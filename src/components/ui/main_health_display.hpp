@@ -14,16 +14,17 @@ class HealthComponent;
 /// MainHealthDisplay - displays main unit's health in the main UI
 ///
 /// This component shows:
-/// - Health bar (current/max health) with built-in percentage display
+/// - Health bar (current/max health) with "current/max" text display
 ///
 /// Properties:
-/// - health_bar_path: NodePath to ProgressBar child (default: "ProgressBar")
+/// - health_bar_path: NodePath to DataProgressBar child (default:
+/// "ProgressBar")
 ///
 /// The component automatically:
 /// 1. Finds the main Unit from MatchManager
 /// 2. Gets HealthComponent from that unit
 /// 3. Connects to health_changed signal
-/// 4. Updates bar value in real-time
+/// 4. Updates bar value in real-time (DataProgressBar handles text)
 class MainHealthDisplay : public PanelContainer {
   GDCLASS(MainHealthDisplay, PanelContainer)
 

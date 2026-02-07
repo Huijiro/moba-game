@@ -16,4 +16,6 @@ target_sources(
   ./main_health_display.cpp
   ./main_resource_display.hpp
   ./main_resource_display.cpp
+  ./data_progress_bar.hpp
+  ./data_progress_bar.cpp
 )

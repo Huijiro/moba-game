@@ -24,6 +24,7 @@
 #include "components/resources/resource_pool_component.hpp"
 #include "components/ui/cooldown_display_component.hpp"
 #include "components/ui/cooldown_icon.hpp"
+#include "components/ui/data_progress_bar.hpp"
 #include "components/ui/head_bar.hpp"
 #include "components/ui/label_component.hpp"
 #include "components/ui/main_health_display.hpp"
@@ -60,6 +61,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourceBar)
   GDREGISTER_CLASS(CooldownIcon)
   GDREGISTER_CLASS(CooldownDisplayComponent)
+  GDREGISTER_CLASS(DataProgressBar)
   GDREGISTER_CLASS(MainHealthDisplay)
   GDREGISTER_CLASS(MainResourceDisplay)
   GDREGISTER_CLASS(AttackComponent)

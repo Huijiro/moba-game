@@ -16,17 +16,18 @@ class ResourcePoolComponent;
 /// MainResourceDisplay - displays main unit's resource pool in the main UI
 ///
 /// This component shows:
-/// - Resource bar (current/max resource) with built-in percentage display
+/// - Resource bar (current/max resource) with "current/max" text display
 ///
 /// Properties:
 /// - pool_id: Which resource pool to display (e.g., "mana") (default: "mana")
-/// - resource_bar_path: NodePath to ProgressBar child (default: "ProgressBar")
+/// - resource_bar_path: NodePath to DataProgressBar child (default:
+/// "ProgressBar")
 ///
 /// The component automatically:
 /// 1. Finds the main Unit from MatchManager
 /// 2. Gets ResourcePoolComponent with matching pool_id
 /// 3. Connects to value_changed signal
-/// 4. Updates bar value in real-time
+/// 4. Updates bar value in real-time (DataProgressBar handles text)
 class MainResourceDisplay : public PanelContainer {
   GDCLASS(MainResourceDisplay, PanelContainer)
 
