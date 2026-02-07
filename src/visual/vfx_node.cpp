@@ -8,6 +8,7 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::MethodInfo;
 using godot::PropertyInfo;
 using godot::String;
 using godot::UtilityFunctions;
@@ -35,6 +36,13 @@ void VFXNode::_bind_methods() {
   ClassDB::bind_method(D_METHOD("_on_finished"), &VFXNode::_on_finished);
   ClassDB::bind_method(D_METHOD("_on_animation_signal", "signal_name"),
                        &VFXNode::_on_animation_signal);
+
+  // Add support for dynamic signals from animations
+  // These allow animations to emit custom signals that can trigger callbacks
+  ADD_SIGNAL(MethodInfo("explosion_damage"));
+  ADD_SIGNAL(MethodInfo("strike_hit"));
+  ADD_SIGNAL(MethodInfo("beam_hit"));
+
   // Note: _process is a virtual method, don't bind it as a regular method
 }
 

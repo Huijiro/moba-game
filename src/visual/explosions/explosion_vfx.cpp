@@ -91,8 +91,25 @@ void ExplosionVFX::play(const Dictionary& params) {
 
     DBG_INFO("ExplosionVFX",
              "All signals connected, starting animation: " + animation_name);
+
+    // Verify animation exists before playing
+    godot::String current = ap->get_assigned_animation();
+    DBG_INFO("ExplosionVFX", "Current animation before play: " +
+                                 (current.is_empty() ? "NONE" : current));
+
     ap->play(animation_name);
-    DBG_INFO("ExplosionVFX", "Animation started: " + animation_name);
+
+    // Verify animation started
+    current = ap->get_assigned_animation();
+    DBG_INFO("ExplosionVFX", "Current animation after play: " +
+                                 (current.is_empty() ? "NONE" : current));
+    DBG_INFO("ExplosionVFX",
+             "Animation is playing: " +
+                 godot::String(ap->is_playing() ? "YES" : "NO"));
+    DBG_INFO("ExplosionVFX",
+             "Animation length: " +
+                 godot::String::num(ap->get_current_animation_length(), 2) +
+                 "s");
   } else {
     DBG_WARN("ExplosionVFX", "No AnimationPlayer found for explosion VFX");
   }
