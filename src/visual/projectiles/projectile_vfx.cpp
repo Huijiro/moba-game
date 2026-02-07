@@ -33,14 +33,14 @@ void ProjectileVFX::_process(double delta) {
     return;
   }
 
-  // If we have a projectile, mirror its position
+  // If we have a projectile, mirror its position (as backup in case reparenting
+  // didn't work)
   if (tracked_projectile != nullptr) {
     Node3D* projectile_node = Object::cast_to<Node3D>(tracked_projectile);
     if (projectile_node != nullptr && projectile_node->is_inside_tree()) {
-      // Only update position if we're in the tree
-      if (is_inside_tree()) {
+      // Only update position if we're in the tree and not already a child
+      if (is_inside_tree() && get_parent() != projectile_node) {
         set_global_position(projectile_node->get_global_position());
-        // Optionally match rotation too for better visuals
         set_global_rotation(projectile_node->get_global_rotation());
       }
     } else if (projectile_node != nullptr &&
@@ -52,9 +52,6 @@ void ProjectileVFX::_process(double delta) {
       return;
     }
   }
-
-  // Don't call parent's _process - we handle our own lifecycle
-  // (no duration-based cleanup, only follows projectile)
 }
 
 void ProjectileVFX::play(const Dictionary& params) {
@@ -77,19 +74,19 @@ void ProjectileVFX::play(const Dictionary& params) {
   // Mark as playing
   is_playing_internal = true;
 
-  // Only set position if we're in the tree
-  if (is_inside_tree() && projectile_node->is_inside_tree()) {
-    set_global_position(projectile_node->get_global_position());
-  } else {
-    DBG_WARN(
-        "ProjectileVFX",
-        "VFX or projectile not in tree yet, position will update in _process");
+  // Make this VFX a child of the projectile so they move together
+  // This avoids any position synchronization issues
+  if (get_parent() != projectile_node) {
+    // Move this node to be a child of the projectile
+    Node* current_parent = get_parent();
+    if (current_parent != nullptr) {
+      current_parent->remove_child(this);
+    }
+    projectile_node->add_child(this);
+    DBG_INFO("ProjectileVFX",
+             "Made VFX a child of projectile for synchronized movement");
   }
 
   DBG_INFO("ProjectileVFX",
-           "Following projectile: " + projectile_node->get_name() +
-               " at position (" +
-               String::num(projectile_node->get_global_position().x, 2) + ", " +
-               String::num(projectile_node->get_global_position().y, 2) + ", " +
-               String::num(projectile_node->get_global_position().z, 2) + ")");
+           "Following projectile: " + projectile_node->get_name());
 }
