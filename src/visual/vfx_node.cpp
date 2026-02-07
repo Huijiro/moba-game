@@ -1,5 +1,6 @@
 #include "vfx_node.hpp"
 
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -8,6 +9,7 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::MeshInstance3D;
 using godot::PropertyInfo;
 using godot::String;
 using godot::UtilityFunctions;
@@ -73,10 +75,17 @@ void VFXNode::_on_finished() {
   clear_callbacks();
 
   // Explicitly cleanup children to ensure rendering resources are freed
-  // This prevents material/shader/texture RID leaks
+  // This prevents material/shader/texture/mesh RID leaks
   for (int i = get_child_count() - 1; i >= 0; i--) {
     Node* child = get_child(i);
     if (child != nullptr) {
+      // For MeshInstance3D, explicitly clear mesh to release mesh RID
+      auto* mesh_instance = godot::Object::cast_to<MeshInstance3D>(child);
+      if (mesh_instance != nullptr) {
+        // Clear mesh - this releases mesh RID
+        mesh_instance->set_mesh(nullptr);
+      }
+
       remove_child(child);
       child->queue_free();
     }
