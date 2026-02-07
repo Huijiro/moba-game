@@ -4,10 +4,8 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <sstream>
 
 #include "../debug/debug_macros.hpp"
-#include "../debug/memory_profiler.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -19,26 +17,9 @@ using godot::Variant;
 
 VFXNode::VFXNode() {
   set_process(true);
-
-  // Track allocation in profiler
-  static int vfx_instance_count = 0;
-  std::ostringstream oss;
-  oss << "VFXNode_" << (++vfx_instance_count) << "_" << this;
-  profiler_id = oss.str();
-  MemoryProfiler::track_allocation("VFXNode", profiler_id);
-  UtilityFunctions::print("[VFXNode] Allocated: " +
-                          String(profiler_id.c_str()));
 }
 
-VFXNode::~VFXNode() {
-  // Only deregister if not already done in _on_finished()
-  // (profiler_id is cleared after deallocation to prevent double-counting)
-  if (!profiler_id.empty()) {
-    MemoryProfiler::track_deallocation("VFXNode", profiler_id);
-    UtilityFunctions::print("[VFXNode] Destructor deallocation: " +
-                            String(profiler_id.c_str()));
-  }
-}
+VFXNode::~VFXNode() = default;
 
 void VFXNode::_bind_methods() {
   ClassDB::bind_method(D_METHOD("play", "params"), &VFXNode::play,
@@ -89,16 +70,6 @@ void VFXNode::stop() {
 
 void VFXNode::_on_finished() {
   is_playing_internal = false;
-
-  UtilityFunctions::print("[VFXNode] _on_finished called for: " +
-                          String(profiler_id.c_str()));
-
-  // Deregister from profiler NOW (not in destructor)
-  // queue_free() is async, destructor may not be called immediately
-  if (!profiler_id.empty()) {
-    MemoryProfiler::track_deallocation("VFXNode", profiler_id);
-    profiler_id.clear();  // Prevent double-deallocation
-  }
 
   // Clear callbacks before cleanup
   clear_callbacks();
