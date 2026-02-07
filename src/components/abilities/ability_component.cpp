@@ -27,7 +27,26 @@ using godot::Variant;
 
 AbilityComponent::AbilityComponent() = default;
 
-AbilityComponent::~AbilityComponent() = default;
+AbilityComponent::~AbilityComponent() {
+  // Clean up instantiated AbilityNode instances
+  // These are orphan nodes created in get_ability() via lazy instantiation
+  // They need explicit cleanup to avoid "Leaked instance dependency" warnings
+  for (int i = 0; i < ability_scenes.size(); i++) {
+    Variant scene_variant = ability_scenes[i];
+    if (scene_variant.get_type() == Variant::OBJECT) {
+      // Try to cast to AbilityNode - if it's an instance (not a PackedScene)
+      AbilityNode* ability =
+          Object::cast_to<AbilityNode>(static_cast<Object*>(scene_variant));
+      if (ability != nullptr) {
+        // This is an instantiated AbilityNode, clean it up
+        godot::Node* node = Object::cast_to<godot::Node>(ability);
+        if (node != nullptr) {
+          node->queue_free();
+        }
+      }
+    }
+  }
+}
 
 void AbilityComponent::_bind_methods() {
   // ========== ABILITY SLOT METHODS ==========
