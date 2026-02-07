@@ -37,8 +37,10 @@ void MemoryDisplayComponent::_bind_methods() {
 
   ClassDB::bind_method(D_METHOD("set_update_interval", "interval"),
                        &MemoryDisplayComponent::set_update_interval);
+  ClassDB::bind_method(D_METHOD("get_update_interval"),
+                       &MemoryDisplayComponent::get_update_interval);
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "update_interval"),
-               "set_update_interval", "set_update_interval");
+               "set_update_interval", "get_update_interval");
 }
 
 void MemoryDisplayComponent::_ready() {

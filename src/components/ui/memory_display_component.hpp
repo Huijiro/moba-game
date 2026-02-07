@@ -35,8 +35,9 @@ class MemoryDisplayComponent : public Control {
   void set_show_stats(bool show);
   bool is_showing_stats() const { return show_memory_stats; }
 
-  // Set update interval (in seconds)
+  // Set/get update interval (in seconds)
   void set_update_interval(float interval);
+  float get_update_interval() const { return update_interval; }
 
  private:
   void update_memory_display();
