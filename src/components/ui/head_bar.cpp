@@ -193,9 +193,8 @@ void HeadBar::_process(double delta) {
     // Mesh instance local position
     Vector3 mesh_local_pos = mesh_instance->get_position();
 
-    // Calculate world position: unit center + mesh offset + top of mesh +
-    // offset above
-    world_pos = unit_pos + mesh_local_pos + Vector3(0, mesh_top_y + 0.5f, 0);
+    // Calculate world position: unit center + mesh offset + top of mesh
+    world_pos = unit_pos + mesh_local_pos + Vector3(0, mesh_top_y, 0);
   }
 
   // Convert to screen position
