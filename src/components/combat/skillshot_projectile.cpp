@@ -139,7 +139,8 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
 
   Vector3 explosion_center = get_global_position();
 
-  // Call detonation callback if set
+  // Call detonation callback if set (indicates explosion effect)
+  bool has_explosion = (on_detonated != nullptr);
   if (on_detonated != nullptr && caster != nullptr) {
     on_detonated(caster, explosion_center);
   }
@@ -158,6 +159,16 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
   } else {
     // No specific target - search for units in AoE radius
     _find_and_damage_units();
+  }
+
+  // Draw AoE visualization only if there's an explosion effect
+  if (has_explosion) {
+    VisualDebugger* debugger = VisualDebugger::get_singleton();
+    if (debugger != nullptr && debugger->is_debug_enabled()) {
+      // Draw AoE explosion radius at detonation point (orange for visibility)
+      debugger->draw_circle_xz(explosion_center, aoe_radius,
+                               godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
+    }
   }
 
   queue_free();
