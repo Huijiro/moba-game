@@ -1,5 +1,8 @@
 [gd_scene format=3 uid="uid://cgx5icaowkcb3"]
 
+[ext_resource type="Texture2D" uid="uid://f6mq2yylwnao" path="res://assets/placeholder/PLACEHOLDER_fireball.png" id="1_v3kf6"]
+
 [node name="Fireball" type="FireballNode" unique_id=526675319]
+icon = ExtResource("1_v3kf6")
 resource_pool_id = "mana"
 resource_cost = 20.0

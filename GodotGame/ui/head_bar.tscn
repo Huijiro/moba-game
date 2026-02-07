@@ -1,39 +1,46 @@
-[gd_scene format=3 uid="uid://b2fxvqyx8ytdlr"]
+[gd_scene format=3 uid="uid://dgttv46hir78b"]
 
-[node name="HeadBar" type="HeadBar"]
-anchors_left = 0.5
-anchors_top = 0.5
-anchors_right = 0.5
-anchors_bottom = 0.5
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qk2ei"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vmghu"]
+bg_color = Color(0.6, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kkvfd"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2cg6n"]
+bg_color = Color(0, 0, 0.6, 1)
+
+[node name="HeadBar" type="HeadBar" unique_id=2004916923]
+unit_name_label_path = NodePath("VBoxContainer/UnitNameLabel")
+health_bar_path = NodePath("VBoxContainer/HealthBar")
 offset_left = -50.0
 offset_top = -30.0
 offset_right = 50.0
 offset_bottom = 50.0
 
-[node name="UnitNameLabel" type="Label" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=565421334]
 layout_mode = 0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 100.0
-offset_bottom = 20.0
+offset_left = -47.0
+offset_right = 141.0
+offset_bottom = 77.0
+theme_override_constants/separation = 0
+
+[node name="UnitNameLabel" type="Label" parent="VBoxContainer" unique_id=997682417]
+layout_mode = 2
 text = "[Unit Name]"
 horizontal_alignment = 1
 
-[node name="HealthBar" type="ProgressBar" parent="."]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 25.0
-offset_right = 100.0
-offset_bottom = 40.0
-max_value = 100.0
+[node name="HealthBar" type="ProgressBar" parent="VBoxContainer" unique_id=1298506797]
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_qk2ei")
+theme_override_styles/fill = SubResource("StyleBoxFlat_vmghu")
 value = 100.0
 
-[node name="ResourceMana" type="ResourceBar" parent="."]
-layout_mode = 0
-offset_left = 0.0
-offset_top = 45.0
-offset_right = 100.0
-offset_bottom = 60.0
-max_value = 100.0
+[node name="ResourceMana" type="ResourceBar" parent="VBoxContainer" unique_id=744854828]
+layout_mode = 2
+theme_override_font_sizes/font_size = 8
+theme_override_styles/background = SubResource("StyleBoxFlat_kkvfd")
+theme_override_styles/fill = SubResource("StyleBoxFlat_2cg6n")
 value = 100.0
-pool_id = &"mana"
