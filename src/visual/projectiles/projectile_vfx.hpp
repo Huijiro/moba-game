@@ -7,31 +7,28 @@
 
 using godot::Vector3;
 
-/// Projectile VFX - Animates a mesh/particle from start to end position
-/// Used for directional abilities like Frost Bolt, Fireball projectiles
+/// Projectile VFX - Visual representation of a projectile
+/// Follows the actual projectile node (SkillshotProjectile)
+/// Automatically cleans up when projectile is destroyed
 ///
 /// Parameters:
-/// - "from": Vector3 - Starting position
-/// - "to": Vector3 - Ending position
-/// - "duration": float - Travel time in seconds
+/// - "projectile": Node3D - The actual projectile to follow
 ///
 /// Example:
 /// projectile_vfx->play({
-///   {"from", caster_pos},
-///   {"to", target_pos},
-///   {"duration", 0.5f}
+///   {"projectile", projectile_node}
 /// });
+///
+/// The VFX will mirror the projectile's position and be destroyed
+/// when the projectile is destroyed (on hit or max distance)
 class ProjectileVFX : public VFXNode {
   GDCLASS(ProjectileVFX, VFXNode)
 
  protected:
   static void _bind_methods();
 
-  // Store animation parameters
-  Vector3 start_position = Vector3(0, 0, 0);
-  Vector3 end_position = Vector3(0, 0, 0);
-  float animation_duration = 1.0f;
-  float elapsed_time = 0.0f;
+  // Reference to the projectile we're following
+  godot::Object* tracked_projectile = nullptr;
 
  public:
   ProjectileVFX();
@@ -39,7 +36,7 @@ class ProjectileVFX : public VFXNode {
 
   void _process(double delta) override;
 
-  // Animate from start to end position
+  // Start following a projectile node
   void play(const Dictionary& params) override;
 };
 

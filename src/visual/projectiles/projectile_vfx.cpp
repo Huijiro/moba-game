@@ -7,6 +7,8 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::Node3D;
+using godot::Object;
 using godot::String;
 
 ProjectileVFX::ProjectileVFX() = default;
@@ -22,44 +24,56 @@ void ProjectileVFX::_process(double delta) {
     return;
   }
 
-  elapsed_time += static_cast<float>(delta);
-
-  // Interpolate position based on elapsed time
-  if (animation_duration > 0.0f) {
-    float progress =
-        godot::Math::clamp(elapsed_time / animation_duration, 0.0f, 1.0f);
-    Vector3 current_position = start_position.lerp(end_position, progress);
-    set_global_position(current_position);
+  // Check if tracked projectile still exists
+  if (tracked_projectile != nullptr &&
+      tracked_projectile->is_queued_for_deletion()) {
+    // Projectile is being deleted, clean up this VFX
+    DBG_INFO("ProjectileVFX", "Projectile destroyed, cleaning up VFX");
+    _on_finished();
+    return;
   }
 
-  // Call parent's process for duration checking and cleanup
-  VFXNode::_process(delta);
+  // If we have a projectile, mirror its position
+  if (tracked_projectile != nullptr) {
+    Node3D* projectile_node = Object::cast_to<Node3D>(tracked_projectile);
+    if (projectile_node != nullptr && projectile_node->is_inside_tree()) {
+      set_global_position(projectile_node->get_global_position());
+      // Optionally match rotation too for better visuals
+      set_global_rotation(projectile_node->get_global_rotation());
+    }
+  }
+
+  // Don't call parent's _process - we handle our own lifecycle
+  // (no duration-based cleanup, only follows projectile)
 }
 
 void ProjectileVFX::play(const Dictionary& params) {
-  DBG_INFO("ProjectileVFX", "Playing projectile VFX");
+  DBG_INFO("ProjectileVFX", "Starting projectile VFX");
 
-  // Extract parameters
-  start_position = params.get("from", Vector3(0, 0, 0));
-  end_position = params.get("to", Vector3(0, 0, 0));
-  animation_duration = params.get("duration", 1.0f);
+  // Extract the projectile node to follow
+  tracked_projectile = params.get("projectile", nullptr);
+  if (tracked_projectile == nullptr) {
+    DBG_WARN("ProjectileVFX", "No projectile provided in params");
+    return;
+  }
 
-  // Set starting position
-  set_global_position(start_position);
-  elapsed_time = 0.0f;
+  Node3D* projectile_node = Object::cast_to<Node3D>(tracked_projectile);
+  if (projectile_node == nullptr) {
+    DBG_WARN("ProjectileVFX", "Projectile param is not a Node3D");
+    tracked_projectile = nullptr;
+    return;
+  }
 
   // Mark as playing
   is_playing_internal = true;
 
-  // Set duration for auto-cleanup
-  set_duration(animation_duration);
+  // Set initial position to match projectile
+  set_global_position(projectile_node->get_global_position());
 
-  DBG_INFO("ProjectileVFX", "Animating from (" +
-                                String::num(start_position.x, 2) + ", " +
-                                String::num(start_position.y, 2) + ", " +
-                                String::num(start_position.z, 2) + ") to (" +
-                                String::num(end_position.x, 2) + ", " +
-                                String::num(end_position.y, 2) + ", " +
-                                String::num(end_position.z, 2) + ") over " +
-                                String::num(animation_duration, 2) + "s");
+  DBG_INFO("ProjectileVFX",
+           "Following projectile: " + projectile_node->get_name() +
+               " at position (" +
+               String::num(projectile_node->get_global_position().x, 2) + ", " +
+               String::num(projectile_node->get_global_position().y, 2) + ", " +
+               String::num(projectile_node->get_global_position().z, 2) + ")");
 }
