@@ -200,6 +200,14 @@ void HeadBar::_process(double delta) {
 
   // Convert to screen position
   godot::Vector2 screen_pos = camera->unproject_position(world_pos);
+
+  // Adjust so the BOTTOM MIDDLE of the HeadBar aligns with the world position
+  // Get the HeadBar's size to offset it properly
+  godot::Vector2 size = get_size();
+  screen_pos.y -=
+      size.y;  // Move up by the height so bottom aligns with world_pos
+  screen_pos.x -= size.x / 2.0f;  // Center horizontally
+
   set_global_position(screen_pos);
 }
 
