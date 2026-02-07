@@ -67,6 +67,7 @@ class HeadBar : public Control {
   // Signal handlers
   void _on_health_changed(float current, float max);
   void _on_resource_changed(StringName pool_id, float current, float max);
+  void _reparent_to_game_ui(godot::Object* game_ui);
 
  public:
   HeadBar();

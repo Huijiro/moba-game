@@ -46,5 +46,3 @@ pool_id = &"mana"
 ability_scenes = [ExtResource("1_5wnup"), ExtResource("2_1sk4h"), ExtResource("3_baxm0"), ExtResource("4_of1k5")]
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1231263238]
-
-[node name="LabelComponent" type="LabelComponent" parent="." unique_id=993868657]

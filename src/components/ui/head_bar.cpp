@@ -48,6 +48,8 @@ void HeadBar::_bind_methods() {
   ClassDB::bind_method(
       D_METHOD("_on_resource_changed", "pool_id", "current", "max"),
       &HeadBar::_on_resource_changed);
+  ClassDB::bind_method(D_METHOD("_reparent_to_game_ui", "game_ui"),
+                       &HeadBar::_reparent_to_game_ui);
 }
 
 void HeadBar::_ready() {
@@ -76,9 +78,10 @@ void HeadBar::_ready() {
   }
 
   if (game_ui) {
-    get_parent()->remove_child(this);
-    game_ui->add_child(this);
-    DBG_DEBUG("HeadBar", "Reparented to GameUI CanvasLayer");
+    // Defer reparenting to avoid "busy adding/removing children" error
+    call_deferred(godot::StringName("_reparent_to_game_ui"),
+                  godot::Variant(game_ui));
+    DBG_DEBUG("HeadBar", "Scheduled reparent to GameUI CanvasLayer");
   } else {
     DBG_WARN("HeadBar", "GameUI CanvasLayer not found in scene");
     return;
@@ -208,4 +211,25 @@ void HeadBar::set_health_bar_path(const godot::NodePath& path) {
 
 godot::NodePath HeadBar::get_health_bar_path() const {
   return health_bar_path;
+}
+
+void HeadBar::_reparent_to_game_ui(godot::Object* game_ui) {
+  if (!game_ui || !is_inside_tree()) {
+    DBG_WARN("HeadBar", "_reparent_to_game_ui: Invalid game_ui or not in tree");
+    return;
+  }
+
+  godot::CanvasLayer* canvas_layer =
+      Object::cast_to<godot::CanvasLayer>(game_ui);
+  if (!canvas_layer) {
+    DBG_WARN("HeadBar", "_reparent_to_game_ui: game_ui is not a CanvasLayer");
+    return;
+  }
+
+  Node* parent = get_parent();
+  if (parent) {
+    parent->remove_child(this);
+  }
+  canvas_layer->add_child(this);
+  DBG_DEBUG("HeadBar", "Successfully reparented to GameUI CanvasLayer");
 }
