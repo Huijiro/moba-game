@@ -1,8 +1,9 @@
 #include "main_health_display.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/v_box_container.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
@@ -12,22 +13,14 @@
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
-using godot::PropertyInfo;
-using godot::Variant;
+using godot::String;
+using godot::VBoxContainer;
 
 MainHealthDisplay::MainHealthDisplay() = default;
 
 MainHealthDisplay::~MainHealthDisplay() = default;
 
 void MainHealthDisplay::_bind_methods() {
-  ClassDB::bind_method(D_METHOD("set_health_bar_path", "path"),
-                       &MainHealthDisplay::set_health_bar_path);
-  ClassDB::bind_method(D_METHOD("get_health_bar_path"),
-                       &MainHealthDisplay::get_health_bar_path);
-  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "health_bar_path"),
-               "set_health_bar_path", "get_health_bar_path");
-
-  // Signal handler
   ClassDB::bind_method(D_METHOD("_on_health_changed", "current", "max"),
                        &MainHealthDisplay::_on_health_changed);
 }
@@ -76,12 +69,19 @@ void MainHealthDisplay::_ready() {
     return;
   }
 
-  // Find child nodes
-  health_bar = Object::cast_to<ProgressBar>(get_node_or_null(health_bar_path));
-  if (!health_bar) {
-    DBG_WARN("MainHealthDisplay",
-             "HealthBar not found at path: " + String(health_bar_path));
-  }
+  // Create a VBoxContainer to hold the bar and label
+  VBoxContainer* container = memnew(VBoxContainer);
+  add_child(container);
+
+  // Create the ProgressBar
+  health_bar = memnew(ProgressBar);
+  container->add_child(health_bar);
+  health_bar->set_show_percentage(false);
+
+  // Create the Label
+  health_label = memnew(Label);
+  container->add_child(health_label);
+  health_label->set_text("0/0");
 
   // Connect to health signal
   health_component->connect(
@@ -95,29 +95,15 @@ void MainHealthDisplay::_ready() {
   DBG_INFO("MainHealthDisplay", "Initialized for main unit");
 }
 
-godot::Vector2 MainHealthDisplay::_get_minimum_size() const {
-  // Calculate minimum size from child nodes
-  godot::Vector2 min_size(0, 0);
-
-  // Get minimum size from the ProgressBar child
-  if (health_bar) {
-    min_size = health_bar->get_combined_minimum_size();
-  }
-
-  return min_size;
-}
-
 void MainHealthDisplay::_on_health_changed(float current, float max) {
   if (health_bar) {
     health_bar->set_value(current);
     health_bar->set_max(max);
   }
-}
 
-void MainHealthDisplay::set_health_bar_path(godot::NodePath path) {
-  health_bar_path = path;
-}
-
-godot::NodePath MainHealthDisplay::get_health_bar_path() const {
-  return health_bar_path;
+  if (health_label) {
+    String health_text =
+        String::num((int)current) + " / " + String::num((int)max);
+    health_label->set_text(health_text);
+  }
 }

@@ -1,8 +1,10 @@
 #include "main_resource_display.hpp"
 
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/v_box_container.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/string.hpp>
 
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
@@ -15,6 +17,7 @@ using godot::Engine;
 using godot::PropertyInfo;
 using godot::String;
 using godot::Variant;
+using godot::VBoxContainer;
 
 MainResourceDisplay::MainResourceDisplay() = default;
 
@@ -28,14 +31,6 @@ void MainResourceDisplay::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "pool_id"), "set_pool_id",
                "get_pool_id");
 
-  ClassDB::bind_method(D_METHOD("set_resource_bar_path", "path"),
-                       &MainResourceDisplay::set_resource_bar_path);
-  ClassDB::bind_method(D_METHOD("get_resource_bar_path"),
-                       &MainResourceDisplay::get_resource_bar_path);
-  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "resource_bar_path"),
-               "set_resource_bar_path", "get_resource_bar_path");
-
-  // Signal handler
   ClassDB::bind_method(D_METHOD("_on_resource_changed", "current", "max"),
                        &MainResourceDisplay::_on_resource_changed);
 }
@@ -92,13 +87,19 @@ void MainResourceDisplay::_ready() {
     return;
   }
 
-  // Find child nodes
-  resource_bar =
-      Object::cast_to<ProgressBar>(get_node_or_null(resource_bar_path));
-  if (!resource_bar) {
-    DBG_WARN("MainResourceDisplay",
-             "ResourceBar not found at path: " + String(resource_bar_path));
-  }
+  // Create a VBoxContainer to hold the bar and label
+  VBoxContainer* container = memnew(VBoxContainer);
+  add_child(container);
+
+  // Create the ProgressBar
+  resource_bar = memnew(ProgressBar);
+  container->add_child(resource_bar);
+  resource_bar->set_show_percentage(false);
+
+  // Create the Label
+  resource_label = memnew(Label);
+  container->add_child(resource_label);
+  resource_label->set_text("0/0");
 
   // Connect to resource signal
   resource_pool->connect(
@@ -113,22 +114,16 @@ void MainResourceDisplay::_ready() {
            "Initialized for pool '" + String(pool_id) + "'");
 }
 
-godot::Vector2 MainResourceDisplay::_get_minimum_size() const {
-  // Calculate minimum size from child nodes
-  godot::Vector2 min_size(0, 0);
-
-  // Get minimum size from the ProgressBar child
-  if (resource_bar) {
-    min_size = resource_bar->get_combined_minimum_size();
-  }
-
-  return min_size;
-}
-
 void MainResourceDisplay::_on_resource_changed(float current, float max) {
   if (resource_bar) {
     resource_bar->set_value(current);
     resource_bar->set_max(max);
+  }
+
+  if (resource_label) {
+    String resource_text =
+        String::num((int)current) + " / " + String::num((int)max);
+    resource_label->set_text(resource_text);
   }
 }
 
@@ -138,12 +133,4 @@ void MainResourceDisplay::set_pool_id(StringName id) {
 
 StringName MainResourceDisplay::get_pool_id() const {
   return pool_id;
-}
-
-void MainResourceDisplay::set_resource_bar_path(godot::NodePath path) {
-  resource_bar_path = path;
-}
-
-godot::NodePath MainResourceDisplay::get_resource_bar_path() const {
-  return resource_bar_path;
 }

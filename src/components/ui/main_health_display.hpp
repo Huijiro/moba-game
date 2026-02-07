@@ -13,30 +13,25 @@ class HealthComponent;
 
 /// MainHealthDisplay - displays main unit's health in the main UI
 ///
-/// This component shows:
-/// - Health bar (current/max health) with "current/max" text display
-///
-/// Properties:
-/// - health_bar_path: NodePath to DataProgressBar child (default:
-/// "ProgressBar")
+/// This component creates and manages:
+/// - A ProgressBar for the health bar visualization
+/// - A Label for "current/max" text display
 ///
 /// The component automatically:
 /// 1. Finds the main Unit from MatchManager
 /// 2. Gets HealthComponent from that unit
 /// 3. Connects to health_changed signal
-/// 4. Updates bar value in real-time (DataProgressBar handles text)
+/// 4. Updates bar value and label text in real-time
 class MainHealthDisplay : public PanelContainer {
   GDCLASS(MainHealthDisplay, PanelContainer)
 
  protected:
   static void _bind_methods();
 
-  godot::NodePath health_bar_path = "ProgressBar";
-
   ProgressBar* health_bar = nullptr;
+  Label* health_label = nullptr;
   HealthComponent* health_component = nullptr;
 
-  // Signal handler
   void _on_health_changed(float current, float max);
 
  public:
@@ -44,11 +39,6 @@ class MainHealthDisplay : public PanelContainer {
   ~MainHealthDisplay();
 
   void _ready() override;
-  godot::Vector2 _get_minimum_size() const override;
-
-  // Properties
-  void set_health_bar_path(godot::NodePath path);
-  godot::NodePath get_health_bar_path() const;
 };
 
 #endif  // GDEXTENSION_MAIN_HEALTH_DISPLAY_H
