@@ -53,20 +53,16 @@ class HeadBar : public Control {
   // References to parent components
   Unit* owner_unit = nullptr;
   HealthComponent* health_component = nullptr;
-  std::vector<ResourcePoolComponent*> resource_pools;
 
   // References to child nodes
   Label* unit_name_label = nullptr;
   ProgressBar* health_bar = nullptr;
-  std::vector<ProgressBar*> resource_bars;
-  std::vector<StringName> resource_pool_ids;
 
   // Camera for world-to-screen positioning
   Camera3D* camera = nullptr;
 
   // Signal handlers
   void _on_health_changed(float current, float max);
-  void _on_resource_changed(StringName pool_id, float current, float max);
   void _reparent_to_game_ui(godot::Object* game_ui);
 
  public:

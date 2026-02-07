@@ -28,7 +28,7 @@ offset_bottom = 40.0
 max_value = 100.0
 value = 100.0
 
-[node name="ResourceMana" type="ProgressBar" parent="."]
+[node name="ResourceMana" type="ResourceBar" parent="."]
 layout_mode = 0
 offset_left = 0.0
 offset_top = 45.0
@@ -36,3 +36,4 @@ offset_right = 100.0
 offset_bottom = 60.0
 max_value = 100.0
 value = 100.0
+pool_id = &"mana"

@@ -6,6 +6,8 @@ target_sources(
   ./label_component.cpp
   ./head_bar.hpp
   ./head_bar.cpp
+  ./resource_bar.hpp
+  ./resource_bar.cpp
   ./cooldown_display_component.hpp
   ./cooldown_display_component.cpp
 )

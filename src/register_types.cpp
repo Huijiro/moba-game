@@ -25,6 +25,7 @@
 #include "components/ui/cooldown_display_component.hpp"
 #include "components/ui/head_bar.hpp"
 #include "components/ui/label_component.hpp"
+#include "components/ui/resource_bar.hpp"
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
@@ -53,6 +54,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(LabelComponent)
   GDREGISTER_CLASS(HeadBar)
+  GDREGISTER_CLASS(ResourceBar)
   GDREGISTER_CLASS(CooldownDisplayComponent)
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)

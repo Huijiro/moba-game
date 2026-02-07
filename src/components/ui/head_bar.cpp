@@ -46,9 +46,6 @@ void HeadBar::_bind_methods() {
   // Signal handlers
   ClassDB::bind_method(D_METHOD("_on_health_changed", "current", "max"),
                        &HeadBar::_on_health_changed);
-  ClassDB::bind_method(
-      D_METHOD("_on_resource_changed", "pool_id", "current", "max"),
-      &HeadBar::_on_resource_changed);
   ClassDB::bind_method(D_METHOD("_reparent_to_game_ui", "game_ui"),
                        &HeadBar::_reparent_to_game_ui);
 }
@@ -106,38 +103,8 @@ void HeadBar::_ready() {
     DBG_WARN("HeadBar", "No HealthComponent found on parent Unit");
   }
 
-  // 6. Find all ResourcePoolComponents on Unit and discover matching child bars
-  for (int i = 0; i < owner_unit->get_child_count(); i++) {
-    ResourcePoolComponent* pool =
-        Object::cast_to<ResourcePoolComponent>(owner_unit->get_child(i));
-    if (!pool) {
-      continue;
-    }
-
-    StringName pool_id = pool->get_pool_id();
-    String child_name = "Resource" + String(pool_id);
-
-    // Look for matching child ProgressBar
-    ProgressBar* bar = Object::cast_to<ProgressBar>(
-        get_node_or_null(godot::NodePath(child_name)));
-
-    if (bar) {
-      // Found matching bar - connect and track
-      resource_bars.push_back(bar);
-      resource_pool_ids.push_back(pool_id);
-      resource_pools.push_back(pool);
-
-      // Connect to value_changed signal with pool_id parameter
-      pool->connect(
-          "value_changed",
-          godot::Callable(this, godot::StringName("_on_resource_changed"))
-              .bindv(godot::Array::make(pool_id)));
-
-      DBG_DEBUG("HeadBar",
-                "Connected to ResourcePoolComponent[" + String(pool_id) + "]");
-    }
-    // If not found: gracefully skip (no error)
-  }
+  // 6. Note: ResourceBar components handle their own resource pool connections
+  // No need to manually connect to resource pools here
 
   // 7. Find unit name label and set text
   unit_name_label =
@@ -217,20 +184,6 @@ void HeadBar::_on_health_changed(float current, float max) {
 
   health_bar->set_value(current);
   health_bar->set_max(max);
-}
-
-void HeadBar::_on_resource_changed(StringName pool_id,
-                                   float current,
-                                   float max) {
-  // Find which bar corresponds to this pool
-  for (size_t i = 0; i < resource_pool_ids.size(); i++) {
-    if (resource_pool_ids[i] == pool_id && i < resource_bars.size()) {
-      ProgressBar* bar = resource_bars[i];
-      bar->set_value(current);
-      bar->set_max(max);
-      return;
-    }
-  }
 }
 
 void HeadBar::set_unit_name_label_path(const godot::NodePath& path) {
