@@ -26,11 +26,18 @@ VFXNode::VFXNode() {
   oss << "VFXNode_" << (++vfx_instance_count) << "_" << this;
   profiler_id = oss.str();
   MemoryProfiler::track_allocation("VFXNode", profiler_id);
+  UtilityFunctions::print("[VFXNode] Allocated: " +
+                          String(profiler_id.c_str()));
 }
 
 VFXNode::~VFXNode() {
-  // Track deallocation in profiler
-  MemoryProfiler::track_deallocation("VFXNode", profiler_id);
+  // Only deregister if not already done in _on_finished()
+  // (profiler_id is cleared after deallocation to prevent double-counting)
+  if (!profiler_id.empty()) {
+    MemoryProfiler::track_deallocation("VFXNode", profiler_id);
+    UtilityFunctions::print("[VFXNode] Destructor deallocation: " +
+                            String(profiler_id.c_str()));
+  }
 }
 
 void VFXNode::_bind_methods() {
@@ -82,6 +89,16 @@ void VFXNode::stop() {
 
 void VFXNode::_on_finished() {
   is_playing_internal = false;
+
+  UtilityFunctions::print("[VFXNode] _on_finished called for: " +
+                          String(profiler_id.c_str()));
+
+  // Deregister from profiler NOW (not in destructor)
+  // queue_free() is async, destructor may not be called immediately
+  if (!profiler_id.empty()) {
+    MemoryProfiler::track_deallocation("VFXNode", profiler_id);
+    profiler_id.clear();  // Prevent double-deallocation
+  }
 
   // Clear callbacks before cleanup
   clear_callbacks();
