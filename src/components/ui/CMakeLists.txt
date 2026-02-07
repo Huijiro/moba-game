@@ -16,4 +16,6 @@ target_sources(
   ./main_health_display.cpp
   ./main_resource_display.hpp
   ./main_resource_display.cpp
+  ./memory_display_component.hpp
+  ./memory_display_component.cpp
 )

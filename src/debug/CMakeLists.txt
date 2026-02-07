@@ -7,4 +7,6 @@ target_sources(
   ./debug_logger.cpp
   ./debug_macros.hpp
   ./debug_utils.hpp
+  ./memory_profiler.hpp
+  ./memory_profiler.cpp
 )

@@ -102,3 +102,17 @@ texture = ExtResource("1_dcmab")
 ability_slot = 3
 layout_mode = 2
 texture = ExtResource("1_dcmab")
+
+[node name="MemoryDisplay" type="MemoryDisplayComponent" parent="Screen" unique_id=1234567890]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 410.0
+offset_bottom = 310.0
+show_stats = true
+update_interval = 0.5

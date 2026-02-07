@@ -28,6 +28,7 @@
 #include "components/ui/label_component.hpp"
 #include "components/ui/main_health_display.hpp"
 #include "components/ui/main_resource_display.hpp"
+#include "components/ui/memory_display_component.hpp"
 #include "components/ui/resource_bar.hpp"
 #include "components/unit_component.hpp"
 #include "core/match_manager.hpp"
@@ -62,6 +63,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ResourceBar)
   GDREGISTER_CLASS(CooldownIcon)
   GDREGISTER_CLASS(CooldownDisplayComponent)
+  GDREGISTER_CLASS(MemoryDisplayComponent)
   GDREGISTER_CLASS(MainHealthDisplay)
   GDREGISTER_CLASS(MainResourceDisplay)
   GDREGISTER_CLASS(AttackComponent)

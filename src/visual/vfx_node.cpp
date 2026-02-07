@@ -4,8 +4,10 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <sstream>
 
 #include "../debug/debug_macros.hpp"
+#include "../debug/memory_profiler.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -17,9 +19,19 @@ using godot::Variant;
 
 VFXNode::VFXNode() {
   set_process(true);
+
+  // Track allocation in profiler
+  static int vfx_instance_count = 0;
+  std::ostringstream oss;
+  oss << "VFXNode_" << (++vfx_instance_count) << "_" << this;
+  profiler_id = oss.str();
+  MemoryProfiler::track_allocation("VFXNode", profiler_id);
 }
 
-VFXNode::~VFXNode() = default;
+VFXNode::~VFXNode() {
+  // Track deallocation in profiler
+  MemoryProfiler::track_deallocation("VFXNode", profiler_id);
+}
 
 void VFXNode::_bind_methods() {
   ClassDB::bind_method(D_METHOD("play", "params"), &VFXNode::play,

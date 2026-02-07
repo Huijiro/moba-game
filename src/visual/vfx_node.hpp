@@ -7,6 +7,7 @@
 #include <godot_cpp/variant/array.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <map>
+#include <string>
 
 using godot::AnimationPlayer;
 using godot::Array;
@@ -50,6 +51,9 @@ class VFXNode : public Node3D {
   std::map<String, std::function<void()>> callbacks;  // Signal name → callback
   Array expected_signals;  // Signals animation should emit
   AnimationPlayer* animation_player_cache = nullptr;  // Cached reference
+
+  // Memory profiling
+  std::string profiler_id;  // Unique ID for tracking in profiler
 
   // Called when animation finishes - subclasses can override for cleanup
   virtual void _on_finished();
