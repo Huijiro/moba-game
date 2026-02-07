@@ -1,9 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2fxvqyx8ytdlr"]
+[gd_scene format=3 uid="uid://b2fxvqyx8ytdlr"]
 
-[ext_resource type="Script" path="res://src/components/ui/head_bar.gdns" id="1_2g8ha"]
-
-[node name="HeadBar" type="Node"]
-script = ExtResource("1_2g8ha")
+[node name="HeadBar" type="HeadBar"]
 
 [node name="UnitNameLabel" type="Label" parent="."]
 offset_left = -50.0

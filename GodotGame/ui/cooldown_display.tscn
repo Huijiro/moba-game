@@ -1,9 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dfq7kv5vj5u6kh"]
+[gd_scene format=3 uid="uid://dfq7kv5vj5u6kh"]
 
-[ext_resource type="Script" path="res://src/components/ui/cooldown_display_component.gdns" id="1_5xhqm"]
-
-[node name="CooldownDisplay" type="CanvasLayer"]
-script = ExtResource("1_5xhqm")
+[node name="CooldownDisplay" type="CooldownDisplayComponent"]
 ability_slot_label_paths = [NodePath("QLabel"), NodePath("WLabel"), NodePath("ELabel"), NodePath("RLabel")]
 
 [node name="QLabel" type="Label" parent="."]
