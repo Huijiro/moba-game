@@ -8,7 +8,6 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::MethodInfo;
 using godot::PropertyInfo;
 using godot::String;
 using godot::UtilityFunctions;
@@ -36,12 +35,6 @@ void VFXNode::_bind_methods() {
   ClassDB::bind_method(D_METHOD("_on_finished"), &VFXNode::_on_finished);
   ClassDB::bind_method(D_METHOD("_on_animation_signal", "signal_name"),
                        &VFXNode::_on_animation_signal);
-
-  // Add support for dynamic signals from animations
-  // These allow animations to emit custom signals that can trigger callbacks
-  ADD_SIGNAL(MethodInfo("explosion_damage"));
-  ADD_SIGNAL(MethodInfo("strike_hit"));
-  ADD_SIGNAL(MethodInfo("beam_hit"));
 
   // Note: _process is a virtual method, don't bind it as a regular method
 }
@@ -106,6 +99,14 @@ void VFXNode::register_callback(String signal_name,
   DBG_INFO("VFXNode", "Callback valid: " + String(callback ? "YES" : "NO"));
 
   callbacks[signal_name] = callback;
+
+  // Dynamically add the signal so animation method tracks can emit it
+  if (!has_signal(signal_name)) {
+    add_user_signal(signal_name);
+    DBG_INFO("VFXNode", "Signal dynamically added: " + signal_name);
+  } else {
+    DBG_INFO("VFXNode", "Signal already exists: " + signal_name);
+  }
 
   DBG_INFO("VFXNode", "Total callbacks after registration: " +
                           String::num(callbacks.size()));
