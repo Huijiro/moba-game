@@ -1,80 +1,44 @@
 #include "data_progress_bar.hpp"
 
-#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/color.hpp>
-#include <godot_cpp/variant/rect2.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/vector2.hpp>
 
 using godot::ClassDB;
-using godot::Color;
-using godot::Font;
-using godot::HorizontalAlignment;
-using godot::Rect2;
+using godot::D_METHOD;
 using godot::String;
-using godot::Vector2;
 
 DataProgressBar::DataProgressBar() {
-  // Enable show_percentage so ProgressBar reserves space for text
-  set_show_percentage(true);
+  // Disable show_percentage - we'll use a child Label instead
+  set_show_percentage(false);
 }
 
 DataProgressBar::~DataProgressBar() = default;
 
 void DataProgressBar::_bind_methods() {
-  // No methods to bind
+  ClassDB::bind_method(D_METHOD("_on_value_changed", "value"),
+                       &DataProgressBar::_on_value_changed);
 }
 
-void DataProgressBar::_notification(int p_what) {
-  if (p_what == NOTIFICATION_DRAW) {
-    // Let parent handle everything first, which will draw percentage
-    ProgressBar::_notification(p_what);
+void DataProgressBar::_ready() {
+  // Create a child Label to display "current/max" text
+  text_label = memnew(godot::Label);
+  add_child(text_label);
 
-    // Now we need to overlay our custom text
-    godot::Ref<Font> font = get_theme_font("font");
-    int font_size = get_theme_font_size("font_size");
-    Color font_color = get_theme_color("font_color");
-    int outline_size = get_theme_constant("outline_size");
-    Color outline_color = get_theme_color("font_outline_color");
+  // Center the label
+  text_label->set_anchors_preset(godot::Control::PRESET_CENTER);
+  text_label->set_text("0/0");
 
-    if (font.is_null()) {
-      return;
-    }
+  // Connect to value_changed signal
+  connect("value_changed",
+          godot::Callable(this, godot::StringName("_on_value_changed")));
 
-    // Create custom text
-    String txt =
-        String::num((int)get_value()) + "/" + String::num((int)get_max());
+  // Initialize with current values
+  _on_value_changed(get_value());
+}
 
-    // Measure the text using the font
-    Vector2 text_size = font->get_string_size(
-        txt, HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-
-    // Center on the progress bar
-    Vector2 bar_size = get_size();
-    Vector2 text_pos = (bar_size - text_size) / 2.0;
-    text_pos = text_pos.round();
-
-    // Draw a background rect to cover the percentage text
-    Color bg_color = get_theme_color("font_color");
-    bg_color.a = 0.6;
-    draw_rect(Rect2(text_pos - Vector2(2, 2), text_size + Vector2(4, 4)),
-              bg_color * Color(0, 0, 0, 1));
-
-    // Draw the custom text
-    font->draw_string(get_canvas_item(), text_pos, txt,
-                      HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT, -1,
-                      font_size, font_color);
-
-    // Draw outline if needed
-    if (outline_size > 0 && outline_color.a > 0) {
-      font->draw_string_outline(get_canvas_item(), text_pos, txt,
-                                HorizontalAlignment::HORIZONTAL_ALIGNMENT_LEFT,
-                                -1, font_size, outline_size, outline_color);
-    }
-
-  } else {
-    // For all other notifications, call parent
-    ProgressBar::_notification(p_what);
+void DataProgressBar::_on_value_changed(double value) {
+  if (text_label) {
+    String text = String::num((int)value) + "/" + String::num((int)get_max());
+    text_label->set_text(text);
   }
 }
