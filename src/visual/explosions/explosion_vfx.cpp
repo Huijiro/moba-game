@@ -25,8 +25,6 @@ void ExplosionVFX::_bind_methods() {
 }
 
 void ExplosionVFX::play(const Dictionary& params) {
-  DBG_INFO("ExplosionVFX", "Playing explosion VFX");
-
   // Extract parameters
   explosion_position = params.get("position", Vector3(0, 0, 0));
   explosion_scale = params.get("scale", 1.0f);
@@ -36,18 +34,6 @@ void ExplosionVFX::play(const Dictionary& params) {
   // Extract animation-driven callback system parameters
   if (params.has("expected_signals")) {
     expected_signals = params["expected_signals"];
-    DBG_INFO("ExplosionVFX", "Expected signals: " +
-                                 godot::String::num(expected_signals.size()));
-  }
-
-  // Register callbacks for animation signals
-  // Check for each expected signal and register its callback
-  for (int i = 0; i < expected_signals.size(); i++) {
-    godot::String signal_name = expected_signals[i];
-    if (params.has(signal_name)) {
-      // Callback is stored in params - ability provides it
-      DBG_INFO("ExplosionVFX", "Found callback for signal: " + signal_name);
-    }
   }
 
   // Set position
@@ -72,67 +58,26 @@ void ExplosionVFX::play(const Dictionary& params) {
   // Start the animation
   AnimationPlayer* ap = get_animation_player();
   if (ap != nullptr) {
-    DBG_INFO("ExplosionVFX", "Found AnimationPlayer, setting up signals...");
-
     // Create and connect expected signals to callback handler
-    DBG_INFO("ExplosionVFX", "Expected signals count: " +
-                                 godot::String::num(expected_signals.size()));
-
     for (int i = 0; i < expected_signals.size(); i++) {
       godot::String signal_name = expected_signals[i];
-      DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
-                                   signal_name + " - setting up...");
 
       // Create the signal dynamically if it doesn't exist
       if (!has_signal(signal_name)) {
         add_user_signal(signal_name);
-        DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
-                                     signal_name + " - CREATED");
       }
 
       // Connect dynamic signal to appropriate handler
       // Use the parameterless handler instead of _on_animation_signal
       if (signal_name == "explosion_damage") {
         connect(signal_name, Callable(this, "_on_explosion_damage_signal"));
-        DBG_INFO("ExplosionVFX",
-                 "[Signal " + godot::String::num(i) + "] " + signal_name +
-                     " - CONNECTED to _on_explosion_damage_signal");
-      } else {
-        // Fallback for other signals (can add more specific handlers later)
-        DBG_WARN("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
-                                     signal_name +
-                                     " - NO HANDLER for this signal type");
       }
     }
 
-    DBG_INFO("ExplosionVFX",
-             "All signals connected, starting animation: " + animation_name);
-
-    // Verify animation exists before playing
-    godot::String current = ap->get_assigned_animation();
-    DBG_INFO("ExplosionVFX", "Current animation before play: " +
-                                 (current.is_empty() ? "NONE" : current));
-
     ap->play(animation_name);
-
-    // Verify animation started
-    current = ap->get_assigned_animation();
-    DBG_INFO("ExplosionVFX", "Current animation after play: " +
-                                 (current.is_empty() ? "NONE" : current));
-    DBG_INFO("ExplosionVFX",
-             "Animation is playing: " +
-                 godot::String(ap->is_playing() ? "YES" : "NO"));
-    DBG_INFO("ExplosionVFX",
-             "Animation length: " +
-                 godot::String::num(ap->get_current_animation_length(), 2) +
-                 "s");
-  } else {
-    DBG_WARN("ExplosionVFX", "No AnimationPlayer found for explosion VFX");
   }
 
   set_duration(effect_duration);
-  DBG_INFO("ExplosionVFX",
-           "VFX duration set to: " + godot::String::num(effect_duration));
 }
 
 void ExplosionVFX::_validate_mesh_size() {
@@ -174,6 +119,5 @@ void ExplosionVFX::_validate_mesh_size() {
 }
 
 void ExplosionVFX::_on_explosion_damage_signal() {
-  DBG_INFO("ExplosionVFX", "explosion_damage signal received");
   _on_animation_signal("explosion_damage");
 }

@@ -53,7 +53,6 @@ void VFXNode::_process(double delta) {
 }
 
 void VFXNode::play(const Dictionary& params) {
-  DBG_INFO("VFXNode", "Playing VFX: " + get_name());
   is_playing_internal = true;
   elapsed_time = 0.0f;
 
@@ -65,12 +64,10 @@ void VFXNode::play(const Dictionary& params) {
 void VFXNode::stop() {
   // Mark as not playing - _process won't call _on_finished
   is_playing_internal = false;
-  DBG_INFO("VFXNode", "Stopped VFX: " + get_name());
 }
 
 void VFXNode::_on_finished() {
   is_playing_internal = false;
-  DBG_INFO("VFXNode", "VFX finished: " + get_name());
 
   // Clear callbacks before cleanup
   clear_callbacks();
@@ -93,56 +90,25 @@ float VFXNode::get_duration() const {
 
 void VFXNode::register_callback(String signal_name,
                                 std::function<void()> callback) {
-  DBG_INFO("VFXNode", "=== REGISTERING CALLBACK ===");
-  DBG_INFO("VFXNode", "Signal name: " + signal_name);
-  DBG_INFO("VFXNode", "VFX node: " + get_name());
-  DBG_INFO("VFXNode", "Callback valid: " + String(callback ? "YES" : "NO"));
-
   callbacks[signal_name] = callback;
 
   // Dynamically add the signal so animation method tracks can emit it
   if (!has_signal(signal_name)) {
     add_user_signal(signal_name);
-    DBG_INFO("VFXNode", "Signal dynamically added: " + signal_name);
-  } else {
-    DBG_INFO("VFXNode", "Signal already exists: " + signal_name);
   }
-
-  DBG_INFO("VFXNode", "Total callbacks after registration: " +
-                          String::num(callbacks.size()));
-  DBG_INFO("VFXNode", "=== CALLBACK REGISTERED ===");
 }
 
 void VFXNode::_on_animation_signal(String signal_name) {
-  DBG_INFO("VFXNode", "=== ANIMATION SIGNAL RECEIVED ===");
-  DBG_INFO("VFXNode", "Signal name: " + signal_name);
-  DBG_INFO("VFXNode", "VFX node: " + get_name());
-  DBG_INFO("VFXNode",
-           "Total registered callbacks: " + String::num(callbacks.size()));
-
   // Check if we have a callback for this signal
   auto it = callbacks.find(signal_name);
   if (it == callbacks.end()) {
-    DBG_WARN("VFXNode", "NO CALLBACK REGISTERED for signal: " + signal_name);
-    DBG_WARN("VFXNode", "Registered signals:");
-    for (const auto& pair : callbacks) {
-      DBG_WARN("VFXNode", "  - " + pair.first);
-    }
     return;
   }
 
-  DBG_INFO("VFXNode", "Callback FOUND for signal: " + signal_name);
-
   // Execute the callback
   if (it->second) {
-    DBG_INFO("VFXNode", "EXECUTING callback...");
     it->second();
-    DBG_INFO("VFXNode", "CALLBACK EXECUTED successfully");
-  } else {
-    DBG_WARN("VFXNode", "Callback function is NULL");
   }
-
-  DBG_INFO("VFXNode", "=== SIGNAL PROCESSING COMPLETE ===");
 }
 
 AnimationPlayer* VFXNode::get_animation_player() {
@@ -167,24 +133,19 @@ AnimationPlayer* VFXNode::get_animation_player() {
 void VFXNode::validate_animation_signals() {
   AnimationPlayer* ap = get_animation_player();
   if (ap == nullptr) {
-    DBG_WARN("VFXNode", "Cannot validate signals - no AnimationPlayer found");
     return;
   }
 
   // Get current animation
   godot::String current_anim = ap->get_assigned_animation();
   if (current_anim.is_empty()) {
-    DBG_WARN("VFXNode", "No animation assigned for validation");
     return;
   }
 
-  // For now, just log what signals we expect
+  // For now, just validate that signals are defined
   // Full validation would require inspecting animation tracks
-  DBG_INFO("VFXNode", "Validating " + String::num(expected_signals.size()) +
-                          " expected signals for animation: " + current_anim);
 }
 
 void VFXNode::clear_callbacks() {
-  DBG_INFO("VFXNode", "Clearing callbacks for " + get_name());
   callbacks.clear();
 }
