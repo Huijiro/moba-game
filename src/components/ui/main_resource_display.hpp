@@ -49,6 +49,7 @@ class MainResourceDisplay : public godot::Control {
   ~MainResourceDisplay();
 
   void _ready() override;
+  godot::Vector2 _get_minimum_size() const override;
 
   // Properties
   void set_pool_id(StringName id);

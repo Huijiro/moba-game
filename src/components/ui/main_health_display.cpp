@@ -110,6 +110,18 @@ void MainHealthDisplay::_ready() {
   DBG_INFO("MainHealthDisplay", "Initialized for main unit");
 }
 
+godot::Vector2 MainHealthDisplay::_get_minimum_size() const {
+  // Calculate minimum size from child nodes
+  godot::Vector2 min_size(0, 0);
+
+  // Get minimum size from the ProgressBar child
+  if (health_bar) {
+    min_size = health_bar->get_combined_minimum_size();
+  }
+
+  return min_size;
+}
+
 void MainHealthDisplay::_on_health_changed(float current, float max) {
   if (health_bar) {
     health_bar->set_value(current);

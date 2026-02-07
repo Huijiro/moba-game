@@ -128,6 +128,18 @@ void MainResourceDisplay::_ready() {
            "Initialized for pool '" + String(pool_id) + "'");
 }
 
+godot::Vector2 MainResourceDisplay::_get_minimum_size() const {
+  // Calculate minimum size from child nodes
+  godot::Vector2 min_size(0, 0);
+
+  // Get minimum size from the ProgressBar child
+  if (resource_bar) {
+    min_size = resource_bar->get_combined_minimum_size();
+  }
+
+  return min_size;
+}
+
 void MainResourceDisplay::_on_resource_changed(float current, float max) {
   if (resource_bar) {
     resource_bar->set_value(current);

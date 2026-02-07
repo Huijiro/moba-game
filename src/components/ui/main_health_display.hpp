@@ -45,6 +45,7 @@ class MainHealthDisplay : public godot::Control {
   ~MainHealthDisplay();
 
   void _ready() override;
+  godot::Vector2 _get_minimum_size() const override;
 
   // Properties
   void set_health_bar_path(godot::NodePath path);
