@@ -138,14 +138,13 @@ void HeadBar::_process(double delta) {
     return;
   }
 
-  if (!owner_unit || !camera) {
+  if (!owner_unit) {
     return;
   }
 
-  // Update position (world-to-screen conversion)
-  // The actual positioning is handled by the scene's CanvasItem nodes
-  // This component just needs to track position updates if needed in future
-  // For now, we rely on the position being set in the editor scene
+  // Position the HeadBar 3 units above the unit
+  Vector3 target_pos = owner_unit->get_global_position() + Vector3(0, 3, 0);
+  set_global_position(target_pos);
 }
 
 void HeadBar::_on_health_changed(float current, float max) {
