@@ -31,7 +31,7 @@ void VFXNode::_bind_methods() {
 
   // Internal callbacks
   ClassDB::bind_method(D_METHOD("_on_finished"), &VFXNode::_on_finished);
-  ClassDB::bind_method(D_METHOD("_process", "delta"), &VFXNode::_process);
+  // Note: _process is a virtual method, don't bind it as a regular method
 }
 
 void VFXNode::_process(double delta) {
