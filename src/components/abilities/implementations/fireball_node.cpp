@@ -60,6 +60,10 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
     DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() +
                              " towards (" + String::num(target_position.x, 2) +
                              ", " + String::num(target_position.z, 2) + ")");
+
+    // Trigger projectile VFX
+    play_vfx("projectile", godot::Dictionary());
+
     return true;
   }
   return false;

@@ -1,11 +1,17 @@
 #include "ability_node.hpp"
 
+#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+
+#include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
+using godot::Object;
 using godot::PropertyInfo;
+using godot::UtilityFunctions;
 using godot::Variant;
 
 AbilityNode::AbilityNode() = default;
@@ -153,6 +159,11 @@ void AbilityNode::_bind_methods() {
                        &AbilityNode::get_base_damage);
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_damage"), "set_base_damage",
                "get_base_damage");
+
+  // ========== VFX SYSTEM ==========
+  ClassDB::bind_method(D_METHOD("play_vfx", "vfx_name", "params"),
+                       &AbilityNode::play_vfx, DEFVAL(godot::Dictionary()));
+  ClassDB::bind_method(D_METHOD("_register_vfx"), &AbilityNode::_register_vfx);
 }
 
 bool AbilityNode::_validate_property(PropertyInfo& p_property) const {
@@ -380,4 +391,33 @@ bool AbilityNode::can_execute_on_target(Unit* caster, Unit* target) const {
 float AbilityNode::calculate_damage(Unit* caster, Unit* target) const {
   // Default: return base damage. Subclasses can add scaling logic.
   return base_damage;
+}
+
+bool AbilityNode::play_vfx(const String& vfx_name,
+                           const godot::Dictionary& params) {
+  // Find VFX child node with the given name
+  Node* vfx_node = find_child(vfx_name, true, false);
+  if (vfx_node == nullptr) {
+    DBG_WARN("AbilityNode", "VFX not found: " + ability_name + "." + vfx_name);
+    return false;
+  }
+
+  // Cast to VFXNode and play
+  auto vfx = Object::cast_to<godot::Node3D>(vfx_node);
+  if (vfx == nullptr) {
+    DBG_WARN("AbilityNode",
+             "VFX node is not Node3D: " + ability_name + "." + vfx_name);
+    return false;
+  }
+
+  // Call play method with parameters
+  vfx->call("play", params);
+  DBG_INFO("AbilityNode", "Triggered VFX: " + ability_name + "." + vfx_name);
+  return true;
+}
+
+void AbilityNode::_register_vfx() {
+  // Scan children for VFXNode instances and register with manager
+  // This is called when the ability is added to the scene
+  // For now, we'll defer VFX discovery to when they're needed
 }

@@ -136,6 +136,16 @@ class AbilityNode : public Node {
                        godot::Vector3 position = godot::Vector3());
   virtual bool can_execute_on_target(Unit* caster, Unit* target) const;
   virtual float calculate_damage(Unit* caster, Unit* target = nullptr) const;
+
+  // VFX system integration
+  /// Trigger a VFX effect by name with optional parameters
+  /// VFX nodes must be children of this ability node
+  /// Parameters are passed as Dictionary to VFXNode::play()
+  bool play_vfx(const String& vfx_name, const godot::Dictionary& params = {});
+
+  /// Register VFX effect for this ability
+  /// Called automatically when ability is loaded
+  void _register_vfx();
 };
 
 #endif  // GDEXTENSION_ABILITY_NODE_H
