@@ -31,10 +31,13 @@ class ProjectileVFX : public VFXNode {
   Vector3 start_position = Vector3(0, 0, 0);
   Vector3 end_position = Vector3(0, 0, 0);
   float animation_duration = 1.0f;
+  float elapsed_time = 0.0f;
 
  public:
   ProjectileVFX();
   ~ProjectileVFX();
+
+  void _process(double delta) override;
 
   // Animate from start to end position
   void play(const Dictionary& params) override;

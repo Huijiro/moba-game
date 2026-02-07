@@ -61,8 +61,13 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
                              " towards (" + String::num(target_position.x, 2) +
                              ", " + String::num(target_position.z, 2) + ")");
 
-    // Trigger projectile VFX
-    play_vfx("projectile", godot::Dictionary());
+    // Trigger projectile VFX with animation parameters
+    godot::Dictionary vfx_params;
+    vfx_params["from"] = caster->get_global_position();
+    vfx_params["to"] = target_position;
+    vfx_params["duration"] =
+        get_skillshot_max_distance() / get_skillshot_speed();
+    play_vfx("projectile", vfx_params);
 
     return true;
   }
