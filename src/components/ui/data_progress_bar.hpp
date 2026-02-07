@@ -6,15 +6,17 @@
 /// DataProgressBar - ProgressBar that displays "current/max" format instead of
 /// percentage
 ///
-/// This is just a ProgressBar with show_percentage disabled by default.
-/// Users can add a child Label with custom formatting if desired, or configure
-/// the theme to display custom text. The bar will maintain proper sizing
-/// without the show_percentage constraint.
+/// Extends ProgressBar to override the text rendering to show "current/max"
+/// format instead of percentage while keeping all other ProgressBar
+/// functionality intact.
 class DataProgressBar : public godot::ProgressBar {
   GDCLASS(DataProgressBar, godot::ProgressBar)
 
  private:
   static void _bind_methods();
+
+ protected:
+  void _notification(int p_what);
 
  public:
   DataProgressBar();
