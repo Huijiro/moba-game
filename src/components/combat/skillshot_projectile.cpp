@@ -157,19 +157,6 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
     DBG_INFO("SkillshotProjectile", "Total hits: 1");
   } else {
     // No specific target - search for units in AoE radius
-    DBG_INFO("SkillshotProjectile",
-             "Detonating at (" + godot::String::num(explosion_center.x) + ", " +
-                 godot::String::num(explosion_center.z) + ") with radius " +
-                 godot::String::num(aoe_radius));
-
-    // Debug visualization: Draw AoE explosion radius (red/orange circle)
-    VisualDebugger* debugger = VisualDebugger::get_singleton();
-    if (debugger != nullptr && debugger->is_debug_enabled()) {
-      // Draw AoE explosion radius at detonation point (orange for visibility)
-      debugger->draw_circle_xz(explosion_center, aoe_radius,
-                               godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
-    }
-
     _find_and_damage_units();
   }
 
