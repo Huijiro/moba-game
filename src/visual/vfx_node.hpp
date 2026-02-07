@@ -2,13 +2,10 @@
 #define GDEXTENSION_VFX_NODE_H
 
 #include <godot_cpp/classes/node3d.hpp>
-#include <godot_cpp/classes/tween.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 
 using godot::Dictionary;
 using godot::Node3D;
-using godot::Ref;
-using godot::Tween;
 
 /// Base class for all VFX effects
 /// VFX nodes are placed as children in ability scenes and triggered by
@@ -29,7 +26,9 @@ class VFXNode : public Node3D {
   static void _bind_methods();
 
   // Tween reference - keeps tween alive until completion
-  Ref<Tween> active_tween = nullptr;
+  // Using raw pointer to avoid issues with incomplete Tween types from
+  // godot-cpp
+  void* active_tween = nullptr;
 
   // Whether this VFX is currently playing
   bool is_playing_internal = false;
@@ -37,15 +36,17 @@ class VFXNode : public Node3D {
   // Duration of the effect (used for auto-cleanup timeout)
   float duration = 1.0f;
 
-  // Called when tween finishes - subclasses can override for cleanup
-  virtual void _on_finished();
+  // Timer for auto-cleanup
+  float elapsed_time = 0.0f;
 
-  // Create a tween for this VFX
-  Ref<Tween> _create_tween();
+  // Called when animation finishes - subclasses can override for cleanup
+  virtual void _on_finished();
 
  public:
   VFXNode();
   ~VFXNode();
+
+  void _process(double delta) override;
 
   // Main entry point - override in subclasses
   // params contains VFX-specific parameters like position, scale, intensity,
@@ -62,9 +63,8 @@ class VFXNode : public Node3D {
   void set_duration(float seconds);
   float get_duration() const;
 
-  // Utility: Create a tween bound to this node
-  // Tween will automatically stop if node is freed
-  Ref<Tween> create_parameterized_tween();
+  // Subclasses can override play() to implement their animations
+  // No direct tween support due to godot-cpp Ref<Tween> limitations
 };
 
 #endif  // GDEXTENSION_VFX_NODE_H
