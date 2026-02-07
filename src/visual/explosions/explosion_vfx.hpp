@@ -43,6 +43,9 @@ class ExplosionVFX : public VFXNode {
   // Each signal handler calls _on_animation_signal with the signal name
   void _on_explosion_damage_signal();
 
+  // Cleanup override to disconnect signals before destruction
+  void _on_finished() override;
+
  public:
   ExplosionVFX();
   ~ExplosionVFX();

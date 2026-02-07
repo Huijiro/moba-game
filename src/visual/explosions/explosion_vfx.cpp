@@ -121,3 +121,16 @@ void ExplosionVFX::_validate_mesh_size() {
 void ExplosionVFX::_on_explosion_damage_signal() {
   _on_animation_signal("explosion_damage");
 }
+
+void ExplosionVFX::_on_finished() {
+  // Disconnect explosion_damage signal before cleanup to prevent connection
+  // leaks
+  if (is_connected("explosion_damage",
+                   Callable(this, "_on_explosion_damage_signal"))) {
+    disconnect("explosion_damage",
+               Callable(this, "_on_explosion_damage_signal"));
+  }
+
+  // Call parent cleanup (which handles child node cleanup and queue_free)
+  VFXNode::_on_finished();
+}

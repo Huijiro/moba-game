@@ -72,6 +72,16 @@ void VFXNode::_on_finished() {
   // Clear callbacks before cleanup
   clear_callbacks();
 
+  // Explicitly cleanup children to ensure rendering resources are freed
+  // This prevents material/shader/texture RID leaks
+  for (int i = get_child_count() - 1; i >= 0; i--) {
+    Node* child = get_child(i);
+    if (child != nullptr) {
+      remove_child(child);
+      child->queue_free();
+    }
+  }
+
   // Auto-cleanup: queue this node for deletion
   queue_free();
 }
