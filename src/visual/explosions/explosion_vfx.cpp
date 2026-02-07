@@ -71,16 +71,23 @@ void ExplosionVFX::play(const Dictionary& params) {
   // Start the animation
   AnimationPlayer* ap = get_animation_player();
   if (ap != nullptr) {
-    DBG_INFO("ExplosionVFX", "Found AnimationPlayer, connecting signals...");
+    DBG_INFO("ExplosionVFX", "Found AnimationPlayer, setting up signals...");
 
-    // Connect expected signals to callback handler
+    // Create and connect expected signals to callback handler
     DBG_INFO("ExplosionVFX", "Expected signals count: " +
                                  godot::String::num(expected_signals.size()));
 
     for (int i = 0; i < expected_signals.size(); i++) {
       godot::String signal_name = expected_signals[i];
       DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
-                                   signal_name + " - connecting...");
+                                   signal_name + " - setting up...");
+
+      // Create the signal dynamically if it doesn't exist
+      if (!has_signal(signal_name)) {
+        add_user_signal(signal_name);
+        DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
+                                     signal_name + " - CREATED");
+      }
 
       // Connect dynamic signal to _on_animation_signal handler
       connect(signal_name, Callable(this, "_on_animation_signal"));
