@@ -3,7 +3,6 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
-#include <godot_cpp/variant/string.hpp>
 
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
@@ -35,13 +34,6 @@ void MainResourceDisplay::_bind_methods() {
                        &MainResourceDisplay::get_resource_bar_path);
   ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "resource_bar_path"),
                "set_resource_bar_path", "get_resource_bar_path");
-
-  ClassDB::bind_method(D_METHOD("set_resource_label_path", "path"),
-                       &MainResourceDisplay::set_resource_label_path);
-  ClassDB::bind_method(D_METHOD("get_resource_label_path"),
-                       &MainResourceDisplay::get_resource_label_path);
-  ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "resource_label_path"),
-               "set_resource_label_path", "get_resource_label_path");
 
   // Signal handler
   ClassDB::bind_method(D_METHOD("_on_resource_changed", "current", "max"),
@@ -108,13 +100,6 @@ void MainResourceDisplay::_ready() {
              "ResourceBar not found at path: " + String(resource_bar_path));
   }
 
-  resource_label =
-      Object::cast_to<Label>(get_node_or_null(resource_label_path));
-  if (!resource_label) {
-    DBG_WARN("MainResourceDisplay",
-             "ResourceLabel not found at path: " + String(resource_label_path));
-  }
-
   // Connect to resource signal
   resource_pool->connect(
       "value_changed",
@@ -145,12 +130,6 @@ void MainResourceDisplay::_on_resource_changed(float current, float max) {
     resource_bar->set_value(current);
     resource_bar->set_max(max);
   }
-
-  if (resource_label) {
-    String resource_text =
-        String::num((int)current) + " / " + String::num((int)max);
-    resource_label->set_text(resource_text);
-  }
 }
 
 void MainResourceDisplay::set_pool_id(StringName id) {
@@ -167,12 +146,4 @@ void MainResourceDisplay::set_resource_bar_path(godot::NodePath path) {
 
 godot::NodePath MainResourceDisplay::get_resource_bar_path() const {
   return resource_bar_path;
-}
-
-void MainResourceDisplay::set_resource_label_path(godot::NodePath path) {
-  resource_label_path = path;
-}
-
-godot::NodePath MainResourceDisplay::get_resource_label_path() const {
-  return resource_label_path;
 }
