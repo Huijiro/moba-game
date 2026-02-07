@@ -35,6 +35,10 @@
 #include "debug/debug_logger.hpp"
 #include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
+#include "visual/area_effects/area_effect_vfx.hpp"
+#include "visual/explosions/explosion_vfx.hpp"
+#include "visual/projectiles/projectile_vfx.hpp"
+#include "visual/vfx_node.hpp"
 
 using namespace godot;
 
@@ -72,6 +76,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(DebugLogger)
+
+  // VFX System
+  GDREGISTER_CLASS(VFXNode)
+  GDREGISTER_CLASS(ProjectileVFX)
+  GDREGISTER_CLASS(ExplosionVFX)
+  GDREGISTER_CLASS(AreaEffectVFX)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {
