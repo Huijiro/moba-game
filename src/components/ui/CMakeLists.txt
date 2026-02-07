@@ -4,4 +4,8 @@ target_sources(
   ./label_registry.cpp
   ./label_component.hpp
   ./label_component.cpp
+  ./head_bar.hpp
+  ./head_bar.cpp
+  ./cooldown_display_component.hpp
+  ./cooldown_display_component.cpp
 )

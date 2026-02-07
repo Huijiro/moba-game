@@ -1,0 +1,30 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2fxvqyx8ytdlr"]
+
+[ext_resource type="Script" path="res://src/components/ui/head_bar.gdns" id="1_2g8ha"]
+
+[node name="HeadBar" type="Node"]
+script = ExtResource("1_2g8ha")
+
+[node name="UnitNameLabel" type="Label" parent="."]
+offset_left = -50.0
+offset_top = -40.0
+offset_right = 50.0
+offset_bottom = -20.0
+text = "[Unit Name]"
+horizontal_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+offset_left = -40.0
+offset_top = -15.0
+offset_right = 40.0
+offset_bottom = 0.0
+max_value = 100.0
+value = 100.0
+
+[node name="ResourceMana" type="ProgressBar" parent="."]
+offset_left = -40.0
+offset_top = 5.0
+offset_right = 40.0
+offset_bottom = 20.0
+max_value = 100.0
+value = 100.0
