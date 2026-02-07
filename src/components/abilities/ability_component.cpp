@@ -129,53 +129,42 @@ void AbilityComponent::_ready() {
     DBG_WARN("AbilityComponent", "No ResourcePoolComponent for mana tracking");
   }
 
-  // Instantiate all PackedScene references into AbilityNode instances at
-  // runtime
-  godot::Array instantiated_abilities;
+  // ability_scenes stores PackedScene references
+  // Abilities are instantiated on-demand when get_ability() is called
+  // This keeps them out of the scene tree until they're actually needed
+
+  // Validate that all ability_scenes are valid PackedScenes
+  // They will be instantiated on-demand when get_ability() is called
   for (int i = 0; i < ability_scenes.size(); i++) {
     Variant scene_variant = ability_scenes[i];
     if (scene_variant.get_type() == Variant::OBJECT) {
-      // Check if it's already an AbilityNode (already instantiated)
-      AbilityNode* ability =
-          Object::cast_to<AbilityNode>(static_cast<Object*>(scene_variant));
-      if (ability != nullptr) {
-        instantiated_abilities.append(ability);
-        continue;
-      }
-
-      // Otherwise, try to instantiate from PackedScene
+      // Check if it's a PackedScene
       Ref<PackedScene> scene_ref = scene_variant;
       if (scene_ref.is_valid()) {
-        Object* instance = scene_ref->instantiate();
-        if (instance != nullptr) {
-          ability = Object::cast_to<AbilityNode>(instance);
-          if (ability != nullptr) {
-            instantiated_abilities.append(ability);
-            DBG_INFO("AbilityComponent", "Instantiated ability " +
-                                             String::num(i) + ": " +
-                                             ability->get_ability_name());
-          } else {
-            DBG_INFO("AbilityComponent", "Warning: Scene at slot " +
-                                             String::num(i) +
-                                             " does not contain AbilityNode");
-            godot::Node* node_instance = Object::cast_to<godot::Node>(instance);
-            if (node_instance != nullptr) {
-              node_instance->queue_free();
-            }
-            instantiated_abilities.append(Variant());
+        // Peek at first node to validate it's an AbilityNode
+        // Don't actually instantiate - just validate structure
+        Object* test_instance = scene_ref->instantiate();
+        if (test_instance != nullptr) {
+          AbilityNode* ability = Object::cast_to<AbilityNode>(test_instance);
+          godot::Node* node_instance =
+              Object::cast_to<godot::Node>(test_instance);
+          if (node_instance != nullptr) {
+            node_instance->queue_free();
           }
-        } else {
-          instantiated_abilities.append(Variant());
+          if (ability != nullptr) {
+            DBG_INFO("AbilityComponent",
+                     "Validated ability scene at slot " + String::num(i));
+          } else {
+            DBG_WARN("AbilityComponent", "Scene at slot " + String::num(i) +
+                                             " does not contain AbilityNode");
+          }
         }
       } else {
-        instantiated_abilities.append(Variant());
+        DBG_WARN("AbilityComponent",
+                 "Slot " + String::num(i) + " is not a valid PackedScene");
       }
-    } else {
-      instantiated_abilities.append(Variant());
     }
   }
-
-  ability_scenes = instantiated_abilities;
 
   // Initialize cooldown timers - size based on ability_scenes array
   if (cooldown_timers.size() != static_cast<size_t>(ability_scenes.size())) {
@@ -323,11 +312,46 @@ AbilityNode* AbilityComponent::get_ability(int slot) {
   if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
     return nullptr;
   }
+
   Variant scene_variant = ability_scenes[slot];
   if (scene_variant.get_type() != Variant::OBJECT) {
     return nullptr;
   }
-  return Object::cast_to<AbilityNode>(scene_variant);
+
+  // Check if it's already an AbilityNode instance
+  AbilityNode* ability =
+      Object::cast_to<AbilityNode>(static_cast<Object*>(scene_variant));
+  if (ability != nullptr) {
+    return ability;
+  }
+
+  // Otherwise, try to instantiate from PackedScene
+  Ref<PackedScene> scene_ref = scene_variant;
+  if (!scene_ref.is_valid()) {
+    return nullptr;
+  }
+
+  Object* instance = scene_ref->instantiate();
+  if (instance == nullptr) {
+    return nullptr;
+  }
+
+  ability = Object::cast_to<AbilityNode>(instance);
+  if (ability == nullptr) {
+    // Not an AbilityNode, clean up
+    godot::Node* node = Object::cast_to<godot::Node>(instance);
+    if (node != nullptr) {
+      node->queue_free();
+    }
+    return nullptr;
+  }
+
+  // Cache the instantiated ability back into ability_scenes
+  ability_scenes[slot] = ability;
+  DBG_INFO("AbilityComponent",
+           "Instantiated ability at slot " + String::num(slot));
+
+  return ability;
 }
 
 bool AbilityComponent::has_ability(int slot) {
