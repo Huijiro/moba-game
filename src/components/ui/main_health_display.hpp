@@ -1,12 +1,12 @@
 #ifndef GDEXTENSION_MAIN_HEALTH_DISPLAY_H
 #define GDEXTENSION_MAIN_HEALTH_DISPLAY_H
 
-#include <godot_cpp/classes/container.hpp>
 #include <godot_cpp/classes/label.hpp>
+#include <godot_cpp/classes/panel_container.hpp>
 #include <godot_cpp/classes/progress_bar.hpp>
 
-using godot::Container;
 using godot::Label;
+using godot::PanelContainer;
 using godot::ProgressBar;
 
 class HealthComponent;
@@ -18,16 +18,16 @@ class HealthComponent;
 /// - Health text label (e.g., "100/100")
 ///
 /// Properties:
-/// - health_bar_path: NodePath to ProgressBar child (default: "HealthBar")
-/// - health_label_path: NodePath to Label child (default: "HealthLabel")
+/// - health_bar_path: NodePath to ProgressBar child (default: "ProgressBar")
+/// - health_label_path: NodePath to Label child (default: "ProgressBar/Label")
 ///
 /// The component automatically:
 /// 1. Finds the main Unit from MatchManager
 /// 2. Gets HealthComponent from that unit
 /// 3. Connects to health_changed signal
 /// 4. Updates bar value and label text in real-time
-class MainHealthDisplay : public Container {
-  GDCLASS(MainHealthDisplay, Container)
+class MainHealthDisplay : public PanelContainer {
+  GDCLASS(MainHealthDisplay, PanelContainer)
 
  protected:
   static void _bind_methods();

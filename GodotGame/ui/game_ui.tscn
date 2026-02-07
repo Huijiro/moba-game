@@ -32,16 +32,10 @@ layout_mode = 2
 health_bar_path = NodePath("ProgressBar")
 health_label_path = NodePath("ProgressBar/Label")
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
 
 [node name="ProgressBar" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay" unique_id=144498464]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
+show_percentage = false
 
 [node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay/ProgressBar" unique_id=274842894]
 layout_mode = 1
@@ -66,14 +60,8 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="Resource" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainResourceDisplay" unique_id=296001814]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -17.5
-offset_bottom = 9.5
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
+show_percentage = false
 
 [node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainResourceDisplay/Resource" unique_id=98607796]
 layout_mode = 1
