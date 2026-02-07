@@ -92,27 +92,48 @@ float VFXNode::get_duration() const {
 
 void VFXNode::register_callback(String signal_name,
                                 std::function<void()> callback) {
-  DBG_INFO("VFXNode", "Registering callback for signal: " + signal_name +
-                          " on " + get_name());
+  DBG_INFO("VFXNode", "=== REGISTERING CALLBACK ===");
+  DBG_INFO("VFXNode", "Signal name: " + signal_name);
+  DBG_INFO("VFXNode", "VFX node: " + get_name());
+  DBG_INFO("VFXNode", "Callback valid: " + String(callback ? "YES" : "NO"));
+
   callbacks[signal_name] = callback;
+
+  DBG_INFO("VFXNode", "Total callbacks after registration: " +
+                          String::num(callbacks.size()));
+  DBG_INFO("VFXNode", "=== CALLBACK REGISTERED ===");
 }
 
 void VFXNode::_on_animation_signal(String signal_name) {
-  DBG_INFO("VFXNode", "Animation signal received: " + signal_name);
+  DBG_INFO("VFXNode", "=== ANIMATION SIGNAL RECEIVED ===");
+  DBG_INFO("VFXNode", "Signal name: " + signal_name);
+  DBG_INFO("VFXNode", "VFX node: " + get_name());
+  DBG_INFO("VFXNode",
+           "Total registered callbacks: " + String::num(callbacks.size()));
 
   // Check if we have a callback for this signal
   auto it = callbacks.find(signal_name);
   if (it == callbacks.end()) {
-    DBG_WARN("VFXNode", "Unexpected animation signal: " + signal_name + " on " +
-                            get_name());
+    DBG_WARN("VFXNode", "NO CALLBACK REGISTERED for signal: " + signal_name);
+    DBG_WARN("VFXNode", "Registered signals:");
+    for (const auto& pair : callbacks) {
+      DBG_WARN("VFXNode", "  - " + pair.first);
+    }
     return;
   }
 
+  DBG_INFO("VFXNode", "Callback FOUND for signal: " + signal_name);
+
   // Execute the callback
   if (it->second) {
+    DBG_INFO("VFXNode", "EXECUTING callback...");
     it->second();
-    DBG_INFO("VFXNode", "Callback executed for signal: " + signal_name);
+    DBG_INFO("VFXNode", "CALLBACK EXECUTED successfully");
+  } else {
+    DBG_WARN("VFXNode", "Callback function is NULL");
   }
+
+  DBG_INFO("VFXNode", "=== SIGNAL PROCESSING COMPLETE ===");
 }
 
 AnimationPlayer* VFXNode::get_animation_player() {

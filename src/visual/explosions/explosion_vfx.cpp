@@ -71,21 +71,35 @@ void ExplosionVFX::play(const Dictionary& params) {
   // Start the animation
   AnimationPlayer* ap = get_animation_player();
   if (ap != nullptr) {
+    DBG_INFO("ExplosionVFX", "Found AnimationPlayer, connecting signals...");
+
     // Connect expected signals to callback handler
+    DBG_INFO("ExplosionVFX", "Expected signals count: " +
+                                 godot::String::num(expected_signals.size()));
+
     for (int i = 0; i < expected_signals.size(); i++) {
       godot::String signal_name = expected_signals[i];
+      DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
+                                   signal_name + " - connecting...");
+
       // Connect dynamic signal to _on_animation_signal handler
       connect(signal_name, Callable(this, "_on_animation_signal"));
-      DBG_INFO("ExplosionVFX", "Connected to signal: " + signal_name);
+
+      DBG_INFO("ExplosionVFX", "[Signal " + godot::String::num(i) + "] " +
+                                   signal_name + " - CONNECTED");
     }
 
+    DBG_INFO("ExplosionVFX",
+             "All signals connected, starting animation: " + animation_name);
     ap->play(animation_name);
-    DBG_INFO("ExplosionVFX", "Started animation: " + animation_name);
+    DBG_INFO("ExplosionVFX", "Animation started: " + animation_name);
   } else {
     DBG_WARN("ExplosionVFX", "No AnimationPlayer found for explosion VFX");
   }
 
   set_duration(effect_duration);
+  DBG_INFO("ExplosionVFX",
+           "VFX duration set to: " + godot::String::num(effect_duration));
 }
 
 void ExplosionVFX::_validate_mesh_size() {

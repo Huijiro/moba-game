@@ -4,6 +4,7 @@
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/math.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include "../../../common/unit_signals.hpp"
@@ -94,41 +95,80 @@ bool ExplosionNode::execute(Unit* caster, Unit* target, Vector3 position) {
   // The callback will fire when animation emits "explosion_damage" signal
   auto vfx = Object::cast_to<VFXNode>(vfx_node);
   if (vfx != nullptr) {
+    DBG_INFO("Explosion", "=== REGISTERING EXPLOSION DAMAGE CALLBACK ===");
+
     vfx->register_callback("explosion_damage", [this, caster, root,
                                                 impact_point]() {
+      DBG_INFO("Explosion",
+               "╔═══════════════════════════════════════════════╗");
+      DBG_INFO("Explosion",
+               "║     EXPLOSION DAMAGE CALLBACK TRIGGERED       ║");
+      DBG_INFO("Explosion",
+               "╚═══════════════════════════════════════════════╝");
+
       // Calculate radius squared for distance checks
       float radius = get_aoe_radius();
       float radius_sq = radius * radius;
 
+      DBG_INFO("Explosion", "Explosion parameters:");
+      DBG_INFO("Explosion", "  Position: (" + String::num(impact_point.x, 2) +
+                                ", " + String::num(impact_point.y, 2) + ", " +
+                                String::num(impact_point.z, 2) + ")");
+      DBG_INFO("Explosion", "  Radius: " + String::num(radius, 2));
+      DBG_INFO("Explosion", "  Radius²: " + String::num(radius_sq, 2));
+
       // Find all units in the area
       Array units_in_area;
+      DBG_INFO("Explosion", "Searching for units in explosion area...");
       _search_units_in_tree(root, impact_point, radius_sq, units_in_area);
+
+      DBG_INFO("Explosion",
+               "Units found in area: " + String::num(units_in_area.size()));
 
       // Apply damage to all units in area
       int hit_count = 0;
       for (int i = 0; i < units_in_area.size(); i++) {
         Unit* affected_unit = Object::cast_to<Unit>(units_in_area[i]);
+
         if (affected_unit == nullptr || !affected_unit->is_inside_tree()) {
+          DBG_WARN("Explosion",
+                   "Unit " + String::num(i) + " is invalid or not in tree");
           continue;
         }
 
         // Don't damage the caster
         if (affected_unit == caster) {
+          DBG_INFO("Explosion",
+                   "Skipping caster: " + String(affected_unit->get_name()));
           continue;
         }
 
         // Apply damage via fire-and-forget signal
         float damage = calculate_damage(caster, affected_unit);
+
+        DBG_INFO("Explosion", "  [HIT " + String::num(hit_count) + "] " +
+                                  String(affected_unit->get_name()) +
+                                  " - Damage: " + String::num(damage, 2));
+
         affected_unit->relay("take_damage", damage, caster);
         hit_count++;
 
-        DBG_DEBUG("Explosion", "Hit " + String(affected_unit->get_name()) +
-                                   " for " + String::num(damage) + " damage");
+        DBG_DEBUG("Explosion", "Damage signal emitted for: " +
+                                   String(affected_unit->get_name()));
       }
 
-      DBG_INFO("Explosion", String(caster->get_name()) + " detonated, hit " +
-                                String::num(hit_count) + " units");
+      DBG_INFO("Explosion",
+               "╔═══════════════════════════════════════════════╗");
+      DBG_INFO("Explosion", "║  EXPLOSION DAMAGE COMPLETE - HIT " +
+                                String::num(hit_count).pad_zeros(2) +
+                                " UNITS  ║");
+      DBG_INFO("Explosion",
+               "╚═══════════════════════════════════════════════╝");
     });
+
+    DBG_INFO("Explosion", "Damage callback registered successfully");
+  } else {
+    DBG_ERROR("Explosion", "Failed to cast VFX node to VFXNode");
   }
 
   return true;
@@ -187,9 +227,18 @@ void ExplosionNode::_search_units_in_tree(Node* node,
   if (unit != nullptr && unit->is_inside_tree()) {
     Vector3 unit_pos = unit->get_global_position();
     float distance_sq = center.distance_squared_to(unit_pos);
+    float distance = godot::Math::sqrt(distance_sq);
+    float radius = godot::Math::sqrt(radius_sq);
+
+    DBG_DEBUG("Explosion", "Found Unit: " + String(unit->get_name()) +
+                               " at distance " + String::num(distance, 2) +
+                               " (radius: " + String::num(radius, 2) + ")");
 
     if (distance_sq <= radius_sq) {
+      DBG_DEBUG("Explosion", "  → IN RANGE - adding to hit list");
       result.append(unit);
+    } else {
+      DBG_DEBUG("Explosion", "  → OUT OF RANGE");
     }
   }
 
