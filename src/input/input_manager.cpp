@@ -547,39 +547,48 @@ void InputManager::_handle_ability_input(const String& key) {
       Vector3 cursor_position;
       godot::Object* cursor_target = nullptr;
       if (_try_raycast(cursor_position, cursor_target)) {
-        // Try casting on unit target first if available
-        if (cursor_target != nullptr) {
-          controlled_unit->relay(cast_ability_unit_target, ability_slot,
-                                 cursor_target);
-          DBG_INFO("InputManager", "Instant cast on unit target: slot=" +
-                                       String::num(ability_slot));
-        } else {
-          // Otherwise cast at position
-          // Log camera and ray info when skill is actually cast
-          Camera3D* cam = Object::cast_to<Camera3D>(camera);
-          if (cam != nullptr) {
-            DBG_INFO("InputManager", "Skill cast - Camera info:");
-            DBG_INFO("InputManager",
-                     "  Camera pos: (" +
-                         String::num(cam->get_global_position().x, 2) + ", " +
-                         String::num(cam->get_global_position().y, 2) + ", " +
-                         String::num(cam->get_global_position().z, 2) + ")");
-            DBG_INFO("InputManager",
-                     "  Camera rotation: (" +
-                         String::num(cam->get_rotation().x, 2) + ", " +
-                         String::num(cam->get_rotation().y, 2) + ", " +
-                         String::num(cam->get_rotation().z, 2) + ")");
-          }
-
+        // Log camera and ray info when skill is actually cast
+        Camera3D* cam = Object::cast_to<Camera3D>(camera);
+        if (cam != nullptr) {
+          DBG_INFO("InputManager", "Skill cast - Camera info:");
           DBG_INFO("InputManager",
-                   "Raycast hit at: (" + String::num(cursor_position.x, 2) +
-                       ", " + String::num(cursor_position.y, 2) + ", " +
-                       String::num(cursor_position.z, 2) + ")");
-          controlled_unit->relay(cast_ability_point_target, ability_slot,
-                                 cursor_position);
-          DBG_INFO("InputManager", "Instant cast at position: slot=" +
-                                       String::num(ability_slot));
+                   "  Camera pos: (" +
+                       String::num(cam->get_global_position().x, 2) + ", " +
+                       String::num(cam->get_global_position().y, 2) + ", " +
+                       String::num(cam->get_global_position().z, 2) + ")");
+          DBG_INFO("InputManager",
+                   "  Camera rotation: (" +
+                       String::num(cam->get_rotation().x, 2) + ", " +
+                       String::num(cam->get_rotation().y, 2) + ", " +
+                       String::num(cam->get_rotation().z, 2) + ")");
         }
+
+        DBG_INFO("InputManager", "Raycast hit at: (" +
+                                     String::num(cursor_position.x, 2) + ", " +
+                                     String::num(cursor_position.y, 2) + ", " +
+                                     String::num(cursor_position.z, 2) + ")");
+
+        // For INSTANT mode, always use point-target casting
+        // This works for both unit and point abilities:
+        // - If you click on a unit, we send that unit's position
+        // - If you click on ground, we send that ground position
+        Vector3 target_position = cursor_position;
+        if (cursor_target != nullptr) {
+          Unit* target_unit = Object::cast_to<Unit>(cursor_target);
+          if (target_unit != nullptr) {
+            target_position = target_unit->get_global_position();
+            DBG_INFO("InputManager",
+                     "Clicked on unit: " + target_unit->get_name() +
+                         " at position (" + String::num(target_position.x, 2) +
+                         ", " + String::num(target_position.y, 2) + ", " +
+                         String::num(target_position.z, 2) + ")");
+          }
+        }
+
+        controlled_unit->relay(cast_ability_point_target, ability_slot,
+                               target_position);
+        DBG_INFO("InputManager",
+                 "Instant cast at position: slot=" + String::num(ability_slot));
       } else {
         DBG_INFO("InputManager", "Cannot cast - no valid target position");
       }

@@ -664,11 +664,6 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
   casting_timer = 0.0f;
   casting_state = static_cast<int>(CastState::CASTING);
 
-  // If target is a unit, use its position as the casting point (for skillshots)
-  if (target_unit != nullptr) {
-    casting_point = target_unit->get_global_position();
-  }
-
   emit_signal("ability_cast_started", slot, target);
 
   DBG_INFO("AbilityComponent", "Began casting " + ability->get_ability_name());
