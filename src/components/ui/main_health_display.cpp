@@ -113,8 +113,8 @@ void MainHealthDisplay::_ready() {
 
 void MainHealthDisplay::_on_health_changed(float current, float max) {
   if (health_bar) {
-    health_bar->set_value(current);
     health_bar->set_max(max);
+    health_bar->set_value(current);
   }
 
   if (health_label) {

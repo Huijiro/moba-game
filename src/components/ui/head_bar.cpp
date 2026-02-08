@@ -182,8 +182,8 @@ void HeadBar::_on_health_changed(float current, float max) {
     return;
   }
 
-  health_bar->set_value(current);
   health_bar->set_max(max);
+  health_bar->set_value(current);
 }
 
 void HeadBar::set_unit_name_label_path(const godot::NodePath& path) {

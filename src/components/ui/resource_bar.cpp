@@ -81,8 +81,8 @@ void ResourceBar::_ready() {
 }
 
 void ResourceBar::_on_resource_changed(float current, float max) {
-  set_value(current);
   set_max(max);
+  set_value(current);
 }
 
 void ResourceBar::set_pool_id(StringName id) {

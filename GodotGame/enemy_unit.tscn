@@ -16,4 +16,8 @@ surface_material_override/0 = SubResource("StandardMaterial3D_2bn7p")
 interval_seconds = 1.0
 wander_radius = 10.0
 
+[node name="HealthComponent" parent="." index="7" unique_id=1706903160]
+max_health = 400.0
+current_health = 400.0
+
 [node name="ReviveComponent" type="ReviveComponent" parent="." index="11" unique_id=1048482651]
