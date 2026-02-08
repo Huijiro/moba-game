@@ -58,7 +58,7 @@ offset_right = 43.0
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
-text = "[HEALTH]%"
+text = "[HEALTH]"
 
 [node name="MainResourceDisplay" type="MainResourceDisplay" parent="Screen/PanelContainer/VBoxContainer" unique_id=1447455656]
 resource_bar_path = NodePath("Resource")
@@ -88,7 +88,7 @@ offset_right = 53.5
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
-text = "[RESOURCE]%"
+text = "[RESOURCE]"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Screen/PanelContainer/VBoxContainer" unique_id=743492209]
 layout_mode = 2

@@ -112,15 +112,19 @@ void MainHealthDisplay::_ready() {
 }
 
 void MainHealthDisplay::_on_health_changed(float current, float max) {
+  int current_int = (int)current;
+  int max_int = (int)max;
+
   if (health_bar) {
-    health_bar->set_max((int)max);
-    health_bar->set_value((int)current);
+    health_bar->set_max(max_int);
+    health_bar->set_value(current_int);
   }
 
   if (health_label) {
     String health_text =
-        String::num((int)current) + " / " + String::num((int)max);
+        String::num(current_int) + " / " + String::num(max_int);
     health_label->set_text(health_text);
+    DBG_INFO("MainHealthDisplay", "Updated health label to: " + health_text);
   }
 }
 
