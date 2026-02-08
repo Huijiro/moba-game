@@ -135,12 +135,22 @@ void MovementComponent::_physics_process(double delta) {
 
   // Update desired location if actively chasing a target
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
-    set_desired_location(chase_target->get_global_position());
+    Vector3 target_pos = chase_target->get_global_position();
+    Vector3 current_pos = body->get_global_position();
+    float distance_to_target = current_pos.distance_to(target_pos);
 
     // Check if we've reached desired range for chase
-    float distance_to_target = body->get_global_position().distance_to(
-        chase_target->get_global_position());
     bool now_in_range = distance_to_target <= chase_desired_range;
+
+    if (!now_in_range) {
+      // Out of range - calculate approach position at desired range and move
+      // toward it
+      Vector3 direction_to_target = (target_pos - current_pos).normalized();
+      Vector3 approach_pos =
+          target_pos - (direction_to_target * chase_desired_range);
+      set_desired_location(approach_pos);
+    }
+    // If in range, don't update desired_location - keep current movement stop
 
     if (now_in_range && !was_chase_in_range) {
       // Just reached range - emit signal
@@ -160,7 +170,16 @@ void MovementComponent::_physics_process(double delta) {
 
   // Apply gravity and move
   Vector3 velocity = movement_velocity;
-  velocity.y = body->get_velocity().y;  // Preserve vertical velocity (gravity)
+
+  // Preserve vertical velocity and apply gravity using Godot's physics gravity
+  Vector3 current_velocity = body->get_velocity();
+  Vector3 gravity = body->get_gravity();
+  current_velocity += gravity * delta;
+
+  // Replace horizontal velocity with movement, keep vertical velocity with
+  // gravity
+  velocity.y = current_velocity.y;
+
   body->set_velocity(velocity);
   body->move_and_slide();
 }

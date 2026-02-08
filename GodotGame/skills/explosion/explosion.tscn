@@ -1,6 +1,9 @@
 [gd_scene format=3 uid="uid://cgx5icaowkcb5"]
 
 [ext_resource type="Texture2D" uid="uid://xn18eygx5mm" path="res://assets/placeholder/PLACEHOLDER_explosion.png" id="1_7mily"]
+[ext_resource type="PackedScene" uid="uid://bb0bs3kernx7b" path="res://skills/explosion/explosion_vfx.tscn" id="2_6bo6f"]
 
 [node name="Explosion" type="ExplosionNode" unique_id=526675321]
 icon = ExtResource("1_7mily")
+
+[node name="explosion" parent="." unique_id=1770922579 instance=ExtResource("2_6bo6f")]

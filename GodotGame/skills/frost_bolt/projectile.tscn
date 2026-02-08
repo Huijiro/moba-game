@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://dfpt5s4opk01j"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frost"]
+transparency = 1
+albedo_color = Color(0, 0.5019608, 1, 0.7)
+
+[sub_resource type="SphereMesh" id="SphereMesh_frost"]
+material = SubResource("StandardMaterial3D_frost")
+radius = 0.5
+height = 1.0
+
+[node name="projectile" type="ProjectileVFX" unique_id=1770922579]
+duration = 2.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1653806995]
+mesh = SubResource("SphereMesh_frost")

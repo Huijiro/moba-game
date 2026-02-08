@@ -10,7 +10,7 @@
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 #include "../../debug/visual_debugger.hpp"
-#include "../../visual/projectile_visual.hpp"
+
 #include "../health/health_component.hpp"
 
 using godot::ClassDB;
@@ -26,6 +26,10 @@ SkillshotProjectile::SkillshotProjectile() = default;
 SkillshotProjectile::~SkillshotProjectile() = default;
 
 void SkillshotProjectile::_bind_methods() {
+  // Signals
+  ADD_SIGNAL(godot::MethodInfo(
+      "detonated", godot::PropertyInfo(Variant::VECTOR3, "position")));
+
   ClassDB::bind_method(D_METHOD("set_speed", "speed"),
                        &SkillshotProjectile::set_speed);
   ClassDB::bind_method(D_METHOD("get_speed"), &SkillshotProjectile::get_speed);
@@ -69,11 +73,7 @@ void SkillshotProjectile::_physics_process(double delta) {
   set_global_position(current_pos + velocity * static_cast<float>(delta));
   travel_distance += speed * delta;
 
-  // Update visual representation
   Vector3 new_pos = get_global_position();
-  if (projectile_visual != nullptr) {
-    projectile_visual->on_travel(new_pos, travel_distance);
-  }
 
   // Debug visualization: Draw projectile collision radius
   VisualDebugger* debugger = VisualDebugger::get_singleton();
@@ -139,6 +139,12 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
 
   Vector3 explosion_center = get_global_position();
 
+  // Call detonation callback if set (indicates explosion effect)
+  bool has_explosion = (on_detonated != nullptr);
+  if (on_detonated != nullptr && caster != nullptr) {
+    on_detonated(caster, explosion_center);
+  }
+
   // If we have a specific hit target (from collision), damage only that unit
   if (hit_target != nullptr && hit_target->is_inside_tree()) {
     DBG_INFO("SkillshotProjectile",
@@ -152,20 +158,17 @@ void SkillshotProjectile::_detonate(Unit* hit_target) {
     DBG_INFO("SkillshotProjectile", "Total hits: 1");
   } else {
     // No specific target - search for units in AoE radius
-    DBG_INFO("SkillshotProjectile",
-             "Detonating at (" + godot::String::num(explosion_center.x) + ", " +
-                 godot::String::num(explosion_center.z) + ") with radius " +
-                 godot::String::num(aoe_radius));
+    _find_and_damage_units();
+  }
 
-    // Debug visualization: Draw AoE explosion radius (red/orange circle)
+  // Draw AoE visualization only if there's an explosion effect
+  if (has_explosion) {
     VisualDebugger* debugger = VisualDebugger::get_singleton();
     if (debugger != nullptr && debugger->is_debug_enabled()) {
       // Draw AoE explosion radius at detonation point (orange for visibility)
       debugger->draw_circle_xz(explosion_center, aoe_radius,
                                godot::Color(1, 0.5f, 0, 1), 32, 1.0f, false);
     }
-
-    _find_and_damage_units();
   }
 
   queue_free();

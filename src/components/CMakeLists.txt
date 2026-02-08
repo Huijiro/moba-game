@@ -9,6 +9,7 @@ target_sources(
 add_subdirectory(movement)
 add_subdirectory(combat)
 add_subdirectory(health)
+add_subdirectory(revive)
 add_subdirectory(resources)
 add_subdirectory(interaction)
 add_subdirectory(abilities)

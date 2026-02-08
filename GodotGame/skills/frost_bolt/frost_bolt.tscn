@@ -1,3 +1,7 @@
 [gd_scene format=3 uid="uid://cgx5ib9owkcb2"]
 
+[ext_resource type="PackedScene" uid="uid://dfpt5s4opk01j" path="res://skills/frost_bolt/projectile.tscn" id="1_frost"]
+
 [node name="FrostBolt" type="FrostBoltNode" unique_id=526675318]
+
+[node name="projectile" parent="." unique_id=1770922579 instance=ExtResource("1_frost")]

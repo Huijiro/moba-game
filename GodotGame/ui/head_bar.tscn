@@ -33,14 +33,18 @@ text = "[Unit Name]"
 horizontal_alignment = 1
 
 [node name="HealthBar" type="ProgressBar" parent="VBoxContainer" unique_id=1298506797]
+custom_minimum_size = Vector2(0, 16)
 layout_mode = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_qk2ei")
 theme_override_styles/fill = SubResource("StyleBoxFlat_vmghu")
 value = 100.0
+show_percentage = false
 
 [node name="ResourceMana" type="ResourceBar" parent="VBoxContainer" unique_id=744854828]
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 theme_override_font_sizes/font_size = 8
 theme_override_styles/background = SubResource("StyleBoxFlat_kkvfd")
 theme_override_styles/fill = SubResource("StyleBoxFlat_2cg6n")
 value = 100.0
+show_percentage = false

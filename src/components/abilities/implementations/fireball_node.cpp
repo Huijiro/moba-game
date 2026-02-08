@@ -10,7 +10,6 @@
 
 using godot::ClassDB;
 using godot::D_METHOD;
-using godot::Node;
 using godot::String;
 using godot::UtilityFunctions;
 using godot::Vector3;
@@ -24,6 +23,7 @@ FireballNode::FireballNode() {
   set_base_damage(50.0f);
   set_range(20.0f);
   set_cooldown(7.0f);
+  set_aoe_radius(5.0f);  // Explosion radius for AoE damage
 }
 
 FireballNode::~FireballNode() = default;
@@ -60,6 +60,12 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
     DBG_INFO("Fireball", "Launched fireball from " + caster->get_name() +
                              " towards (" + String::num(target_position.x, 2) +
                              ", " + String::num(target_position.z, 2) + ")");
+
+    // Trigger projectile VFX to follow the actual projectile
+    godot::Dictionary vfx_params;
+    vfx_params["projectile"] = projectile;
+    play_vfx(caster, "projectile", vfx_params);
+
     return true;
   }
   return false;
@@ -119,7 +125,7 @@ SkillshotProjectile* FireballNode::_spawn_projectile(
       calculate_damage(caster, nullptr),  // Damage amount
       get_skillshot_speed(),              // Speed
       get_skillshot_max_distance(),       // Max distance (range)
-      0.0f,                               // No AoE (single target)
+      get_aoe_radius(),                   // Use ability's AoE radius
       get_skillshot_hit_radius()          // Hit radius (collision detection)
   );
 

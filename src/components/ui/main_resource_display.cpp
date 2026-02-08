@@ -131,8 +131,8 @@ void MainResourceDisplay::_ready() {
 
 void MainResourceDisplay::_on_resource_changed(float current, float max) {
   if (resource_bar) {
-    resource_bar->set_value(current);
     resource_bar->set_max(max);
+    resource_bar->set_value(current);
   }
 
   if (resource_label) {

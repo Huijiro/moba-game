@@ -147,6 +147,7 @@ void AttackComponent::_ready() {
   owner->register_signal(move_requested);
   owner->register_signal(attack_requested);
   owner->register_signal(chase_requested);
+  owner->register_signal(chase_to_range_requested);
   owner->register_signal(stop_requested);
 
   // Connect to the Unit's movement-related signals
@@ -209,10 +210,11 @@ void AttackComponent::_physics_process(double delta) {
           try_fire_at(active_attack_target, delta);
         }
       } else {
-        // Out of range: emit attack request to move toward target within attack
-        // range
-        owner->relay(attack_requested, active_attack_target,
-                     active_attack_target->get_global_position());
+        // Out of range: emit chase_to_range_requested to move toward target
+        // within auto_attack_range
+        owner->relay(chase_to_range_requested, active_attack_target,
+                     active_attack_target->get_global_position(),
+                     auto_attack_range);
       }
     }
   }

@@ -1,6 +1,7 @@
 #ifndef GDEXTENSION_SKILLSHOT_PROJECTILE_H
 #define GDEXTENSION_SKILLSHOT_PROJECTILE_H
 
+#include <functional>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/variant/vector3.hpp>
 
@@ -9,7 +10,6 @@ using godot::Vector3;
 
 class Unit;
 class AbilityDefinition;
-class ProjectileVisual;
 
 /// Skillshot projectile - travels in a direction and detonates on impact or
 /// distance Used for directional abilities like Fireball
@@ -35,9 +35,6 @@ class SkillshotProjectile : public Node3D {
 
   Vector3 direction = Vector3(0, 0, -1);  // Direction of travel
 
-  ProjectileVisual* projectile_visual =
-      nullptr;  // Optional visual representation
-
   // Called when projectile hits something
   // If hit_target is provided, only damage that unit (single-target hit)
   // Otherwise, find all units in aoe_radius and damage them
@@ -47,6 +44,11 @@ class SkillshotProjectile : public Node3D {
   void _find_and_damage_units();
 
  public:
+  // Callback when projectile detonates (optional, set by ability system)
+  std::function<void(Unit*, const Vector3&)> on_detonated = nullptr;
+
+  // Get the caster for external callbacks
+  Unit* get_caster() const { return caster; }
   SkillshotProjectile();
   ~SkillshotProjectile();
 

@@ -1,8 +1,12 @@
 [gd_scene format=3 uid="uid://cgx5icaowkcb3"]
 
 [ext_resource type="Texture2D" uid="uid://f6mq2yylwnao" path="res://assets/placeholder/PLACEHOLDER_fireball.png" id="1_v3kf6"]
+[ext_resource type="PackedScene" uid="uid://dave47rt005bj" path="res://skills/fireball/projectile.tscn" id="2_v0gj8"]
 
 [node name="Fireball" type="FireballNode" unique_id=526675319]
 icon = ExtResource("1_v3kf6")
 resource_pool_id = "mana"
 resource_cost = 20.0
+
+[node name="projectile" parent="." unique_id=1770922578 instance=ExtResource("2_v0gj8")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0)

@@ -22,6 +22,7 @@
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
 #include "components/resources/resource_pool_component.hpp"
+#include "components/revive/revive_component.hpp"
 #include "components/ui/cooldown_display_component.hpp"
 #include "components/ui/cooldown_icon.hpp"
 #include "components/ui/head_bar.hpp"
@@ -35,8 +36,10 @@
 #include "debug/debug_logger.hpp"
 #include "debug/visual_debugger.hpp"
 #include "input/input_manager.hpp"
-#include "visual/projectile_visual.hpp"
-#include "visual/visual_effect.hpp"
+#include "visual/area_effects/area_effect_vfx.hpp"
+#include "visual/explosions/explosion_vfx.hpp"
+#include "visual/projectiles/projectile_vfx.hpp"
+#include "visual/vfx_node.hpp"
 
 using namespace godot;
 
@@ -54,6 +57,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(UnitComponent)
   GDREGISTER_CLASS(MovementComponent)
   GDREGISTER_CLASS(HealthComponent)
+  GDREGISTER_CLASS(ReviveComponent)
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(LabelComponent)
   GDREGISTER_CLASS(HeadBar)
@@ -74,8 +78,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(DebugLogger)
-  GDREGISTER_CLASS(VisualEffect)
-  GDREGISTER_CLASS(ProjectileVisual)
+
+  // VFX System
+  GDREGISTER_CLASS(VFXNode)
+  GDREGISTER_CLASS(ProjectileVFX)
+  GDREGISTER_CLASS(ExplosionVFX)
+  GDREGISTER_CLASS(AreaEffectVFX)
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {
