@@ -111,10 +111,23 @@ void MOBACamera::_update_camera_transform(double delta, bool snap) {
   float horizontal_dist =
       (std::abs(tan_pitch) > 0.0001f) ? height / tan_pitch : distance;
 
-  // Position camera behind and above the target
-  // We'll position it in the negative Z direction (behind)
+  // Position camera behind and above the target with 45 degree Y rotation
+  // Start with offset in negative Z direction
   Vector3 camera_offset = Vector3(0, height, horizontal_dist);
-  Vector3 desired_position = target_pos + camera_offset;
+
+  // Apply 45 degree rotation around Y axis for diagonal view
+  float yaw_angle = 45.0f * 3.14159265f / 180.0f;  // 45 degrees in radians
+  float cos_yaw = std::cos(yaw_angle);
+  float sin_yaw = std::sin(yaw_angle);
+
+  // Rotate offset around Y axis
+  // New X = X * cos(yaw) - Z * sin(yaw)
+  // New Z = X * sin(yaw) + Z * cos(yaw)
+  Vector3 rotated_offset = Vector3(
+      camera_offset.x * cos_yaw - camera_offset.z * sin_yaw, camera_offset.y,
+      camera_offset.x * sin_yaw + camera_offset.z * cos_yaw);
+
+  Vector3 desired_position = target_pos + rotated_offset;
 
   Vector3 new_pos;
   if (snap) {
