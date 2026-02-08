@@ -115,7 +115,8 @@ class AbilityComponent : public UnitComponent {
   void _begin_cast(int slot, Object* target);
 
   // Execute the ability (call effect->execute)
-  void _execute_ability(int slot);
+  // Returns true if executed, false if deferred
+  bool _execute_ability(int slot);
 
   // Apply cooldown after ability executes
   void _apply_cooldown(int slot);

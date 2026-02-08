@@ -298,21 +298,29 @@ void AbilityComponent::_physics_process(double delta) {
           casting_state == static_cast<int>(CastState::CASTING)) {
         // Fire the ability at cast point
         emit_signal("ability_cast_point_reached", casting_slot, casting_target);
-        _execute_ability(casting_slot);
-        casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+        bool executed = _execute_ability(casting_slot);
 
-        // Initialize tick timer for channel abilities
-        if (cast_type == static_cast<int>(CastType::CHANNEL)) {
-          float tick_interval = ability->get_channel_tick_interval();
-          next_tick_time = (tick_interval > 0.0f) ? tick_interval : 999999.0f;
+        // Only transition to cooldown if ability executed (not deferred)
+        if (executed) {
+          casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+
+          // Initialize tick timer for channel abilities
+          if (cast_type == static_cast<int>(CastType::CHANNEL)) {
+            float tick_interval = ability->get_channel_tick_interval();
+            next_tick_time = (tick_interval > 0.0f) ? tick_interval : 999999.0f;
+          }
         }
       }
     } else {
       // Instant cast - execute immediately
       if (casting_state == static_cast<int>(CastState::CASTING)) {
         emit_signal("ability_cast_point_reached", casting_slot, casting_target);
-        _execute_ability(casting_slot);
-        casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+        bool executed = _execute_ability(casting_slot);
+
+        // Only transition to cooldown if ability executed (not deferred)
+        if (executed) {
+          casting_state = static_cast<int>(CastState::ON_COOLDOWN);
+        }
       }
     }
 
@@ -669,19 +677,19 @@ void AbilityComponent::_begin_cast(int slot, Object* target) {
   DBG_INFO("AbilityComponent", "Began casting " + ability->get_ability_name());
 }
 
-void AbilityComponent::_execute_ability(int slot) {
+bool AbilityComponent::_execute_ability(int slot) {
   if (slot < 0 || slot >= static_cast<int>(ability_scenes.size())) {
-    return;
+    return false;
   }
 
   AbilityNode* ability = get_ability(slot);
   if (ability == nullptr) {
-    return;
+    return false;
   }
 
   Unit* owner = get_unit();
   if (owner == nullptr) {
-    return;
+    return false;
   }
 
   // Spend resource if needed
@@ -738,6 +746,7 @@ void AbilityComponent::_execute_ability(int slot) {
     owner->relay(get_stop_requested());
 
     DBG_INFO("AbilityComponent", "Executed ability slot " + String::num(slot));
+    return true;
   } else {
     // Ability deferred (e.g., chasing) - reset casting state to try again
     casting_state = static_cast<int>(CastState::IDLE);
@@ -748,6 +757,7 @@ void AbilityComponent::_execute_ability(int slot) {
              "  casting_slot=" + String::num(casting_slot) +
                  ", casting_target=" +
                  (target_unit != nullptr ? target_unit->get_name() : "null"));
+    return false;
   }
 }
 
