@@ -222,8 +222,10 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     return;
   }
 
-  // Movement/attack handling
-  if (!is_move_action) {
+  // Movement/attack handling - only if we're NOT using cast action
+  // This prevents clicking to cast an ability from also triggering a
+  // movement/attack
+  if (!is_move_action || is_cast_action) {
     return;
   }
 
@@ -276,6 +278,7 @@ void InputManager::_process(double delta) {
   }
 
   _update_click_marker(delta);
+  _update_hover_glow();
 
   // Visual debugging: Draw aiming line and AoE circle while targeting
   if (awaiting_target_slot >= 0 && controlled_unit != nullptr &&
@@ -758,5 +761,114 @@ String InputManager::_get_key_name_for_action(const String& action) {
       return "F";  // KEY_F
     default:
       return String::num(keycode);  // Return keycode if not in standard mapping
+  }
+}
+
+void InputManager::_update_hover_glow() {
+  if (controlled_unit == nullptr || camera == nullptr) {
+    return;
+  }
+
+  // Raycast to see what's under the cursor
+  Vector3 mouse_pos;
+  godot::Object* hovered_object = nullptr;
+  if (!_try_raycast(mouse_pos, hovered_object)) {
+    // Nothing hovered - remove glow if a unit was previously hovered
+    if (hovered_unit != nullptr) {
+      _remove_outline_glow(hovered_unit);
+      hovered_unit = nullptr;
+    }
+    return;
+  }
+
+  // Try to cast the hovered object to a Unit
+  auto hovered_candidate = Object::cast_to<Unit>(hovered_object);
+
+  // Check if this is a valid targetable unit
+  bool is_valid_target = false;
+  if (hovered_candidate != nullptr && hovered_candidate != controlled_unit) {
+    // Don't glow if it's the controlled unit or the same faction
+    if (hovered_candidate->get_faction_id() !=
+        controlled_unit->get_faction_id()) {
+      is_valid_target = true;
+    }
+  }
+
+  // Update glow based on whether we're hovering a valid target
+  if (is_valid_target && hovered_candidate != hovered_unit) {
+    // New valid target - apply glow
+    if (hovered_unit != nullptr) {
+      _remove_outline_glow(hovered_unit);
+    }
+    hovered_unit = hovered_candidate;
+    _apply_outline_glow(hovered_unit);
+  } else if (!is_valid_target && hovered_unit != nullptr) {
+    // Was hovering a valid target, but now hovering something else
+    _remove_outline_glow(hovered_unit);
+    hovered_unit = nullptr;
+  }
+}
+
+void InputManager::_apply_outline_glow(Unit* unit) {
+  if (unit == nullptr) {
+    return;
+  }
+
+  // Remove any existing glow overlay
+  if (glow_overlay != nullptr) {
+    glow_overlay->queue_free();
+    glow_overlay = nullptr;
+  }
+
+  // Create a glow overlay by using the unit's mesh with a glowing material
+  // Find the main mesh instance of the unit
+  MeshInstance3D* main_mesh = nullptr;
+  for (int i = 0; i < unit->get_child_count(); ++i) {
+    godot::Node* child = unit->get_child(i);
+    auto mesh_instance = Object::cast_to<MeshInstance3D>(child);
+    if (mesh_instance != nullptr) {
+      main_mesh = mesh_instance;
+      break;  // Use the first mesh instance found
+    }
+  }
+
+  if (main_mesh == nullptr) {
+    return;  // No mesh to glow
+  }
+
+  // Create a new MeshInstance3D as the glow overlay
+  glow_overlay = memnew(MeshInstance3D);
+  unit->add_child(glow_overlay);
+
+  // Copy the mesh from the main mesh instance
+  Ref<godot::Mesh> mesh = main_mesh->get_mesh();
+  if (mesh.is_valid()) {
+    glow_overlay->set_mesh(mesh);
+  }
+
+  // Create a glowing material
+  Ref<StandardMaterial3D> glow_material = memnew(StandardMaterial3D);
+  glow_material->set_shading_mode(godot::BaseMaterial3D::SHADING_MODE_UNSHADED);
+  glow_material->set_albedo(glow_color);
+  glow_material->set_emission(glow_color);
+  glow_material->set_emission_energy_multiplier(0.5f);
+  glow_material->set_transparency(godot::BaseMaterial3D::TRANSPARENCY_ALPHA);
+
+  // Apply the glow material to all surfaces
+  glow_overlay->set_surface_override_material(0, glow_material);
+
+  // Copy the transform of the main mesh
+  glow_overlay->set_transform(main_mesh->get_transform());
+}
+
+void InputManager::_remove_outline_glow(Unit* unit) {
+  if (unit == nullptr) {
+    return;
+  }
+
+  // Remove the glow overlay
+  if (glow_overlay != nullptr) {
+    glow_overlay->queue_free();
+    glow_overlay = nullptr;
   }
 }

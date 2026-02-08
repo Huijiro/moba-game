@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input_event.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/ref.hpp>
@@ -28,6 +29,7 @@ using godot::Camera3D;
 using godot::Color;
 using godot::Dictionary;
 using godot::InputEvent;
+using godot::MeshInstance3D;
 using godot::Node;
 using godot::PackedScene;
 using godot::Ref;
@@ -91,6 +93,11 @@ class InputManager : public Node {
   // Get key name from input action (e.g., "game_ability_1" -> "Q")
   String _get_key_name_for_action(const String& action);
 
+  // Hover glow effect methods
+  void _update_hover_glow();
+  void _apply_outline_glow(Unit* unit);
+  void _remove_outline_glow(Unit* unit);
+
   // Member variables
   Unit* controlled_unit = nullptr;
   Camera3D* camera = nullptr;
@@ -124,6 +131,12 @@ class InputManager : public Node {
       -1;  // -1 = not charging, 0-3 = ability slot being charged
   bool indicator_charging = false;
   double indicator_charge_time = 0.0;
+
+  // Hover glow effect state
+  Unit* hovered_unit = nullptr;
+  godot::MeshInstance3D* glow_overlay = nullptr;
+  Color glow_color =
+      Color(0.3f, 0.8f, 1.0f, 0.3f);  // Light blue glow with alpha
 };
 
 #endif  // GDEXTENSION_INPUT_MANAGER_H

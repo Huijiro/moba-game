@@ -22,6 +22,7 @@
 #include "components/interaction/interactable.hpp"
 #include "components/movement/movement_component.hpp"
 #include "components/resources/resource_pool_component.hpp"
+#include "components/revive/revive_component.hpp"
 #include "components/ui/cooldown_display_component.hpp"
 #include "components/ui/cooldown_icon.hpp"
 #include "components/ui/head_bar.hpp"
@@ -56,6 +57,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(UnitComponent)
   GDREGISTER_CLASS(MovementComponent)
   GDREGISTER_CLASS(HealthComponent)
+  GDREGISTER_CLASS(ReviveComponent)
   GDREGISTER_CLASS(ResourcePoolComponent)
   GDREGISTER_CLASS(LabelComponent)
   GDREGISTER_CLASS(HeadBar)
