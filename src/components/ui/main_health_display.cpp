@@ -9,6 +9,7 @@
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -95,6 +96,17 @@ void MainHealthDisplay::_ready() {
   main_unit->connect(
       health_changed,
       godot::Callable(this, godot::StringName("_on_health_changed")));
+
+  // Get initial health values from HealthComponent to display on startup
+  for (int i = 0; i < main_unit->get_child_count(); i++) {
+    auto health_comp =
+        Object::cast_to<HealthComponent>(main_unit->get_child(i));
+    if (health_comp) {
+      _on_health_changed(health_comp->get_current_health(),
+                         health_comp->get_max_health());
+      break;
+    }
+  }
 
   DBG_INFO("MainHealthDisplay", "Initialized for main unit");
 }

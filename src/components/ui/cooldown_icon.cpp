@@ -109,7 +109,7 @@ void CooldownIcon::_ready() {
   // The icon texture is set in the editor, so we just need to listen for
   // cooldown updates
   main_unit->connect(
-      godot::StringName("ability_cooldown_started"),
+      ability_cooldown_started,
       godot::Callable(this, godot::StringName("_on_cooldown_started")));
   main_unit->connect(
       ability_cooldown_tick,
