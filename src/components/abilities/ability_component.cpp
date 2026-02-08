@@ -810,12 +810,11 @@ void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
                String::num(casting_state) +
                ", casting_slot=" + String::num(casting_slot));
 
-  // Only re-execute if we have a deferred ability waiting
-  // This can be in IDLE state (just deferred) or CASTING state (still casting)
-  if (casting_state != static_cast<int>(CastState::IDLE) &&
-      casting_state != static_cast<int>(CastState::CASTING)) {
-    DBG_INFO("AbilityComponent",
-             "Ignoring - casting_state is neither IDLE nor CASTING");
+  // Only re-execute if we have a deferred ability waiting (in IDLE state)
+  // After deferred, state is reset to IDLE. We restore it to CASTING so the
+  // next _process() frame will execute it naturally through the normal flow.
+  if (casting_state != static_cast<int>(CastState::IDLE)) {
+    DBG_INFO("AbilityComponent", "Ignoring - not in deferred IDLE state");
     return;
   }
 
@@ -825,11 +824,13 @@ void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
     return;
   }
 
-  // Re-execute the ability now that we're in range
-  _execute_ability(casting_slot);
+  // Restore casting state so _process() will execute it naturally
+  casting_state = static_cast<int>(CastState::CASTING);
+  casting_timer = 0.0f;
 
-  DBG_INFO("AbilityComponent", "Ability in slot " + String::num(casting_slot) +
-                                   " triggered by chase_range_reached");
+  DBG_INFO("AbilityComponent", "Restored CASTING state for slot " +
+                                   String::num(casting_slot) +
+                                   " - will execute next frame");
 }
 
 void AbilityComponent::_on_cast_ability_unit_target(int slot,
