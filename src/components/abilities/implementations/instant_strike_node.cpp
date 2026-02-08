@@ -67,8 +67,9 @@ bool InstantStrikeNode::execute(Unit* caster,
   // Calculate damage
   float damage = calculate_damage(caster, target);
 
-  // Fire-and-forget: emit take_damage signal, don't wait for response
-  caster->relay(take_damage, damage, target);
+  // Fire-and-forget: emit take_damage signal on TARGET, not caster
+  // The target receives damage with caster as source
+  target->relay(take_damage, damage, caster);
 
   DBG_INFO("InstantStrike", String(caster->get_name()) + " dealt " +
                                 String::num(damage) + " damage to " +
