@@ -221,11 +221,17 @@ void AbilityComponent::_physics_process(double delta) {
   }
 
   // Update cooldown timers
+  Unit* owner = get_unit();
   for (size_t i = 0; i < cooldown_timers.size(); i++) {
     if (cooldown_timers[i] > 0.0f) {
       cooldown_timers[i] -= delta;
       if (cooldown_timers[i] < 0.0f) {
         cooldown_timers[i] = 0.0f;
+      }
+      // Emit cooldown tick signal for UI updates
+      if (owner != nullptr) {
+        owner->relay(ability_cooldown_tick, (int)i,
+                     std::max(0.0f, cooldown_timers[i]));
       }
     }
   }
