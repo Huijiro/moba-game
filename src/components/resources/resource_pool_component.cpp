@@ -4,9 +4,13 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
+#include "../../common/unit_signals.hpp"
+#include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
@@ -48,6 +52,11 @@ void ResourcePoolComponent::_bind_methods() {
                        &ResourcePoolComponent::try_spend);
   ClassDB::bind_method(D_METHOD("restore", "amount"),
                        &ResourcePoolComponent::restore);
+
+  // Bind signal handler for resource pool queries
+  ClassDB::bind_method(
+      D_METHOD("_on_resource_pool_requested", "requested_pool_id"),
+      &ResourcePoolComponent::_on_resource_pool_requested);
 
   ADD_SIGNAL(godot::MethodInfo("value_changed",
                                PropertyInfo(Variant::FLOAT, "current"),
@@ -125,4 +134,35 @@ void ResourcePoolComponent::restore(float amount) {
                 String::num(old_value) + " -> " + String::num(current_value) +
                 " / " + String::num(max_value));
   emit_signal("value_changed", current_value, max_value);
+}
+
+void ResourcePoolComponent::_ready() {
+  UnitComponent::_ready();
+
+  if (godot::Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  Unit* owner = get_unit();
+  if (owner == nullptr) {
+    return;
+  }
+
+  // Register and connect to resource pool query signal
+  owner->register_signal(resource_pool_requested);
+  owner->connect(
+      resource_pool_requested,
+      godot::Callable(this, godot::StringName("_on_resource_pool_requested")));
+}
+
+void ResourcePoolComponent::_on_resource_pool_requested(
+    const godot::StringName& requested_pool_id) {
+  // If this pool matches the requested pool_id, provide our reference
+  if (requested_pool_id == pool_id) {
+    Unit* owner = get_unit();
+    if (owner != nullptr) {
+      // Emit the response through the unit relay
+      owner->relay(resource_pool_requested, godot::Variant(this));
+    }
+  }
 }

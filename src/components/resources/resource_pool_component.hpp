@@ -17,9 +17,14 @@ class ResourcePoolComponent : public UnitComponent {
   float max_value = 100.0f;
   float current_value = 100.0f;
 
+  // Signal handler for resource pool queries
+  void _on_resource_pool_requested(const godot::StringName& requested_pool_id);
+
  public:
   ResourcePoolComponent();
   ~ResourcePoolComponent();
+
+  void _ready() override;
 
   void set_pool_id(StringName id);
   StringName get_pool_id() const;

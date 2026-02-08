@@ -50,6 +50,35 @@ inline const StringName& get_chase_range_reached() {
   return signal;
 }
 
+// Ability casting signals - emitted by InputManager/AI, listened by
+// AbilityComponent
+inline const StringName& get_cast_ability_unit_target() {
+  static StringName signal = StringName("cast_ability_unit_target");
+  return signal;
+}
+
+inline const StringName& get_cast_ability_point_target() {
+  static StringName signal = StringName("cast_ability_point_target");
+  return signal;
+}
+
+// Ability query signals - for UI and component initialization
+inline const StringName& get_ability_icon_requested() {
+  static StringName signal = StringName("ability_icon_requested");
+  return signal;
+}
+
+inline const StringName& get_resource_pool_requested() {
+  static StringName signal = StringName("resource_pool_requested");
+  return signal;
+}
+
+// Cooldown update signal - emitted by AbilityComponent, listened by UI
+inline const StringName& get_ability_cooldown_tick() {
+  static StringName signal = StringName("ability_cooldown_tick");
+  return signal;
+}
+
 // Convenience aliases for backwards compatibility
 #define move_requested get_move_requested()
 #define attack_requested get_attack_requested()
@@ -59,5 +88,10 @@ inline const StringName& get_chase_range_reached() {
 #define stop_requested get_stop_requested()
 #define take_damage get_take_damage()
 #define chase_range_reached get_chase_range_reached()
+#define cast_ability_unit_target get_cast_ability_unit_target()
+#define cast_ability_point_target get_cast_ability_point_target()
+#define ability_icon_requested get_ability_icon_requested()
+#define resource_pool_requested get_resource_pool_requested()
+#define ability_cooldown_tick get_ability_cooldown_tick()
 
 #endif  // GDEXTENSION_UNIT_SIGNALS_H

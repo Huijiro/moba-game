@@ -118,6 +118,18 @@ void AbilityComponent::_bind_methods() {
   // Bind signal handler for chase range reached
   ClassDB::bind_method(D_METHOD("_on_chase_range_reached", "target"),
                        &AbilityComponent::_on_chase_range_reached);
+
+  // Bind signal handlers for ability casting
+  ClassDB::bind_method(
+      D_METHOD("_on_cast_ability_unit_target", "slot", "target"),
+      &AbilityComponent::_on_cast_ability_unit_target);
+  ClassDB::bind_method(
+      D_METHOD("_on_cast_ability_point_target", "slot", "position"),
+      &AbilityComponent::_on_cast_ability_point_target);
+
+  // Bind signal handler for resource pool response
+  ClassDB::bind_method(D_METHOD("_on_resource_pool_provided", "pool"),
+                       &AbilityComponent::_on_resource_pool_provided);
 }
 
 void AbilityComponent::_ready() {
@@ -133,16 +145,28 @@ void AbilityComponent::_ready() {
     return;
   }
 
-  // Register and connect to chase_range_reached signal
-  // This allows deferred abilities (e.g., Instant Strike) to execute when in
-  // range
+  // Register signals
   owner->register_signal(get_chase_range_reached());
+  owner->register_signal(cast_ability_unit_target);
+  owner->register_signal(cast_ability_point_target);
+  owner->register_signal(ability_icon_requested);
+  owner->register_signal(resource_pool_requested);
+  owner->register_signal(ability_cooldown_tick);
+
+  // Connect to casting signals
   owner->connect(get_chase_range_reached(),
                  godot::Callable(this, StringName("_on_chase_range_reached")));
+  owner->connect(
+      cast_ability_unit_target,
+      godot::Callable(this, StringName("_on_cast_ability_unit_target")));
+  owner->connect(
+      cast_ability_point_target,
+      godot::Callable(this, StringName("_on_cast_ability_point_target")));
 
-  // Try to get resource pool for mana checks
-  resource_pool = Object::cast_to<ResourcePoolComponent>(
-      owner->get_component_by_class("ResourcePoolComponent"));
+  // Request resource pool for mana checks
+  // ResourcePoolComponent will respond by setting our resource_pool reference
+  owner->relay(resource_pool_requested, StringName("mana"),
+               godot::Callable(this, StringName("_on_resource_pool_provided")));
 
   if (resource_pool == nullptr) {
     DBG_WARN("AbilityComponent", "No ResourcePoolComponent for mana tracking");
@@ -758,4 +782,23 @@ void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
 
   DBG_INFO("AbilityComponent", "Ability in slot " + String::num(casting_slot) +
                                    " triggered by chase_range_reached");
+}
+
+void AbilityComponent::_on_cast_ability_unit_target(int slot,
+                                                    godot::Object* target) {
+  try_cast(slot, target);
+}
+
+void AbilityComponent::_on_cast_ability_point_target(int slot,
+                                                     const Vector3& position) {
+  try_cast_point(slot, position);
+}
+
+void AbilityComponent::_on_resource_pool_provided(godot::Object* pool) {
+  resource_pool = Object::cast_to<ResourcePoolComponent>(pool);
+  if (resource_pool) {
+    DBG_DEBUG("AbilityComponent", "ResourcePoolComponent obtained via signal");
+  } else {
+    DBG_DEBUG("AbilityComponent", "No ResourcePoolComponent available");
+  }
 }

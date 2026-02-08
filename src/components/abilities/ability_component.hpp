@@ -53,7 +53,7 @@ class AbilityComponent : public UnitComponent {
   // Channel ticking (for periodic damage abilities)
   float next_tick_time = 0.0f;  // When the next tick should occur
 
-  // Resource pool reference (for mana checks)
+  // Resource pool reference (for mana checks) - obtained via signal query
   ResourcePoolComponent* resource_pool = nullptr;
 
  public:
@@ -125,6 +125,13 @@ class AbilityComponent : public UnitComponent {
 
   // Handle chase_range_reached signal - re-execute deferred abilities
   void _on_chase_range_reached(godot::Object* target);
+
+  // Handle ability casting signals from InputManager/AI
+  void _on_cast_ability_unit_target(int slot, godot::Object* target);
+  void _on_cast_ability_point_target(int slot, const Vector3& position);
+
+  // Handle resource pool response from ResourcePoolComponent
+  void _on_resource_pool_provided(godot::Object* pool);
 };
 
 #endif  // GDEXTENSION_ABILITY_COMPONENT_H
