@@ -696,6 +696,25 @@ void AbilityComponent::_execute_ability(int slot) {
 
   // Execute the ability
   Unit* target_unit = Object::cast_to<Unit>(casting_target);
+
+  // Log skill execution details
+  DBG_INFO("AbilityComponent",
+           "Executing ability: " + ability->get_ability_name() + " (slot " +
+               String::num(slot) + ")");
+  DBG_INFO("AbilityComponent",
+           "  Caster: " + owner->get_name() + " at (" +
+               String::num(owner->get_global_position().x, 2) + ", " +
+               String::num(owner->get_global_position().y, 2) + ", " +
+               String::num(owner->get_global_position().z, 2) + ")");
+  if (target_unit != nullptr) {
+    DBG_INFO("AbilityComponent", "  Target: " + target_unit->get_name());
+  } else {
+    DBG_INFO("AbilityComponent", "  Target position: (" +
+                                     String::num(casting_point.x, 2) + ", " +
+                                     String::num(casting_point.y, 2) + ", " +
+                                     String::num(casting_point.z, 2) + ")");
+  }
+
   bool executed = ability->execute(owner, target_unit, casting_point);
 
   // Only apply cooldown if ability actually executed (not deferred)

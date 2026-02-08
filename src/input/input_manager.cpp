@@ -551,12 +551,18 @@ void InputManager::_handle_ability_input(const String& key) {
         if (cursor_target != nullptr) {
           controlled_unit->relay(cast_ability_unit_target, ability_slot,
                                  cursor_target);
-          DBG_INFO("InputManager", "Instant cast on unit target");
+          DBG_INFO("InputManager", "Instant cast on unit target: slot=" +
+                                       String::num(ability_slot));
         } else {
           // Otherwise cast at position
+          DBG_INFO("InputManager",
+                   "Raycast hit at: (" + String::num(cursor_position.x, 2) +
+                       ", " + String::num(cursor_position.y, 2) + ", " +
+                       String::num(cursor_position.z, 2) + ")");
           controlled_unit->relay(cast_ability_point_target, ability_slot,
                                  cursor_position);
-          DBG_INFO("InputManager", "Instant cast at cursor position");
+          DBG_INFO("InputManager", "Instant cast at position: slot=" +
+                                       String::num(ability_slot));
         }
       } else {
         DBG_INFO("InputManager", "Cannot cast - no valid target position");

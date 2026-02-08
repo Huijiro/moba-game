@@ -47,11 +47,20 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
   // For skillshot, position is where the projectile should travel to
   // If no position provided, use a default forward direction
   Vector3 target_position = position;
+
+  DBG_INFO("Fireball", "Execute called with position: (" +
+                           String::num(position.x, 2) + ", " +
+                           String::num(position.y, 2) + ", " +
+                           String::num(position.z, 2) + ")");
+
   if (target_position == Vector3(0, 0, 0)) {
     // Use caster's forward direction
     target_position =
         caster->get_global_position() +
         caster->get_global_transform().basis.get_column(2) * get_range();
+    DBG_INFO("Fireball", "Position was zero, using forward direction: (" +
+                             String::num(target_position.x, 2) + ", " +
+                             String::num(target_position.z, 2) + ")");
   }
 
   // Spawn the projectile
