@@ -2,6 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://dneif043gwqqa" path="res://assets/placeholder/PLACEHOLDER_empty_ability.png" id="1_dcmab"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dcmab"]
+bg_color = Color(0, 0.6, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w46tp"]
+bg_color = Color(0, 0, 0.6, 1)
+
 [node name="GameUI" type="CanvasLayer" unique_id=128704472]
 
 [node name="Screen" type="Control" parent="." unique_id=199309830]
@@ -35,6 +41,8 @@ layout_mode = 2
 [node name="ProgressBar" type="ProgressBar" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay" unique_id=144498464]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_dcmab")
+value = 50.0
 show_percentage = false
 
 [node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainHealthDisplay/ProgressBar" unique_id=274842894]
@@ -63,6 +71,8 @@ size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 size_flags_vertical = 1
+theme_override_styles/fill = SubResource("StyleBoxFlat_w46tp")
+value = 50.0
 show_percentage = false
 
 [node name="Label" type="Label" parent="Screen/PanelContainer/VBoxContainer/MainResourceDisplay/Resource" unique_id=98607796]

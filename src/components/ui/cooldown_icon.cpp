@@ -44,8 +44,6 @@ void CooldownIcon::_bind_methods() {
   // Signal handlers
   ClassDB::bind_method(D_METHOD("_on_cooldown_started", "slot", "duration"),
                        &CooldownIcon::_on_cooldown_started);
-  ClassDB::bind_method(D_METHOD("_on_cooldown_tick", "slot", "remaining_time"),
-                       &CooldownIcon::_on_cooldown_tick);
   ClassDB::bind_method(D_METHOD("_log_debug_position"),
                        &CooldownIcon::_log_debug_position);
 }
@@ -105,23 +103,32 @@ void CooldownIcon::_ready() {
     return;
   }
 
-  // Connect to cooldown signals from the main unit
-  // The icon texture is set in the editor, so we just need to listen for
-  // cooldown updates
+  // Connect to cooldown_started signal to handle sudden cooldown changes
+  // (e.g., if cooldown is reset or changed by the ability)
+  // We do our own delta-based tracking in _process for the countdown
   main_unit->connect(
       ability_cooldown_started,
       godot::Callable(this, godot::StringName("_on_cooldown_started")));
-  main_unit->connect(
-      ability_cooldown_tick,
-      godot::Callable(this, godot::StringName("_on_cooldown_tick")));
 
   DBG_INFO("CooldownIcon",
            "Initialized for ability slot " + String::num(ability_slot));
 }
 
 void CooldownIcon::_process(double delta) {
-  // Processing is now handled entirely by signal callbacks
-  // No need to query state - we receive updates via signals
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  // Do our own delta-based cooldown tracking
+  if (on_cooldown && cooldown_remaining > 0.0f) {
+    cooldown_remaining -= delta;
+    if (cooldown_remaining <= 0.0f) {
+      cooldown_remaining = 0.0f;
+      on_cooldown = false;
+      cooldown_duration = 0.0f;
+    }
+    queue_redraw();
+  }
 }
 
 void CooldownIcon::_draw() {
@@ -204,23 +211,6 @@ void CooldownIcon::_on_cooldown_started(int slot, float duration) {
 
   DBG_DEBUG("CooldownIcon", "Cooldown started for slot " + String::num(slot) +
                                 ": " + String::num(duration, 2) + "s");
-  queue_redraw();
-}
-
-void CooldownIcon::_on_cooldown_tick(int slot, float remaining_time) {
-  if (slot != ability_slot) {
-    return;
-  }
-
-  cooldown_remaining = remaining_time;
-
-  // Check if cooldown is complete
-  if (remaining_time <= 0.0f) {
-    on_cooldown = false;
-    cooldown_remaining = 0.0f;
-    cooldown_duration = 0.0f;
-  }
-
   queue_redraw();
 }
 

@@ -34,14 +34,13 @@ class CooldownIcon : public TextureRect {
   int ability_slot = 0;
   Vector2 icon_size = Vector2(50, 50);
 
-  // Cooldown tracking (updated via signals)
+  // Cooldown tracking (we do our own delta-based tracking)
   float cooldown_duration = 0.0f;
   float cooldown_remaining = 0.0f;
   bool on_cooldown = false;
 
-  // Signal handlers - listen for cooldown updates from AbilityComponent
+  // Signal handler - listen for cooldown_started to handle sudden changes
   void _on_cooldown_started(int slot, float duration);
-  void _on_cooldown_tick(int slot, float remaining_time);
 
   // Drawing
   void _draw_cooldown_overlay();
