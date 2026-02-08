@@ -161,7 +161,7 @@ void CooldownIcon::_process(double delta) {
       on_cooldown = false;
       cooldown_duration = 0.0f;
     }
-    queue_redraw();
+    queue_redraw();  // Redraw every frame during cooldown for smooth animation
   }
 }
 
@@ -171,7 +171,10 @@ void CooldownIcon::_draw() {
     return;
   }
 
-  // If on cooldown, draw a radial cooldown overlay
+  // First, let TextureRect draw the icon texture
+  TextureRect::_draw();
+
+  // If on cooldown, draw a radial cooldown overlay on top
   if (on_cooldown && cooldown_duration > 0.0f) {
     float progress =
         (cooldown_duration - cooldown_remaining) / cooldown_duration;
