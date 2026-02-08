@@ -800,9 +800,10 @@ void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
   // When movement system indicates we've reached chase range,
   // re-execute any ability that was deferred waiting for range
 
-  // Only re-execute if we're actively casting and waiting for range
-  // If casting_state is IDLE or ON_COOLDOWN, don't re-execute
-  if (casting_state != static_cast<int>(CastState::CASTING)) {
+  // Only re-execute if we have a deferred ability waiting
+  // This can be in IDLE state (just deferred) or CASTING state (still casting)
+  if (casting_state != static_cast<int>(CastState::IDLE) &&
+      casting_state != static_cast<int>(CastState::CASTING)) {
     return;
   }
 
