@@ -170,7 +170,13 @@ void MovementComponent::_physics_process(double delta) {
 
   // Apply gravity and move
   Vector3 velocity = movement_velocity;
-  velocity.y = body->get_velocity().y;  // Preserve vertical velocity (gravity)
+
+  // Preserve vertical velocity and apply gravity
+  float vertical_velocity = body->get_velocity().y;
+  // Apply gravity acceleration (9.8 m/s² standard, but Godot often uses 9.8)
+  vertical_velocity -= 9.8f * delta;
+  velocity.y = vertical_velocity;
+
   body->set_velocity(velocity);
   body->move_and_slide();
 }
