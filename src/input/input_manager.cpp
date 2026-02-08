@@ -571,14 +571,22 @@ void InputManager::_handle_ability_input(const String& key) {
       Vector3 cursor_position;
       godot::Object* cursor_target = nullptr;
       if (_try_raycast(cursor_position, cursor_target)) {
-        // Try casting on unit target first if available
-        if (cursor_target != nullptr) {
+        // Check the ability's targeting type to decide which signal to send
+        bool is_unit_target = false;
+        if (ability_slot >= 0 && ability_slot < 4) {
+          // TargetingType: 0 = UNIT_TARGET, 1 = POINT_TARGET, 2 = AREA, 3 =
+          // SKILLSHOT
+          is_unit_target = (ability_targeting_types[ability_slot] == 0);
+        }
+
+        if (is_unit_target && cursor_target != nullptr) {
+          // Unit-target ability and we hit a unit: send unit target
           controlled_unit->relay(cast_ability_unit_target, ability_slot,
                                  cursor_target);
           DBG_INFO("InputManager", "Instant cast on unit target: slot=" +
                                        String::num(ability_slot));
         } else {
-          // Otherwise cast at position
+          // Point-target/area/skillshot ability OR no unit hit: send position
           // Log camera and ray info when skill is actually cast
           Camera3D* cam = Object::cast_to<Camera3D>(camera);
           if (cam != nullptr) {
@@ -667,10 +675,10 @@ void InputManager::_handle_stop_command() {
     did_stop_anything = true;
   }
 
-  // Note: Interrupting channel abilities would require querying ability state.
-  // Since we're now signal-based, channel interruption should be handled
-  // through a separate signal if needed. For now, we just cancel targeting mode
-  // above.
+  // Note: Interrupting channel abilities would require querying ability
+  // state. Since we're now signal-based, channel interruption should be
+  // handled through a separate signal if needed. For now, we just cancel
+  // targeting mode above.
 
   // Cancel any movement orders - relay STOP order
   controlled_unit->relay(stop_requested);
