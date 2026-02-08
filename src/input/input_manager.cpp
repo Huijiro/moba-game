@@ -370,32 +370,6 @@ bool InputManager::_try_raycast(Vector3& out_position,
   Vector3 ray_normal = camera->project_ray_normal(mouse_pos);
   Vector3 ray_to = ray_from + (ray_normal * raycast_distance);
 
-  // Log camera and ray information
-  DBG_DEBUG("InputManager", "Raycast debug:");
-  DBG_DEBUG("InputManager",
-            "  Camera pos: (" +
-                String::num(camera->get_global_position().x, 2) + ", " +
-                String::num(camera->get_global_position().y, 2) + ", " +
-                String::num(camera->get_global_position().z, 2) + ")");
-  DBG_DEBUG("InputManager",
-            "  Camera rotation: (" + String::num(camera->get_rotation().x, 2) +
-                ", " + String::num(camera->get_rotation().y, 2) + ", " +
-                String::num(camera->get_rotation().z, 2) + ")");
-  DBG_DEBUG("InputManager", "  Mouse pos (screen): (" +
-                                String::num(mouse_pos.x, 0) + ", " +
-                                String::num(mouse_pos.y, 0) + ")");
-  DBG_DEBUG("InputManager", "  Ray origin (world): (" +
-                                String::num(ray_from.x, 2) + ", " +
-                                String::num(ray_from.y, 2) + ", " +
-                                String::num(ray_from.z, 2) + ")");
-  DBG_DEBUG("InputManager", "  Ray direction (normalized): (" +
-                                String::num(ray_normal.x, 2) + ", " +
-                                String::num(ray_normal.y, 2) + ", " +
-                                String::num(ray_normal.z, 2) + ")");
-  DBG_DEBUG("InputManager", "  Ray end point: (" + String::num(ray_to.x, 2) +
-                                ", " + String::num(ray_to.y, 2) + ", " +
-                                String::num(ray_to.z, 2) + ")");
-
   // Setup raycast query
   Ref<PhysicsRayQueryParameters3D> query =
       PhysicsRayQueryParameters3D::create(ray_from, ray_to);
@@ -581,6 +555,22 @@ void InputManager::_handle_ability_input(const String& key) {
                                        String::num(ability_slot));
         } else {
           // Otherwise cast at position
+          // Log camera and ray info when skill is actually cast
+          Camera3D* cam = Object::cast_to<Camera3D>(camera);
+          if (cam != nullptr) {
+            DBG_INFO("InputManager", "Skill cast - Camera info:");
+            DBG_INFO("InputManager",
+                     "  Camera pos: (" +
+                         String::num(cam->get_global_position().x, 2) + ", " +
+                         String::num(cam->get_global_position().y, 2) + ", " +
+                         String::num(cam->get_global_position().z, 2) + ")");
+            DBG_INFO("InputManager",
+                     "  Camera rotation: (" +
+                         String::num(cam->get_rotation().x, 2) + ", " +
+                         String::num(cam->get_rotation().y, 2) + ", " +
+                         String::num(cam->get_rotation().z, 2) + ")");
+          }
+
           DBG_INFO("InputManager",
                    "Raycast hit at: (" + String::num(cursor_position.x, 2) +
                        ", " + String::num(cursor_position.y, 2) + ", " +
