@@ -742,7 +742,12 @@ void AbilityComponent::_execute_ability(int slot) {
     // Ability deferred (e.g., chasing) - reset casting state to try again
     casting_state = static_cast<int>(CastState::IDLE);
     casting_timer = 0.0f;
+    Unit* target_unit = Object::cast_to<Unit>(casting_target);
     DBG_INFO("AbilityComponent", "Ability deferred (waiting for range)");
+    DBG_INFO("AbilityComponent",
+             "  casting_slot=" + String::num(casting_slot) +
+                 ", casting_target=" +
+                 (target_unit != nullptr ? target_unit->get_name() : "null"));
   }
 }
 
