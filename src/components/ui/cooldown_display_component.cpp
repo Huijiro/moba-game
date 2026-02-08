@@ -122,7 +122,7 @@ void CooldownDisplayComponent::_ready() {
 
   // 5. Connect to ability cooldown signals from main_unit
   main_unit->connect(
-      ability_cooldown_tick,
+      ability_cooldown_started,
       godot::Callable(this, godot::StringName("_on_cooldown_started")));
   main_unit->connect(
       ability_cooldown_tick,
