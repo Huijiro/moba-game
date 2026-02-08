@@ -79,6 +79,12 @@ inline const StringName& get_ability_cooldown_tick() {
   return signal;
 }
 
+// Health update signal - emitted by HealthComponent, listened by UI
+inline const StringName& get_health_changed() {
+  static StringName signal = StringName("health_changed");
+  return signal;
+}
+
 // Convenience aliases for backwards compatibility
 #define move_requested get_move_requested()
 #define attack_requested get_attack_requested()
@@ -93,5 +99,6 @@ inline const StringName& get_ability_cooldown_tick() {
 #define ability_icon_requested get_ability_icon_requested()
 #define resource_pool_requested get_resource_pool_requested()
 #define ability_cooldown_tick get_ability_cooldown_tick()
+#define health_changed get_health_changed()
 
 #endif  // GDEXTENSION_UNIT_SIGNALS_H

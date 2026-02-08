@@ -604,9 +604,9 @@ ResourcePoolComponent* AbilityComponent::_get_resource_pool(
     }
   }
 
-  // Fallback: return the default resource pool if found
-  return Object::cast_to<ResourcePoolComponent>(
-      owner->get_component_by_class("ResourcePoolComponent"));
+  // If not found by pool_id, return the default resource pool that was provided
+  // via signal
+  return resource_pool;
 }
 
 bool AbilityComponent::_can_afford(int slot) {

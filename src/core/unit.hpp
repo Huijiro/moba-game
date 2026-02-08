@@ -79,13 +79,6 @@ class Unit : public CharacterBody3D {
   // Debug label registration - called by LabelComponent
   void register_all_debug_labels(LabelRegistry* registry);
 
-  // TODO: Refactor ability system to use relay() instead of direct component
-  // lookups Temporary methods to unblock build - these should be removed after
-  // abilities are redesigned
-  godot::Node* get_component_by_class(
-      const godot::StringName& class_name) const;
-  class AbilityComponent* get_ability_component() const;
-
  private:
   int32_t faction_id = 0;
   String unit_name = "Unit";

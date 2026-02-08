@@ -10,11 +10,10 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
-#include "../abilities/ability_component.hpp"
-#include "../abilities/ability_node.hpp"
 
 using godot::ClassDB;
 using godot::Color;
@@ -45,8 +44,8 @@ void CooldownIcon::_bind_methods() {
   // Signal handlers
   ClassDB::bind_method(D_METHOD("_on_cooldown_started", "slot", "duration"),
                        &CooldownIcon::_on_cooldown_started);
-  ClassDB::bind_method(D_METHOD("_on_cooldown_changed", "slot"),
-                       &CooldownIcon::_on_cooldown_changed);
+  ClassDB::bind_method(D_METHOD("_on_cooldown_tick", "slot", "remaining_time"),
+                       &CooldownIcon::_on_cooldown_tick);
   ClassDB::bind_method(D_METHOD("_log_debug_position"),
                        &CooldownIcon::_log_debug_position);
 }
@@ -106,85 +105,23 @@ void CooldownIcon::_ready() {
     return;
   }
 
-  // Get AbilityComponent
-  ability_component = Object::cast_to<AbilityComponent>(
-      main_unit->get_component_by_class("AbilityComponent"));
-  if (!ability_component) {
-    DBG_WARN("CooldownIcon", "No AbilityComponent on main_unit");
-    return;
-  }
-
-  // Get ability icon for this slot
-  AbilityNode* ability = ability_component->get_ability(ability_slot);
-  if (ability) {
-    Ref<godot::Texture2D> ability_icon = ability->get_icon();
-    if (ability_icon.is_valid()) {
-      set_texture(ability_icon);
-      DBG_DEBUG("CooldownIcon",
-                "Set icon from ability for slot " + String::num(ability_slot));
-    } else {
-      DBG_DEBUG("CooldownIcon",
-                "Ability has no icon, keeping editor texture for slot " +
-                    String::num(ability_slot));
-      // Keep whatever texture was set in the editor
-    }
-  } else {
-    DBG_WARN("CooldownIcon", "No ability at slot " + String::num(ability_slot));
-  }
-
-  // Connect to cooldown signals
-  ability_component->connect(
-      "ability_cooldown_started",
+  // Connect to cooldown signals from the main unit
+  // The icon texture is set in the editor, so we just need to listen for
+  // cooldown updates
+  main_unit->connect(
+      godot::StringName("ability_cooldown_started"),
       godot::Callable(this, godot::StringName("_on_cooldown_started")));
-  ability_component->connect(
-      "cooldown_changed",
-      godot::Callable(this, godot::StringName("_on_cooldown_changed")));
+  main_unit->connect(
+      ability_cooldown_tick,
+      godot::Callable(this, godot::StringName("_on_cooldown_tick")));
 
   DBG_INFO("CooldownIcon",
            "Initialized for ability slot " + String::num(ability_slot));
 }
 
 void CooldownIcon::_process(double delta) {
-  if (Engine::get_singleton()->is_editor_hint()) {
-    return;
-  }
-
-  if (!ability_component) {
-    return;
-  }
-
-  // Query the actual cooldown remaining from the ability component
-  float cooldown_remaining =
-      ability_component->get_cooldown_remaining(ability_slot);
-
-  // Check if cooldown is complete
-  if (cooldown_remaining <= 0.0f) {
-    if (on_cooldown) {
-      on_cooldown = false;
-      cooldown_elapsed = 0.0f;
-      cooldown_duration = 0.0f;
-      queue_redraw();
-    }
-    return;
-  }
-
-  // If we're now on cooldown and weren't before, update state
-  if (!on_cooldown) {
-    on_cooldown = true;
-    // Get the full duration from the ability node
-    AbilityNode* ability = ability_component->get_ability(ability_slot);
-    if (ability) {
-      cooldown_duration = ability->get_cooldown();
-    }
-  }
-
-  // Calculate elapsed from the remaining and duration
-  if (cooldown_duration > 0.0f) {
-    cooldown_elapsed = cooldown_duration - cooldown_remaining;
-  }
-
-  // Redraw to update the cooldown overlay
-  queue_redraw();
+  // Processing is now handled entirely by signal callbacks
+  // No need to query state - we receive updates via signals
 }
 
 void CooldownIcon::_draw() {
@@ -195,7 +132,8 @@ void CooldownIcon::_draw() {
 
   // If on cooldown, draw a radial cooldown overlay
   if (on_cooldown && cooldown_duration > 0.0f) {
-    float progress = cooldown_elapsed / cooldown_duration;
+    float progress =
+        (cooldown_duration - cooldown_remaining) / cooldown_duration;
     progress = godot::Math::clamp(progress, 0.0f, 1.0f);
 
     // Set clip rect to constrain drawing to icon bounds
@@ -261,7 +199,7 @@ void CooldownIcon::_on_cooldown_started(int slot, float duration) {
   }
 
   cooldown_duration = duration;
-  cooldown_elapsed = 0.0f;
+  cooldown_remaining = duration;
   on_cooldown = true;
 
   DBG_DEBUG("CooldownIcon", "Cooldown started for slot " + String::num(slot) +
@@ -269,16 +207,20 @@ void CooldownIcon::_on_cooldown_started(int slot, float duration) {
   queue_redraw();
 }
 
-void CooldownIcon::_on_cooldown_changed(int slot) {
+void CooldownIcon::_on_cooldown_tick(int slot, float remaining_time) {
   if (slot != ability_slot) {
     return;
   }
 
-  on_cooldown = false;
-  cooldown_elapsed = 0.0f;
-  cooldown_duration = 0.0f;
+  cooldown_remaining = remaining_time;
 
-  DBG_DEBUG("CooldownIcon", "Cooldown reset for slot " + String::num(slot));
+  // Check if cooldown is complete
+  if (remaining_time <= 0.0f) {
+    on_cooldown = false;
+    cooldown_remaining = 0.0f;
+    cooldown_duration = 0.0f;
+  }
+
   queue_redraw();
 }
 

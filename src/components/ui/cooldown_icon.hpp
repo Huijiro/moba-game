@@ -9,8 +9,6 @@ using godot::StringName;
 using godot::TextureRect;
 using godot::Vector2;
 
-class AbilityComponent;
-
 /// CooldownIcon - displays an ability icon with a visual cooldown swipe overlay
 ///
 /// This component shows:
@@ -22,11 +20,11 @@ class AbilityComponent;
 /// - ability_slot: Which ability slot to display (0-3 for Q/W/E/R)
 /// - icon_size: Size of the icon in pixels (default: 50)
 ///
-/// The component automatically:
-/// 1. Finds the AbilityComponent on the main unit via MatchManager
-/// 2. Gets the ability icon from that slot
+/// The component:
+/// 1. Has ability_slot configured in the editor
+/// 2. Listens to ability cooldown signals (cooldown_started, cooldown_tick)
 /// 3. Draws a visual cooldown overlay during cooldown
-/// 4. Updates in real-time via ability cooldown signals
+/// 4. Updates in real-time via signal callbacks
 class CooldownIcon : public TextureRect {
   GDCLASS(CooldownIcon, TextureRect)
 
@@ -36,16 +34,14 @@ class CooldownIcon : public TextureRect {
   int ability_slot = 0;
   Vector2 icon_size = Vector2(50, 50);
 
-  AbilityComponent* ability_component = nullptr;
-
-  // Cooldown tracking
+  // Cooldown tracking (updated via signals)
   float cooldown_duration = 0.0f;
-  float cooldown_elapsed = 0.0f;
+  float cooldown_remaining = 0.0f;
   bool on_cooldown = false;
 
-  // Signal handlers
+  // Signal handlers - listen for cooldown updates from AbilityComponent
   void _on_cooldown_started(int slot, float duration);
-  void _on_cooldown_changed(int slot);
+  void _on_cooldown_tick(int slot, float remaining_time);
 
   // Drawing
   void _draw_cooldown_overlay();
