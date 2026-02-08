@@ -120,6 +120,9 @@ class InputManager : public Node {
   // Keybinds: Maps key name to ability slot (e.g., "KEY_Q" -> 0)
   Dictionary keybind_map;
 
+  // Ability targeting types: 0=UNIT_TARGET, 1=POINT_TARGET, 3=SKILLSHOT
+  int ability_targeting_types[4] = {1, 1, 1, 1};  // Default to point target
+
   // Ability targeting state
   int awaiting_target_slot =
       -1;  // -1 = not waiting, 0-3 = ability slot waiting for target
