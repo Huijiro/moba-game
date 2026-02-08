@@ -154,7 +154,7 @@ void CooldownIcon::_process(double delta) {
   }
 
   // Do our own delta-based cooldown tracking
-  if (on_cooldown && cooldown_remaining > 0.0f) {
+  if (on_cooldown) {
     cooldown_remaining -= delta;
     if (cooldown_remaining <= 0.0f) {
       cooldown_remaining = 0.0f;
@@ -180,6 +180,16 @@ void CooldownIcon::_draw() {
         (cooldown_duration - cooldown_remaining) / cooldown_duration;
     progress = godot::Math::clamp(progress, 0.0f, 1.0f);
 
+    // DEBUG: Log every N frames to see if this is being called
+    static int frame_count = 0;
+    if (frame_count % 30 == 0) {
+      DBG_DEBUG("CooldownIcon",
+                "Drawing cooldown for slot " + String::num(ability_slot) +
+                    ", progress=" + String::num(progress, 2) +
+                    ", remaining=" + String::num(cooldown_remaining, 2));
+    }
+    frame_count++;
+
     // Set clip rect to constrain drawing to icon bounds
     draw_set_transform(Vector2(0, 0), 0, Vector2(1, 1));
 
@@ -192,7 +202,8 @@ void CooldownIcon::_draw() {
     float half_y = icon_size.y / 2.0f;
     float radius = godot::Math::sqrt(half_x * half_x + half_y * half_y);
 
-    int segments = 32;  // Number of segments for smooth arc
+    int segments = 64;  // Number of segments for smooth arc (increased for
+                        // smoother animation)
     float start_angle = -(float)Math_PI / 2.0f;  // Start at top (12 o'clock)
     float remaining = 1.0f - progress;  // Remaining cooldown as a fraction
     float sweep_angle =
