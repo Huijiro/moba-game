@@ -741,6 +741,13 @@ void AbilityComponent::register_debug_labels(LabelRegistry* registry) {
 void AbilityComponent::_on_chase_range_reached(godot::Object* target) {
   // When movement system indicates we've reached chase range,
   // re-execute any ability that was deferred waiting for range
+
+  // Only re-execute if we're actively casting and waiting for range
+  // If casting_state is IDLE or ON_COOLDOWN, don't re-execute
+  if (casting_state != static_cast<int>(CastState::CASTING)) {
+    return;
+  }
+
   if (casting_slot < 0 ||
       casting_slot >= static_cast<int>(ability_scenes.size())) {
     return;
