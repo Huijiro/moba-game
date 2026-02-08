@@ -89,25 +89,6 @@ void Unit::register_all_debug_labels(LabelRegistry* registry) {
   }
 }
 
-Node* Unit::get_component_by_class(const StringName& class_name) const {
-  // TODO: Remove this method after refactoring ability system to use relay()
-  // Temporary implementation to support abilities that need component lookups
-  for (int i = 0; i < get_child_count(); ++i) {
-    Node* child = get_child(i);
-    if (child != nullptr && child->get_class() == class_name) {
-      return child;
-    }
-  }
-  return nullptr;
-}
-
-AbilityComponent* Unit::get_ability_component() const {
-  // TODO: Refactor ability system to use relay() instead of direct lookups
-  // Temporary implementation to support existing InputManager code
-  Node* component = get_component_by_class("AbilityComponent");
-  return Object::cast_to<AbilityComponent>(component);
-}
-
 void Unit::register_signal(const StringName& signal_name) {
   // Use Godot's add_user_signal() which is the official way to dynamically
   // add signals to an object instance.

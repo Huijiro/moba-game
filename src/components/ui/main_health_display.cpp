@@ -5,10 +5,10 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
-#include "../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -70,17 +70,9 @@ void MainHealthDisplay::_ready() {
   }
 
   // Get main unit
-  Unit* main_unit = match_manager->get_main_unit();
+  main_unit = match_manager->get_main_unit();
   if (!main_unit) {
     DBG_WARN("MainHealthDisplay", "No main_unit in MatchManager");
-    return;
-  }
-
-  // Get HealthComponent
-  health_component = Object::cast_to<HealthComponent>(
-      main_unit->get_component_by_class("HealthComponent"));
-  if (!health_component) {
-    DBG_WARN("MainHealthDisplay", "No HealthComponent on main_unit");
     return;
   }
 
@@ -99,14 +91,10 @@ void MainHealthDisplay::_ready() {
     return;
   }
 
-  // Connect to health signal
-  health_component->connect(
-      "health_changed",
+  // Connect to Unit's health_changed signal (emitted by HealthComponent)
+  main_unit->connect(
+      health_changed,
       godot::Callable(this, godot::StringName("_on_health_changed")));
-
-  // Initialize display with current health
-  _on_health_changed(health_component->get_current_health(),
-                     health_component->get_max_health());
 
   DBG_INFO("MainHealthDisplay", "Initialized for main unit");
 }

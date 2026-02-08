@@ -11,7 +11,6 @@ using godot::String;
 using godot::StringName;
 
 class Unit;
-class AbilityComponent;
 class MatchManager;
 
 /// CooldownDisplayComponent - displays ability cooldowns in a fixed HUD
@@ -24,8 +23,8 @@ class MatchManager;
 /// 1. Gets the main Unit from MatchManager
 /// 2. Finds child Label nodes for ability slots
 /// 3. Listens to ability_cooldown_started signal to begin tracking
-/// 4. Maintains local cooldown timers and updates labels
-/// 5. Listens to cooldown_changed signal for forced updates
+/// 4. Listens to ability_cooldown_tick signal for real-time updates
+/// 5. Updates labels with remaining cooldown time
 ///
 /// Child nodes required (configurable in editor):
 /// - Any number of Label nodes (one per ability slot to display)
@@ -57,12 +56,11 @@ class CooldownDisplayComponent : public CanvasLayer {
   // References
   MatchManager* match_manager = nullptr;
   Unit* main_unit = nullptr;
-  AbilityComponent* ability_component = nullptr;
   std::vector<Label*> cooldown_labels;
 
   // Signal handlers
   void _on_cooldown_started(int slot, float duration);
-  void _on_cooldown_changed(int slot);
+  void _on_cooldown_tick(int slot, float remaining_time);
 
  public:
   CooldownDisplayComponent();
