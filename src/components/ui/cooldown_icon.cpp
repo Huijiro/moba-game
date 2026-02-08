@@ -180,16 +180,6 @@ void CooldownIcon::_draw() {
         (cooldown_duration - cooldown_remaining) / cooldown_duration;
     progress = godot::Math::clamp(progress, 0.0f, 1.0f);
 
-    // DEBUG: Log every N frames to see if this is being called
-    static int frame_count = 0;
-    if (frame_count % 30 == 0) {
-      DBG_DEBUG("CooldownIcon",
-                "Drawing cooldown for slot " + String::num(ability_slot) +
-                    ", progress=" + String::num(progress, 2) +
-                    ", remaining=" + String::num(cooldown_remaining, 2));
-    }
-    frame_count++;
-
     // Set clip rect to constrain drawing to icon bounds
     draw_set_transform(Vector2(0, 0), 0, Vector2(1, 1));
 
