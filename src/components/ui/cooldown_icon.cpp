@@ -14,6 +14,8 @@
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
+#include "../abilities/ability_component.hpp"
+#include "../abilities/ability_node.hpp"
 
 using godot::ClassDB;
 using godot::Color;
@@ -109,6 +111,38 @@ void CooldownIcon::_ready() {
   main_unit->connect(
       ability_cooldown_started,
       godot::Callable(this, godot::StringName("_on_cooldown_started")));
+
+  // Try to load ability icon from the AbilityComponent
+  // First, find the AbilityComponent on the unit
+  AbilityComponent* ability_comp = nullptr;
+  for (int i = 0; i < main_unit->get_child_count(); i++) {
+    ability_comp = Object::cast_to<AbilityComponent>(main_unit->get_child(i));
+    if (ability_comp != nullptr) {
+      break;
+    }
+  }
+
+  // If found, get the ability icon for this slot and set it
+  if (ability_comp != nullptr) {
+    AbilityNode* ability = ability_comp->get_ability(ability_slot);
+    if (ability != nullptr) {
+      godot::Ref<godot::Texture2D> icon = ability->get_icon();
+      if (icon.is_valid()) {
+        set_texture(icon);
+        DBG_DEBUG("CooldownIcon",
+                  "Loaded icon for ability slot " + String::num(ability_slot));
+      } else {
+        DBG_WARN("CooldownIcon", "Ability at slot " +
+                                     String::num(ability_slot) +
+                                     " has no icon texture");
+      }
+    } else {
+      DBG_WARN("CooldownIcon",
+               "Could not find ability at slot " + String::num(ability_slot));
+    }
+  } else {
+    DBG_WARN("CooldownIcon", "Could not find AbilityComponent on main unit");
+  }
 
   DBG_INFO("CooldownIcon",
            "Initialized for ability slot " + String::num(ability_slot));
