@@ -706,6 +706,18 @@ void AbilityComponent::_execute_ability(int slot) {
                String::num(owner->get_global_position().x, 2) + ", " +
                String::num(owner->get_global_position().y, 2) + ", " +
                String::num(owner->get_global_position().z, 2) + ")");
+  DBG_DEBUG("AbilityComponent",
+            "  Caster rotation: (" + String::num(owner->get_rotation().x, 2) +
+                ", " + String::num(owner->get_rotation().y, 2) + ", " +
+                String::num(owner->get_rotation().z, 2) + ")");
+
+  // Log caster's forward direction (Z-axis of transform)
+  Vector3 caster_forward = owner->get_global_transform().basis.get_column(2);
+  DBG_DEBUG("AbilityComponent", "  Caster forward direction: (" +
+                                    String::num(caster_forward.x, 2) + ", " +
+                                    String::num(caster_forward.y, 2) + ", " +
+                                    String::num(caster_forward.z, 2) + ")");
+
   if (target_unit != nullptr) {
     DBG_INFO("AbilityComponent", "  Target: " + target_unit->get_name());
   } else {

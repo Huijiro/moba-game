@@ -53,14 +53,28 @@ bool FireballNode::execute(Unit* caster, Unit* target, Vector3 position) {
                            String::num(position.y, 2) + ", " +
                            String::num(position.z, 2) + ")");
 
+  Vector3 caster_forward = caster->get_global_transform().basis.get_column(2);
+  DBG_DEBUG("Fireball", "Caster forward direction: (" +
+                            String::num(caster_forward.x, 2) + ", " +
+                            String::num(caster_forward.y, 2) + ", " +
+                            String::num(caster_forward.z, 2) + ")");
+
   if (target_position == Vector3(0, 0, 0)) {
     // Use caster's forward direction
     target_position =
-        caster->get_global_position() +
-        caster->get_global_transform().basis.get_column(2) * get_range();
+        caster->get_global_position() + caster_forward * get_range();
     DBG_INFO("Fireball", "Position was zero, using forward direction: (" +
                              String::num(target_position.x, 2) + ", " +
+                             String::num(target_position.y, 2) + ", " +
                              String::num(target_position.z, 2) + ")");
+  } else {
+    // Log the direction vector from caster to target
+    Vector3 direction =
+        (target_position - caster->get_global_position()).normalized();
+    DBG_DEBUG("Fireball", "Direction to target: (" +
+                              String::num(direction.x, 2) + ", " +
+                              String::num(direction.y, 2) + ", " +
+                              String::num(direction.z, 2) + ")");
   }
 
   // Spawn the projectile
