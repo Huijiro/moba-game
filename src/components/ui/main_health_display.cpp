@@ -121,8 +121,9 @@ void MainHealthDisplay::_on_health_changed(float current, float max) {
   }
 
   if (health_label) {
+    // Format as integer with 0 decimal places
     String health_text =
-        String::num(current_int) + " / " + String::num(max_int);
+        String::num(current_int, 0) + " / " + String::num(max_int, 0);
     health_label->set_text(health_text);
     DBG_INFO("MainHealthDisplay", "Updated health label to: " + health_text);
   }
