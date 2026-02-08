@@ -73,7 +73,12 @@ inline const StringName& get_resource_pool_requested() {
   return signal;
 }
 
-// Cooldown update signal - emitted by AbilityComponent, listened by UI
+// Cooldown signals - emitted by AbilityComponent, listened by UI
+inline const StringName& get_ability_cooldown_started() {
+  static StringName signal = StringName("ability_cooldown_started");
+  return signal;
+}
+
 inline const StringName& get_ability_cooldown_tick() {
   static StringName signal = StringName("ability_cooldown_tick");
   return signal;
@@ -98,6 +103,7 @@ inline const StringName& get_health_changed() {
 #define cast_ability_point_target get_cast_ability_point_target()
 #define ability_icon_requested get_ability_icon_requested()
 #define resource_pool_requested get_resource_pool_requested()
+#define ability_cooldown_started get_ability_cooldown_started()
 #define ability_cooldown_tick get_ability_cooldown_tick()
 #define health_changed get_health_changed()
 

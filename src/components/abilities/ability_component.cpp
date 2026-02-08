@@ -126,10 +126,6 @@ void AbilityComponent::_bind_methods() {
   ClassDB::bind_method(
       D_METHOD("_on_cast_ability_point_target", "slot", "position"),
       &AbilityComponent::_on_cast_ability_point_target);
-
-  // Bind signal handler for resource pool response
-  ClassDB::bind_method(D_METHOD("_on_resource_pool_provided", "pool"),
-                       &AbilityComponent::_on_resource_pool_provided);
 }
 
 void AbilityComponent::_ready() {
@@ -150,7 +146,7 @@ void AbilityComponent::_ready() {
   owner->register_signal(cast_ability_unit_target);
   owner->register_signal(cast_ability_point_target);
   owner->register_signal(ability_icon_requested);
-  owner->register_signal(resource_pool_requested);
+  owner->register_signal(ability_cooldown_started);
   owner->register_signal(ability_cooldown_tick);
 
   // Connect to casting signals
@@ -163,11 +159,8 @@ void AbilityComponent::_ready() {
       cast_ability_point_target,
       godot::Callable(this, StringName("_on_cast_ability_point_target")));
 
-  // Request resource pool for mana checks
-  // ResourcePoolComponent will respond by setting our resource_pool reference
-  owner->relay(resource_pool_requested, StringName("mana"),
-               godot::Callable(this, StringName("_on_resource_pool_provided")));
-
+  // Find resource pool for mana checks
+  resource_pool = _get_resource_pool("mana");
   if (resource_pool == nullptr) {
     DBG_WARN("AbilityComponent", "No ResourcePoolComponent for mana tracking");
   }
@@ -735,7 +728,11 @@ void AbilityComponent::_apply_cooldown(int slot) {
   float cooldown = ability->get_cooldown();
   cooldown_timers[slot] = cooldown;
 
-  emit_signal("ability_cooldown_started", slot, cooldown);
+  // Emit cooldown started through Unit relay
+  Unit* owner = get_unit();
+  if (owner != nullptr) {
+    owner->relay(ability_cooldown_started, slot, cooldown);
+  }
 }
 
 void AbilityComponent::_finish_casting() {
@@ -798,13 +795,4 @@ void AbilityComponent::_on_cast_ability_unit_target(int slot,
 void AbilityComponent::_on_cast_ability_point_target(int slot,
                                                      const Vector3& position) {
   try_cast_point(slot, position);
-}
-
-void AbilityComponent::_on_resource_pool_provided(godot::Object* pool) {
-  resource_pool = Object::cast_to<ResourcePoolComponent>(pool);
-  if (resource_pool) {
-    DBG_DEBUG("AbilityComponent", "ResourcePoolComponent obtained via signal");
-  } else {
-    DBG_DEBUG("AbilityComponent", "No ResourcePoolComponent available");
-  }
 }

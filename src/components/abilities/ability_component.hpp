@@ -129,9 +129,6 @@ class AbilityComponent : public UnitComponent {
   // Handle ability casting signals from InputManager/AI
   void _on_cast_ability_unit_target(int slot, godot::Object* target);
   void _on_cast_ability_point_target(int slot, const Vector3& position);
-
-  // Handle resource pool response from ResourcePoolComponent
-  void _on_resource_pool_provided(godot::Object* pool);
 };
 
 #endif  // GDEXTENSION_ABILITY_COMPONENT_H

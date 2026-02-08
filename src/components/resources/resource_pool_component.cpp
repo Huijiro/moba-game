@@ -53,11 +53,6 @@ void ResourcePoolComponent::_bind_methods() {
   ClassDB::bind_method(D_METHOD("restore", "amount"),
                        &ResourcePoolComponent::restore);
 
-  // Bind signal handler for resource pool queries
-  ClassDB::bind_method(
-      D_METHOD("_on_resource_pool_requested", "requested_pool_id"),
-      &ResourcePoolComponent::_on_resource_pool_requested);
-
   ADD_SIGNAL(godot::MethodInfo("value_changed",
                                PropertyInfo(Variant::FLOAT, "current"),
                                PropertyInfo(Variant::FLOAT, "max")));
@@ -143,26 +138,7 @@ void ResourcePoolComponent::_ready() {
     return;
   }
 
-  Unit* owner = get_unit();
-  if (owner == nullptr) {
-    return;
-  }
-
-  // Register and connect to resource pool query signal
-  owner->register_signal(resource_pool_requested);
-  owner->connect(
-      resource_pool_requested,
-      godot::Callable(this, godot::StringName("_on_resource_pool_requested")));
-}
-
-void ResourcePoolComponent::_on_resource_pool_requested(
-    const godot::StringName& requested_pool_id) {
-  // If this pool matches the requested pool_id, provide our reference
-  if (requested_pool_id == pool_id) {
-    Unit* owner = get_unit();
-    if (owner != nullptr) {
-      // Emit the response through the unit relay
-      owner->relay(resource_pool_requested, godot::Variant(this));
-    }
-  }
+  // ResourcePoolComponent is self-sufficient - it doesn't need signal
+  // coordination Other components (AbilityComponent) will look it up via
+  // _get_resource_pool()
 }
