@@ -51,15 +51,15 @@ void CooldownIcon::_bind_methods() {
 }
 
 void CooldownIcon::_ready() {
+  if (Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
   DBG_DEBUG("CooldownIcon",
             "CooldownIcon _ready called for slot " + String::num(ability_slot));
   DBG_DEBUG("CooldownIcon",
             "  Visible: " + String(is_visible() ? "yes" : "no") +
                 ", In tree: " + String(is_inside_tree() ? "yes" : "no"));
-
-  if (Engine::get_singleton()->is_editor_hint()) {
-    return;
-  }
 
   // Set TextureRect size and expand settings
   set_custom_minimum_size(icon_size);
