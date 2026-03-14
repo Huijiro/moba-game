@@ -12,6 +12,9 @@ class SkillshotProjectile;
 /// The projectile template is a child of this component (first Node3D child).
 /// On execute: duplicates the template, spawns it into the scene aimed at the
 /// target position. Can miss — target can dodge. Detonates on first hit or max range.
+///
+/// The collision shape is defined in the projectile scene (CollisionShape3D child
+/// of the SkillshotProjectile Area3D). No hit_radius needed here.
 class SkillshotProjectileComponent : public AbilitySubcomponent {
   GDCLASS(SkillshotProjectileComponent, AbilitySubcomponent);
 
@@ -30,9 +33,6 @@ class SkillshotProjectileComponent : public AbilitySubcomponent {
   void set_max_distance(float d);
   float get_max_distance() const;
 
-  void set_hit_radius(float r);
-  float get_hit_radius() const;
-
  protected:
   static void _bind_methods();
 
@@ -40,7 +40,6 @@ class SkillshotProjectileComponent : public AbilitySubcomponent {
   float damage = 0.0f;
   float speed = 30.0f;
   float max_distance = 20.0f;
-  float hit_radius = 0.5f;
 
   void _on_execute(const godot::Ref<godot::RefCounted>& context);
   void _on_projectile_hit(godot::Object* unit, const godot::Vector3& position);

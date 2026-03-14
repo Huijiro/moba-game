@@ -47,13 +47,6 @@ void SkillshotProjectileComponent::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance"),
                "set_max_distance", "get_max_distance");
 
-  ClassDB::bind_method(D_METHOD("set_hit_radius", "radius"),
-                       &SkillshotProjectileComponent::set_hit_radius);
-  ClassDB::bind_method(D_METHOD("get_hit_radius"),
-                       &SkillshotProjectileComponent::get_hit_radius);
-  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hit_radius"), "set_hit_radius",
-               "get_hit_radius");
-
   ClassDB::bind_method(D_METHOD("_on_execute", "context"),
                        &SkillshotProjectileComponent::_on_execute);
   ClassDB::bind_method(D_METHOD("_on_projectile_hit", "unit", "position"),
@@ -98,11 +91,6 @@ void SkillshotProjectileComponent::set_max_distance(float d) {
 }
 float SkillshotProjectileComponent::get_max_distance() const {
   return max_distance;
-}
-
-void SkillshotProjectileComponent::set_hit_radius(float r) { hit_radius = r; }
-float SkillshotProjectileComponent::get_hit_radius() const {
-  return hit_radius;
 }
 
 void SkillshotProjectileComponent::_on_execute(
@@ -164,7 +152,7 @@ void SkillshotProjectileComponent::_on_execute(
   SkillshotProjectile* projectile =
       Object::cast_to<SkillshotProjectile>(instance);
   if (projectile != nullptr) {
-    projectile->setup(caster, direction, speed, max_distance, hit_radius);
+    projectile->setup(caster, direction, speed, max_distance);
 
     projectile->connect("hit", godot::Callable(this, "_on_projectile_hit"));
     projectile->connect("reached_max_range",
