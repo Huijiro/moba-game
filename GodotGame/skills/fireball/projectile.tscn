@@ -12,6 +12,8 @@ height = 0.6
 radius = 0.30255654
 
 [node name="projectile" type="SkillshotProjectile" unique_id=1550266325]
+collision_layer = 4
+collision_mask = 2
 monitoring = false
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1934121848]
