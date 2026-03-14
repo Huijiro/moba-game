@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://dh351y52tr6vd"]
+
+[sub_resource type="Gradient" id="Gradient_ring"]
+offsets = PackedFloat32Array(0, 0.85, 0.92, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0, 0.3, 0.8, 1, 0.8, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ring"]
+gradient = SubResource("Gradient_ring")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[node name="RangeCircle" type="Decal" unique_id=1313391058]
+size = Vector3(4, 10, 4)
+texture_albedo = SubResource("GradientTexture2D_ring")
+modulate = Color(1, 1, 1, 0.8)

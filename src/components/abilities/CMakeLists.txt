@@ -1,14 +1,17 @@
 # Ability system components
 target_sources(
   ${PROJECT_NAME} PRIVATE
-  ./ability_types.hpp
+  ./ability_context.hpp
+  ./ability_context.cpp
   ./ability_node.hpp
   ./ability_node.cpp
-  ./ability_api.hpp
-  ./ability_api.cpp
+  ./ability_subcomponent.hpp
+  ./ability_subcomponent.cpp
   ./ability_component.hpp
   ./ability_component.cpp
+  ./targeting_info.hpp
+  ./targeting_info.cpp
 )
 
-# Ability implementations subdirectory
-add_subdirectory(implementations)
+# Concrete ability subcomponents
+add_subdirectory(ability_components)

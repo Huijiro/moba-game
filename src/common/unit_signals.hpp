@@ -5,7 +5,7 @@
 
 using godot::StringName;
 
-// Movement signals - emitted by Unit relay from InputManager/AI
+// Movement signals - emitted by Unit relay from PlayerController/AI
 // Use functions to get signal names lazily (avoids static initialization
 // issues)
 inline const StringName& get_move_requested() {
@@ -50,6 +50,41 @@ inline const StringName& get_chase_range_reached() {
   return signal;
 }
 
+// Ability casting signal - emitted by PlayerController/AI, listened by
+// AbilityComponent. Carries slot + target (nullable) + position.
+inline const StringName& get_cast_ability() {
+  static StringName signal = StringName("cast_ability");
+  return signal;
+}
+
+// Ability query signals - for UI and component initialization
+inline const StringName& get_ability_icon_requested() {
+  static StringName signal = StringName("ability_icon_requested");
+  return signal;
+}
+
+inline const StringName& get_resource_pool_requested() {
+  static StringName signal = StringName("resource_pool_requested");
+  return signal;
+}
+
+// Cooldown signals - emitted by AbilityComponent, listened by UI
+inline const StringName& get_ability_cooldown_started() {
+  static StringName signal = StringName("ability_cooldown_started");
+  return signal;
+}
+
+inline const StringName& get_ability_cooldown_tick() {
+  static StringName signal = StringName("ability_cooldown_tick");
+  return signal;
+}
+
+// Health update signal - emitted by HealthComponent, listened by UI
+inline const StringName& get_health_changed() {
+  static StringName signal = StringName("health_changed");
+  return signal;
+}
+
 // Convenience aliases for backwards compatibility
 #define move_requested get_move_requested()
 #define attack_requested get_attack_requested()
@@ -59,5 +94,11 @@ inline const StringName& get_chase_range_reached() {
 #define stop_requested get_stop_requested()
 #define take_damage get_take_damage()
 #define chase_range_reached get_chase_range_reached()
+#define cast_ability get_cast_ability()
+#define ability_icon_requested get_ability_icon_requested()
+#define resource_pool_requested get_resource_pool_requested()
+#define ability_cooldown_started get_ability_cooldown_started()
+#define ability_cooldown_tick get_ability_cooldown_tick()
+#define health_changed get_health_changed()
 
 #endif  // GDEXTENSION_UNIT_SIGNALS_H

@@ -4,9 +4,13 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
+#include <godot_cpp/variant/callable.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
+#include "../../common/unit_signals.hpp"
+#include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 
 using godot::ClassDB;
@@ -125,4 +129,16 @@ void ResourcePoolComponent::restore(float amount) {
                 String::num(old_value) + " -> " + String::num(current_value) +
                 " / " + String::num(max_value));
   emit_signal("value_changed", current_value, max_value);
+}
+
+void ResourcePoolComponent::_ready() {
+  UnitComponent::_ready();
+
+  if (godot::Engine::get_singleton()->is_editor_hint()) {
+    return;
+  }
+
+  // ResourcePoolComponent is self-sufficient - it doesn't need signal
+  // coordination Other components (AbilityComponent) will look it up via
+  // _get_resource_pool()
 }

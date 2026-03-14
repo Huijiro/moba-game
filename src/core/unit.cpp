@@ -1,5 +1,6 @@
 #include "unit.hpp"
 
+#include "../common/collision_layers.hpp"
 #include "../components/abilities/ability_component.hpp"
 #include "../components/ui/label_registry.hpp"
 #include "../components/unit_component.hpp"
@@ -51,6 +52,10 @@ void Unit::_ready() {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
   }
+
+  // Units live on layer 2 so raycasts/projectiles can target them correctly
+  set_collision_layer(CollisionLayer::UNITS);
+  set_collision_mask(CollisionLayer::WORLD | CollisionLayer::UNITS);
 }
 
 void Unit::set_faction_id(int32_t new_faction_id) {
@@ -87,25 +92,6 @@ void Unit::register_all_debug_labels(LabelRegistry* registry) {
       component->register_debug_labels(registry);
     }
   }
-}
-
-Node* Unit::get_component_by_class(const StringName& class_name) const {
-  // TODO: Remove this method after refactoring ability system to use relay()
-  // Temporary implementation to support abilities that need component lookups
-  for (int i = 0; i < get_child_count(); ++i) {
-    Node* child = get_child(i);
-    if (child != nullptr && child->get_class() == class_name) {
-      return child;
-    }
-  }
-  return nullptr;
-}
-
-AbilityComponent* Unit::get_ability_component() const {
-  // TODO: Refactor ability system to use relay() instead of direct lookups
-  // Temporary implementation to support existing InputManager code
-  Node* component = get_component_by_class("AbilityComponent");
-  return Object::cast_to<AbilityComponent>(component);
 }
 
 void Unit::register_signal(const StringName& signal_name) {

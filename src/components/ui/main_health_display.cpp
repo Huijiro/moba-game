@@ -5,6 +5,7 @@
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/string.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/match_manager.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
@@ -70,17 +71,9 @@ void MainHealthDisplay::_ready() {
   }
 
   // Get main unit
-  Unit* main_unit = match_manager->get_main_unit();
+  main_unit = match_manager->get_main_unit();
   if (!main_unit) {
     DBG_WARN("MainHealthDisplay", "No main_unit in MatchManager");
-    return;
-  }
-
-  // Get HealthComponent
-  health_component = Object::cast_to<HealthComponent>(
-      main_unit->get_component_by_class("HealthComponent"));
-  if (!health_component) {
-    DBG_WARN("MainHealthDisplay", "No HealthComponent on main_unit");
     return;
   }
 
@@ -99,28 +92,40 @@ void MainHealthDisplay::_ready() {
     return;
   }
 
-  // Connect to health signal
-  health_component->connect(
-      "health_changed",
+  // Connect to Unit's health_changed signal (emitted by HealthComponent)
+  main_unit->connect(
+      health_changed,
       godot::Callable(this, godot::StringName("_on_health_changed")));
 
-  // Initialize display with current health
-  _on_health_changed(health_component->get_current_health(),
-                     health_component->get_max_health());
+  // Get initial health values from HealthComponent to display on startup
+  for (int i = 0; i < main_unit->get_child_count(); i++) {
+    auto health_comp =
+        Object::cast_to<HealthComponent>(main_unit->get_child(i));
+    if (health_comp) {
+      _on_health_changed(health_comp->get_current_health(),
+                         health_comp->get_max_health());
+      break;
+    }
+  }
 
   DBG_INFO("MainHealthDisplay", "Initialized for main unit");
 }
 
 void MainHealthDisplay::_on_health_changed(float current, float max) {
+  int current_int = (int)current;
+  int max_int = (int)max;
+
   if (health_bar) {
-    health_bar->set_max(max);
-    health_bar->set_value(current);
+    health_bar->set_max(max_int);
+    health_bar->set_value(current_int);
   }
 
   if (health_label) {
+    // Format as integer with 0 decimal places
     String health_text =
-        String::num((int)current) + " / " + String::num((int)max);
+        String::num(current_int, 0) + " / " + String::num(max_int, 0);
     health_label->set_text(health_text);
+    DBG_INFO("MainHealthDisplay", "Updated health label to: " + health_text);
   }
 }
 

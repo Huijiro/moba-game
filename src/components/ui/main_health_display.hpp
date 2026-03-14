@@ -9,7 +9,7 @@ using godot::Label;
 using godot::PanelContainer;
 using godot::ProgressBar;
 
-class HealthComponent;
+class Unit;
 
 /// MainHealthDisplay - displays main unit's health in the main UI
 ///
@@ -37,7 +37,7 @@ class MainHealthDisplay : public PanelContainer {
 
   ProgressBar* health_bar = nullptr;
   Label* health_label = nullptr;
-  HealthComponent* health_component = nullptr;
+  Unit* main_unit = nullptr;
 
   void _on_health_changed(float current, float max);
 

@@ -84,7 +84,7 @@ tracks/2/keys = {
 "times": PackedFloat32Array(0.16),
 "transitions": PackedFloat32Array(1),
 "values": [{
-"args": [&"explosion_damage"],
+"args": [&"execute"],
 "method": &"emit_signal"
 }]
 }
@@ -100,6 +100,20 @@ tracks/3/keys = {
 "update": 0,
 "values": [Vector3(1, 1, 1), Vector3(0, 1, 0)]
 }
+tracks/4/type = "method"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath(".")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(1),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"queue_free"
+}]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_4u2pf"]
 _data = {
@@ -114,8 +128,7 @@ albedo_color = Color(1, 0.45882353, 0, 0.59607846)
 [sub_resource type="CylinderMesh" id="CylinderMesh_8rfdh"]
 material = SubResource("StandardMaterial3D_vra24")
 
-[node name="explosion" type="ExplosionVFX" unique_id=1770922579]
-duration = 0.6
+[node name="explosion" type="Node3D" unique_id=1770922579]
 
 [node name="Explosion" type="MeshInstance3D" parent="." unique_id=1653806995]
 mesh = SubResource("SphereMesh_explosion")

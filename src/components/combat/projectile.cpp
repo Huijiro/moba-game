@@ -6,15 +6,15 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/collision_layers.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
-#include "../health/health_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
 using godot::Engine;
+using godot::Object;
 using godot::PropertyInfo;
-using godot::UtilityFunctions;
 using godot::Variant;
 
 Projectile::Projectile() = default;
@@ -22,11 +22,17 @@ Projectile::Projectile() = default;
 Projectile::~Projectile() = default;
 
 void Projectile::_bind_methods() {
-  ClassDB::bind_method(D_METHOD("set_hit_radius", "radius"),
-                       &Projectile::set_hit_radius);
-  ClassDB::bind_method(D_METHOD("get_hit_radius"), &Projectile::get_hit_radius);
-  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hit_radius"), "set_hit_radius",
-               "get_hit_radius");
+  ClassDB::bind_method(D_METHOD("_on_body_entered", "body"),
+                       &Projectile::_on_body_entered);
+}
+
+void Projectile::_ready() {
+  // Template: fully inert — no collision until setup()
+  set_physics_process(false);
+  set_monitoring(false);
+  set_monitorable(false);
+  set_collision_layer(0);
+  set_collision_mask(0);
 }
 
 void Projectile::_physics_process(double delta) {
@@ -42,31 +48,31 @@ void Projectile::_physics_process(double delta) {
   Vector3 current_pos = get_global_position();
   Vector3 target_pos = target->get_global_position();
 
-  // Recompute direction each frame (target might be moving)
+  // Recompute direction each frame (target is moving)
   Vector3 to_target = target_pos - current_pos;
   float distance_to_target = to_target.length();
-
-  // Check if we've arrived (close enough)
-  if (distance_to_target <= hit_radius) {
-    // Apply damage via relay signal
-    if (attacker != nullptr) {
-      DBG_INFO("Projectile", "" + attacker->get_name() + "'s projectile hit " +
-                                 target->get_name() + " for " +
-                                 godot::String::num(damage) + " damage");
-    }
-    target->relay("take_damage", damage, attacker);
-
-    queue_free();
-    return;
-  }
 
   // Move towards target
   if (distance_to_target > 0.001f) {
     direction = to_target / distance_to_target;
     Vector3 velocity = direction * speed;
     set_global_position(current_pos + velocity * static_cast<float>(delta));
-    travel_distance += speed * delta;
   }
+}
+
+void Projectile::_on_body_entered(godot::Node3D* body) {
+  Unit* unit = Object::cast_to<Unit>(body);
+  if (unit == nullptr || unit != target) {
+    return;  // Only hit the intended target
+  }
+
+  if (attacker != nullptr) {
+    DBG_INFO("Projectile", "" + attacker->get_name() + "'s projectile hit " +
+                               target->get_name() + " for " +
+                               godot::String::num(damage) + " damage");
+  }
+  target->relay("take_damage", damage, attacker);
+  queue_free();
 }
 
 void Projectile::setup(Unit* attacker_unit,
@@ -78,24 +84,20 @@ void Projectile::setup(Unit* attacker_unit,
   damage = damage_amount;
   speed = travel_speed;
 
-  if (target != nullptr) {
-    Vector3 start_pos = attacker_unit != nullptr
-                            ? attacker_unit->get_global_position()
-                            : get_global_position();
-    Vector3 target_pos = target_unit->get_global_position();
-    Vector3 to_target = target_pos - start_pos;
+  if (target != nullptr && attacker != nullptr) {
+    Vector3 to_target =
+        target->get_global_position() - attacker->get_global_position();
     float distance = to_target.length();
-
     if (distance > 0.001f) {
       direction = to_target / distance;
     }
   }
-}
 
-void Projectile::set_hit_radius(float radius) {
-  hit_radius = std::max(0.0f, radius);
-}
-
-float Projectile::get_hit_radius() const {
-  return hit_radius;
+  // Enable physics and collision — projectile layer, detect units
+  set_physics_process(true);
+  set_monitoring(true);
+  set_monitorable(false);
+  set_collision_layer(CollisionLayer::PROJECTILES);
+  set_collision_mask(CollisionLayer::UNITS);
+  connect("body_entered", godot::Callable(this, "_on_body_entered"));
 }

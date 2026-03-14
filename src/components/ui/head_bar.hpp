@@ -50,9 +50,8 @@ class HeadBar : public Control {
   godot::NodePath unit_name_label_path = "UnitNameLabel";
   godot::NodePath health_bar_path = "HealthBar";
 
-  // References to parent components
+  // References to parent
   Unit* owner_unit = nullptr;
-  HealthComponent* health_component = nullptr;
 
   // References to child nodes
   Label* unit_name_label = nullptr;

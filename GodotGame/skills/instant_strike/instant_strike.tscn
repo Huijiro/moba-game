@@ -3,7 +3,24 @@
 [ext_resource type="Texture2D" uid="uid://xx3rfwd40dxw" path="res://assets/placeholder/PLACEHOLDER_strike.png" id="1_h1err"]
 [ext_resource type="PackedScene" uid="uid://d3tgkn2i2i4ps" path="res://skills/instant_strike/impact.tscn" id="2_strike"]
 
-[node name="InstantStrike" type="InstantStrikeNode" unique_id=526675317]
+[node name="InstantStrike" type="AbilityNode" unique_id=526675317]
+ability_name = "Instant Strike"
+description = "A quick strike against a nearby target"
 icon = ExtResource("1_h1err")
 
-[node name="impact" parent="." unique_id=1770922579 instance=ExtResource("2_strike")]
+[node name="InstantCastComponent" type="InstantCastComponent" parent="."]
+
+[node name="UnitTargetingComponent" type="UnitTargetingComponent" parent="."]
+range = 5.0
+
+[node name="DamageEffectComponent" type="DamageEffectComponent" parent="."]
+base_damage = 30.0
+
+[node name="CooldownComponent" type="CooldownComponent" parent="."]
+cooldown = 4.0
+
+[node name="VFXComponent" type="VFXComponent" parent="."]
+trigger_signal = "execute"
+position_mode = 1
+
+[node name="impact" parent="VFXComponent" instance=ExtResource("2_strike")]

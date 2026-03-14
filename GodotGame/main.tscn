@@ -27,18 +27,30 @@ safe_margin = 0.01
 
 [node name="HeadBar" parent="Unit" unique_id=299090832 instance=ExtResource("5_head_bar")]
 
-[node name="MatchManager" type="MatchManager" parent="." unique_id=1026291291 node_paths=PackedStringArray("main_unit", "player_controller", "moba_camera")]
+[node name="MatchManager" type="MatchManager" parent="." unique_id=1026291291 node_paths=PackedStringArray("main_unit", "player_input", "moba_camera")]
 main_unit = NodePath("../Unit")
-player_controller = NodePath("../InputManager")
+player_input = NodePath("../PlayerInput")
 moba_camera = NodePath("../MOBACamera")
 
 [node name="MOBACamera" type="MOBACamera" parent="." unique_id=138252045]
 
 [node name="Camera3D" type="Camera3D" parent="MOBACamera" unique_id=2065679344]
 
-[node name="InputManager" type="InputManager" parent="." unique_id=681750269 node_paths=PackedStringArray("camera")]
-camera = NodePath("../MOBACamera/Camera3D")
+[node name="PlayerInput" type="Node" parent="." unique_id=681750269]
+
+[node name="CursorWorldQuery" type="CursorWorldQuery" parent="PlayerInput" node_paths=PackedStringArray("camera")]
+camera = NodePath("../../MOBACamera/Camera3D")
+
+[node name="PlayerController" type="PlayerController" parent="PlayerInput"]
+
+[node name="AbilityTargetingHandler" type="AbilityTargetingHandler" parent="PlayerInput"]
+
+[node name="ClickMarkerHandler" type="ClickMarkerHandler" parent="PlayerInput"]
 click_indicator_scene = ExtResource("3_h2yge")
+
+[node name="HoverHighlight" type="HoverHighlight" parent="PlayerInput"]
+
+[node name="TargetingPreview" type="TargetingPreview" parent="PlayerInput"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1238631995]
 environment = SubResource("Environment_ig7tw")

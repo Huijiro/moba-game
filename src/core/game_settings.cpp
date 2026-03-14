@@ -2,91 +2,61 @@
 
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/core/print_string.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
+
 #include "../debug/debug_macros.hpp"
 
 using godot::ProjectSettings;
-using godot::UtilityFunctions;
+using godot::String;
 
 bool GameSettings::get_channel_requires_stop_command_only() {
   ProjectSettings* settings = ProjectSettings::get_singleton();
-  if (settings == nullptr) {
-    return true;  // Default to true if ProjectSettings unavailable
-  }
-
-  godot::Variant value = settings->get_setting(SETTING_CHANNEL_REQUIRES_STOP);
-  return value.operator bool();
+  if (settings == nullptr) return true;
+  return settings->get_setting(SETTING_CHANNEL_REQUIRES_STOP).operator bool();
 }
 
 void GameSettings::set_channel_requires_stop_command_only(bool value) {
   ProjectSettings* settings = ProjectSettings::get_singleton();
-  if (settings == nullptr) {
-    godot::print_error("[GameSettings] ProjectSettings unavailable");
-    return;
-  }
-
+  if (settings == nullptr) return;
   settings->set_setting(SETTING_CHANNEL_REQUIRES_STOP, value);
-  DBG_INFO("GameSettings", "Channel requires stop command only: " + godot::String(value ? "true" : "false"));
 }
 
-int GameSettings::get_casting_mode() {
+String GameSettings::get_casting_mode() {
   ProjectSettings* settings = ProjectSettings::get_singleton();
-  if (settings == nullptr) {
-    return static_cast<int>(CastingMode::CLICK_TO_CAST);  // Default
-  }
-
-  godot::Variant value = settings->get_setting(SETTING_CASTING_MODE);
-  return value.operator int();
+  if (settings == nullptr) return "click_to_cast";
+  return settings->get_setting(SETTING_CASTING_MODE).operator String();
 }
 
-void GameSettings::set_casting_mode(int mode) {
+void GameSettings::set_casting_mode(const String& mode) {
   ProjectSettings* settings = ProjectSettings::get_singleton();
-  if (settings == nullptr) {
-    godot::print_error("[GameSettings] ProjectSettings unavailable");
-    return;
-  }
-
+  if (settings == nullptr) return;
   settings->set_setting(SETTING_CASTING_MODE, mode);
-
-  godot::String mode_name = "Unknown";
-  switch (static_cast<CastingMode>(mode)) {
-    case CastingMode::INSTANT:
-      mode_name = "INSTANT";
-      break;
-    case CastingMode::CLICK_TO_CAST:
-      mode_name = "CLICK_TO_CAST";
-      break;
-    case CastingMode::INDICATOR:
-      mode_name = "INDICATOR";
-      break;
-  }
-
-  DBG_INFO("GameSettings", "Casting mode set to: " + mode_name);
+  DBG_INFO("GameSettings", "Casting mode set to: " + mode);
 }
 
 CastingMode GameSettings::get_casting_mode_enum() {
-  return static_cast<CastingMode>(get_casting_mode());
+  return casting_mode_from_string(get_casting_mode());
 }
 
 void GameSettings::register_settings() {
   ProjectSettings* settings = ProjectSettings::get_singleton();
-  if (settings == nullptr) {
-    godot::print_error(
-        "[GameSettings] Cannot register settings - ProjectSettings "
-        "unavailable");
-    return;
-  }
+  if (settings == nullptr) return;
 
-  // Register channel setting with default value
   if (!settings->has_setting(SETTING_CHANNEL_REQUIRES_STOP)) {
     settings->set_setting(SETTING_CHANNEL_REQUIRES_STOP, true);
-    DBG_INFO("GameSettings", "Registered channel_requires_stop_command_only = true");
   }
 
-  // Register casting mode setting with default value (CLICK_TO_CAST)
   if (!settings->has_setting(SETTING_CASTING_MODE)) {
-    settings->set_setting(SETTING_CASTING_MODE,
-                          static_cast<int>(CastingMode::CLICK_TO_CAST));
-    DBG_INFO("GameSettings", "Registered casting_mode = CLICK_TO_CAST");
+    settings->set_setting(SETTING_CASTING_MODE, String("click_to_cast"));
   }
+
+  // Add property info for a dropdown hint in the editor
+  settings->set_initial_value(SETTING_CASTING_MODE, String("click_to_cast"));
+  godot::Dictionary hint;
+  hint["name"] = SETTING_CASTING_MODE;
+  hint["type"] = godot::Variant::STRING;
+  hint["hint"] = godot::PROPERTY_HINT_ENUM;
+  hint["hint_string"] = "instant,click_to_cast,indicator";
+  settings->add_property_info(hint);
+
+  settings->set_initial_value(SETTING_CHANNEL_REQUIRES_STOP, true);
 }

@@ -43,7 +43,7 @@ class LabelRegistry;
 /// 1. Add Unit to scene
 /// 2. Add desired components as children
 /// 3. Components auto-wire via _ready() and connect to signals
-/// 4. InputManager/AI/Network calls unit->relay(signal_name, ...)
+/// 4. PlayerController/AI/Network calls unit->relay(signal_name, ...)
 /// 5. Unit emits, components independently listen and respond
 class Unit : public CharacterBody3D {
   GDCLASS(Unit, CharacterBody3D)
@@ -78,13 +78,6 @@ class Unit : public CharacterBody3D {
 
   // Debug label registration - called by LabelComponent
   void register_all_debug_labels(LabelRegistry* registry);
-
-  // TODO: Refactor ability system to use relay() instead of direct component
-  // lookups Temporary methods to unblock build - these should be removed after
-  // abilities are redesigned
-  godot::Node* get_component_by_class(
-      const godot::StringName& class_name) const;
-  class AbilityComponent* get_ability_component() const;
 
  private:
   int32_t faction_id = 0;

@@ -66,9 +66,9 @@ void ResourceBar::_ready() {
           godot::StringName("value_changed"),
           godot::Callable(this, godot::StringName("_on_resource_changed")));
 
-      // Initialize the bar with current values
-      set_max(pool->get_max_value());
-      set_value(pool->get_current_value());
+      // Initialize the bar with current values (as integers)
+      set_max((int)pool->get_max_value());
+      set_value((int)pool->get_current_value());
 
       DBG_DEBUG("ResourceBar",
                 "Connected to ResourcePoolComponent[" + String(pool_id) + "]");
@@ -81,8 +81,8 @@ void ResourceBar::_ready() {
 }
 
 void ResourceBar::_on_resource_changed(float current, float max) {
-  set_max(max);
-  set_value(current);
+  set_max((int)max);
+  set_value((int)current);
 }
 
 void ResourceBar::set_pool_id(StringName id) {

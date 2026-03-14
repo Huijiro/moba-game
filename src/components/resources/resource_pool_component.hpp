@@ -21,6 +21,8 @@ class ResourcePoolComponent : public UnitComponent {
   ResourcePoolComponent();
   ~ResourcePoolComponent();
 
+  void _ready() override;
+
   void set_pool_id(StringName id);
   StringName get_pool_id() const;
 

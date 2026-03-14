@@ -2,6 +2,22 @@
 
 [ext_resource type="PackedScene" uid="uid://dfpt5s4opk01j" path="res://skills/frost_bolt/projectile.tscn" id="1_frost"]
 
-[node name="FrostBolt" type="FrostBoltNode" unique_id=526675318]
+[node name="FrostBolt" type="AbilityNode" unique_id=526675318]
+ability_name = "Frost Bolt"
+description = "Launch a bolt of frost that damages and slows"
 
-[node name="projectile" parent="." unique_id=1770922579 instance=ExtResource("1_frost")]
+[node name="CastTimeComponent" type="CastTimeComponent" parent="."]
+cast_time = 0.7
+cast_point = 0.5
+
+[node name="UnitTargetingComponent" type="UnitTargetingComponent" parent="."]
+range = 10.0
+
+[node name="HomingProjectileComponent" type="HomingProjectileComponent" parent="."]
+damage = 40.0
+speed = 20.0
+
+[node name="projectile" parent="HomingProjectileComponent" instance=ExtResource("1_frost")]
+
+[node name="CooldownComponent" type="CooldownComponent" parent="."]
+cooldown = 6.0

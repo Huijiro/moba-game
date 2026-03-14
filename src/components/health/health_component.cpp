@@ -72,7 +72,8 @@ void HealthComponent::_ready() {
     return;
   }
 
-  // Register signals that this component uses
+  // Register signals that this component emits and listens to
+  owner->register_signal(health_changed);
   owner->register_signal(take_damage);
 
   // Connect to Unit's take_damage signal
@@ -85,7 +86,9 @@ void HealthComponent::set_max_health(float value) {
   if (current_health > max_health) {
     current_health = max_health;
   }
-  emit_signal("health_changed", current_health, max_health);
+  if (owner_unit) {
+    owner_unit->relay(health_changed, current_health, max_health);
+  }
 }
 
 float HealthComponent::get_max_health() const {
@@ -94,11 +97,14 @@ float HealthComponent::get_max_health() const {
 
 void HealthComponent::set_current_health(float value) {
   current_health = std::clamp(value, 0.0f, max_health);
-  emit_signal("health_changed", current_health, max_health);
+  if (owner_unit) {
+    owner_unit->relay(health_changed, current_health, max_health);
+  }
 
   if (current_health <= 0.0f) {
     is_dead_flag = true;
     _disable_collision();
+    // Note: "died" signal emitted locally only
     emit_signal("died", nullptr);
   }
 }
@@ -113,7 +119,9 @@ bool HealthComponent::apply_damage(float amount, godot::Object* source) {
   }
 
   current_health = std::max(0.0f, current_health - amount);
-  emit_signal("health_changed", current_health, max_health);
+  if (owner_unit) {
+    owner_unit->relay(health_changed, current_health, max_health);
+  }
 
   // Log damage
   if (owner_unit != nullptr) {
@@ -151,7 +159,9 @@ void HealthComponent::heal(float amount) {
   }
 
   current_health = std::min(max_health, current_health + amount);
-  emit_signal("health_changed", current_health, max_health);
+  if (owner_unit) {
+    owner_unit->relay(health_changed, current_health, max_health);
+  }
 }
 
 bool HealthComponent::is_dead() const {

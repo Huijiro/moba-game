@@ -12,9 +12,9 @@
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#include "../../common/unit_signals.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
-#include "../health/health_component.hpp"
 #include "../resources/resource_pool_component.hpp"
 
 using godot::ClassDB;
@@ -91,20 +91,11 @@ void HeadBar::_ready() {
     camera = viewport->get_camera_3d();
   }
 
-  // 5. Get HealthComponent from parent
-  health_component = Object::cast_to<HealthComponent>(
-      owner_unit->get_component_by_class("HealthComponent"));
-  if (health_component) {
-    health_component->connect(
-        "health_changed",
-        godot::Callable(this, godot::StringName("_on_health_changed")));
-    DBG_DEBUG("HeadBar", "Connected to HealthComponent.health_changed");
-  } else {
-    DBG_WARN("HeadBar", "No HealthComponent found on parent Unit");
-  }
-
-  // 6. Note: ResourceBar components handle their own resource pool connections
-  // No need to manually connect to resource pools here
+  // 5. Connect to Unit's health_changed signal (emitted by HealthComponent)
+  owner_unit->connect(
+      health_changed,
+      godot::Callable(this, godot::StringName("_on_health_changed")));
+  DBG_DEBUG("HeadBar", "Connected to Unit.health_changed signal");
 
   // 7. Find unit name label and set text
   unit_name_label =
@@ -182,8 +173,8 @@ void HeadBar::_on_health_changed(float current, float max) {
     return;
   }
 
-  health_bar->set_max(max);
-  health_bar->set_value(current);
+  health_bar->set_max((int)max);
+  health_bar->set_value((int)current);
 }
 
 void HeadBar::set_unit_name_label_path(const godot::NodePath& path) {

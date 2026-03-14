@@ -130,15 +130,21 @@ void MainResourceDisplay::_ready() {
 }
 
 void MainResourceDisplay::_on_resource_changed(float current, float max) {
+  int current_int = (int)current;
+  int max_int = (int)max;
+
   if (resource_bar) {
-    resource_bar->set_max(max);
-    resource_bar->set_value(current);
+    resource_bar->set_max(max_int);
+    resource_bar->set_value(current_int);
   }
 
   if (resource_label) {
+    // Format as integer with 0 decimal places
     String resource_text =
-        String::num((int)current) + " / " + String::num((int)max);
+        String::num(current_int, 0) + " / " + String::num(max_int, 0);
     resource_label->set_text(resource_text);
+    DBG_INFO("MainResourceDisplay",
+             "Updated resource label to: " + resource_text);
   }
 }
 

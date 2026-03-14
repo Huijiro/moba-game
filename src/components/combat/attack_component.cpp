@@ -213,7 +213,6 @@ void AttackComponent::_physics_process(double delta) {
         // Out of range: emit chase_to_range_requested to move toward target
         // within auto_attack_range
         owner->relay(chase_to_range_requested, active_attack_target,
-                     active_attack_target->get_global_position(),
                      auto_attack_range);
       }
     }

@@ -3,10 +3,26 @@
 [ext_resource type="Texture2D" uid="uid://f6mq2yylwnao" path="res://assets/placeholder/PLACEHOLDER_fireball.png" id="1_v3kf6"]
 [ext_resource type="PackedScene" uid="uid://dave47rt005bj" path="res://skills/fireball/projectile.tscn" id="2_v0gj8"]
 
-[node name="Fireball" type="FireballNode" unique_id=526675319]
+[node name="Fireball" type="AbilityNode" unique_id=526675319]
+ability_name = "Fireball"
+description = "Launch a fireball that explodes on impact"
 icon = ExtResource("1_v3kf6")
+
+[node name="InstantCastComponent" type="InstantCastComponent" parent="."]
+
+[node name="PointTargetingComponent" type="PointTargetingComponent" parent="."]
+max_range = 20.0
+
+[node name="SkillshotProjectileComponent" type="SkillshotProjectileComponent" parent="."]
+damage = 50.0
+speed = 30.0
+max_distance = 20.0
+
+[node name="projectile" parent="SkillshotProjectileComponent" instance=ExtResource("2_v0gj8")]
+
+[node name="ResourceCostComponent" type="ResourceCostComponent" parent="."]
 resource_pool_id = "mana"
 resource_cost = 20.0
 
-[node name="projectile" parent="." unique_id=1770922578 instance=ExtResource("2_v0gj8")]
-transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 1, 0)
+[node name="CooldownComponent" type="CooldownComponent" parent="."]
+cooldown = 7.0
