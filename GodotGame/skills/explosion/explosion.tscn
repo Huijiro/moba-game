@@ -3,7 +3,22 @@
 [ext_resource type="Texture2D" uid="uid://xn18eygx5mm" path="res://assets/placeholder/PLACEHOLDER_explosion.png" id="1_7mily"]
 [ext_resource type="PackedScene" uid="uid://bb0bs3kernx7b" path="res://skills/explosion/explosion_vfx.tscn" id="2_6bo6f"]
 
-[node name="Explosion" type="ExplosionNode" unique_id=526675321]
+[node name="Explosion" type="AbilityNode" unique_id=526675321]
+ability_name = "Explosion"
+description = "Cast an explosion at target location dealing AoE damage"
 icon = ExtResource("1_7mily")
+
+[node name="InstantCastComponent" type="InstantCastComponent" parent="."]
+
+[node name="PointTargetingComponent" type="PointTargetingComponent" parent="."]
+max_range = 20.0
+
+[node name="AoEDamageComponent" type="AoEDamageComponent" parent="."]
+base_damage = 60.0
+radius = 8.0
+damage_caster = false
+
+[node name="CooldownComponent" type="CooldownComponent" parent="."]
+cooldown = 10.0
 
 [node name="explosion" parent="." unique_id=1770922579 instance=ExtResource("2_6bo6f")]

@@ -182,24 +182,15 @@ void InputManager::_input(const Ref<InputEvent>& event) {
     Vector3 click_position;
     godot::Object* clicked_object = nullptr;
     if (_try_raycast(click_position, clicked_object)) {
-      if (is_awaiting_unit_target) {
-        // Unit-target ability: only cast if valid target clicked
-        if (clicked_object != nullptr) {
-          controlled_unit->relay(cast_ability_unit_target, awaiting_target_slot,
-                                 clicked_object);
-          awaiting_target_slot = -1;
-        } else {
-          // No target clicked - stay in targeting mode
-          DBG_INFO("InputManager", "No valid target. Click on a unit.");
-          return;
-        }
-      } else {
-        // Position-target or skillshot ability: cast at clicked position
-        controlled_unit->relay(cast_ability_point_target, awaiting_target_slot,
-                               click_position);
-        // Clear targeting mode
-        awaiting_target_slot = -1;
+      if (is_awaiting_unit_target && clicked_object == nullptr) {
+        // Unit-target ability but no unit clicked — stay in targeting mode
+        DBG_INFO("InputManager", "No valid target. Click on a unit.");
+        return;
       }
+
+      controlled_unit->relay(cast_ability, awaiting_target_slot,
+                             clicked_object, click_position);
+      awaiting_target_slot = -1;
 
       DBG_INFO("InputManager", "Cast ability at target");
       get_viewport()->set_input_as_handled();
@@ -534,17 +525,9 @@ void InputManager::_init_default_keybinds() {
       }
     }
 
-    if (ability_comp != nullptr) {
-      for (int i = 0; i < ability_count && i < 4; i++) {
-        AbilityNode* ability = ability_comp->get_ability(i);
-        if (ability != nullptr) {
-          ability_targeting_types[i] = ability->get_targeting_type();
-          DBG_DEBUG("InputManager",
-                    "Ability slot " + String::num(i) + " targeting type: " +
-                        String::num(ability_targeting_types[i]));
-        }
-      }
-    }
+    // Targeting types are now determined by ability subcomponents.
+    // InputManager sends unit target if we hit a unit, point target otherwise.
+    // The ability's validate handles the rest.
   }
 }
 
@@ -571,58 +554,23 @@ void InputManager::_handle_ability_input(const String& key) {
       Vector3 cursor_position;
       godot::Object* cursor_target = nullptr;
       if (_try_raycast(cursor_position, cursor_target)) {
-        // Check the ability's targeting type to decide which signal to send
-        bool is_unit_target = false;
-        if (ability_slot >= 0 && ability_slot < 4) {
-          // TargetingType: 0 = UNIT_TARGET, 1 = POINT_TARGET, 2 = AREA, 3 =
-          // SKILLSHOT
-          is_unit_target = (ability_targeting_types[ability_slot] == 0);
-        }
-
-        if (is_unit_target && cursor_target != nullptr) {
-          // Unit-target ability and we hit a unit: send unit target
-          controlled_unit->relay(cast_ability_unit_target, ability_slot,
-                                 cursor_target);
-          DBG_INFO("InputManager", "Instant cast on unit target: slot=" +
-                                       String::num(ability_slot));
-        } else {
-          // Point-target/area/skillshot ability OR no unit hit: send position
-          // Log camera and ray info when skill is actually cast
-          Camera3D* cam = Object::cast_to<Camera3D>(camera);
-          if (cam != nullptr) {
-            DBG_INFO("InputManager", "Skill cast - Camera info:");
-            DBG_INFO("InputManager",
-                     "  Camera pos: (" +
-                         String::num(cam->get_global_position().x, 2) + ", " +
-                         String::num(cam->get_global_position().y, 2) + ", " +
-                         String::num(cam->get_global_position().z, 2) + ")");
-            DBG_INFO("InputManager",
-                     "  Camera rotation: (" +
-                         String::num(cam->get_rotation().x, 2) + ", " +
-                         String::num(cam->get_rotation().y, 2) + ", " +
-                         String::num(cam->get_rotation().z, 2) + ")");
-          }
-
-          DBG_INFO("InputManager",
-                   "Raycast hit at: (" + String::num(cursor_position.x, 2) +
-                       ", " + String::num(cursor_position.y, 2) + ", " +
-                       String::num(cursor_position.z, 2) + ")");
-          controlled_unit->relay(cast_ability_point_target, ability_slot,
-                                 cursor_position);
-          DBG_INFO("InputManager", "Instant cast at position: slot=" +
-                                       String::num(ability_slot));
-        }
+        // Always send both target and position — ability decides what it needs
+        controlled_unit->relay(cast_ability, ability_slot,
+                               cursor_target, cursor_position);
+        DBG_INFO("InputManager",
+                 "Instant cast: slot=" + String::num(ability_slot) +
+                     " target=" + (cursor_target ? "unit" : "none") +
+                     " pos=(" + String::num(cursor_position.x, 1) + ", " +
+                     String::num(cursor_position.z, 1) + ")");
       } else {
-        DBG_INFO("InputManager", "Cannot cast - no valid target position");
+        DBG_INFO("InputManager", "Cannot cast - no valid cursor position");
       }
       break;
     }
 
     case CastingMode::CLICK_TO_CAST: {
-      // Click to cast mode - wait for user to click
-      // We assume unit-target for now; the actual targeting type is
-      // defined in the ability configuration
-      _enter_ability_targeting_mode(ability_slot, 0);  // 0 = assume unit-target
+      // Query the ability for targeting info
+      _enter_ability_targeting_mode(ability_slot);
       break;
     }
 
@@ -639,23 +587,65 @@ void InputManager::_handle_ability_input(const String& key) {
   }
 }
 
-void InputManager::_enter_ability_targeting_mode(int ability_slot,
-                                                 int targeting_type) {
-  awaiting_target_slot = ability_slot;
-  is_awaiting_unit_target = (targeting_type == 0);  // UNIT_TARGET requires unit
-
-  if (targeting_type == 0) {  // UNIT_TARGET
-    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
-                                 " waiting for unit target - click on target");
-  } else if (targeting_type == 3) {  // SKILLSHOT
-    DBG_INFO("InputManager",
-             "Ability slot " + String::num(ability_slot) +
-                 " waiting for skillshot direction - click to aim");
-  } else {  // POINT_TARGET (1), AREA (2), or other position-based
-    DBG_INFO("InputManager",
-             "Ability slot " + String::num(ability_slot) +
-                 " waiting for position target - click to cast");
+void InputManager::_enter_ability_targeting_mode(int ability_slot) {
+  // Query the ability for what targeting it needs
+  AbilityComponent* ability_comp = _find_ability_component();
+  if (ability_comp == nullptr) {
+    return;
   }
+
+  AbilityNode* ability = ability_comp->get_ability(ability_slot);
+  if (ability == nullptr) {
+    DBG_INFO("InputManager",
+             "No ability at slot " + String::num(ability_slot));
+    return;
+  }
+
+  Ref<TargetingInfo> info = ability->get_targeting_info();
+  int targeting_type = info->get_type();
+
+  if (targeting_type == TargetingInfo::NONE) {
+    // Passive — not castable
+    DBG_INFO("InputManager",
+             "Ability slot " + String::num(ability_slot) + " is passive");
+    return;
+  }
+
+  if (targeting_type == TargetingInfo::SELF) {
+    // Self-cast — cast immediately, no targeting needed
+    Unit* caster = ability_comp->get_unit();
+    Vector3 pos = caster ? caster->get_global_position() : Vector3();
+    controlled_unit->relay(cast_ability, ability_slot,
+                           (godot::Object*)caster, pos);
+    DBG_INFO("InputManager",
+             "Self-cast ability slot " + String::num(ability_slot));
+    return;
+  }
+
+  awaiting_target_slot = ability_slot;
+  is_awaiting_unit_target = (targeting_type == TargetingInfo::UNIT);
+
+  if (is_awaiting_unit_target) {
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
+                                 " waiting for unit target");
+  } else {
+    DBG_INFO("InputManager", "Ability slot " + String::num(ability_slot) +
+                                 " waiting for position target");
+  }
+}
+
+AbilityComponent* InputManager::_find_ability_component() {
+  if (controlled_unit == nullptr) {
+    return nullptr;
+  }
+  for (int i = 0; i < controlled_unit->get_child_count(); i++) {
+    auto* comp =
+        Object::cast_to<AbilityComponent>(controlled_unit->get_child(i));
+    if (comp != nullptr) {
+      return comp;
+    }
+  }
+  return nullptr;
 }
 
 void InputManager::_handle_stop_command() {

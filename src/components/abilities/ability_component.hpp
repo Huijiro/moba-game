@@ -3,133 +3,83 @@
 
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include <vector>
 
 #include "../unit_component.hpp"
+#include "ability_context.hpp"
 #include "ability_node.hpp"
-#include "ability_types.hpp"
 
 using godot::PackedScene;
 using godot::Ref;
 using godot::Vector3;
 
-class ResourcePoolComponent;
-
-/// Core ability system component
-/// Manages ability slots, casting, cooldowns, and mana costs
-/// Attaches to Unit nodes and provides ability execution interface
+/// AbilityComponent — thin ability slot manager on Unit.
 ///
-/// Documentation: See docs/ability-system/00_INDEX.md
-/// - Core Components section for architecture overview
-/// - Key Methods: try_cast(), try_cast_point(), is_casting()
-/// - State machine: IDLE, CASTING, CHANNELING, ON_COOLDOWN
-/// - Integrates with ResourcePoolComponent for mana validation
+/// Responsibilities:
+/// - Stores and instantiates AbilityNode scenes as children
+/// - Routes cast requests through AbilityNode::can_cast / start_cast
+/// - Listens to ability lifecycle signals for state tracking
+/// - Handles chase-into-range retry logic
 ///
-/// Usage:
-/// 1. Add AbilityComponent as child of Unit
-/// 2. Configure abilities array in the editor or via set_abilities()
-/// 3. Call try_cast(slot, target) or try_cast_point(slot, point)
-/// 4. Query states: is_casting(), is_on_cooldown(), get_cooldown_remaining()
+/// Does NOT manage:
+/// - Cast timing (owned by CastTime/Instant/Channel components)
+/// - Cooldowns (owned by CooldownComponent)
+/// - Resource costs (owned by ResourceCostComponent)
+/// - Damage (owned by DamageEffectComponent)
 class AbilityComponent : public UnitComponent {
   GDCLASS(AbilityComponent, UnitComponent)
 
  protected:
   static void _bind_methods();
 
-  // Ability slots - stored as PackedScene references during editor
-  // Only instantiated to AbilityNode instances at runtime (in _ready)
-  godot::Array ability_scenes;  // Stores either PackedScene or AbilityNode
-
-  // Cooldown tracking per ability slot
-  std::vector<float> cooldown_timers;
-
-  // Casting state
-  int casting_slot = -1;
-  Object* casting_target = nullptr;
-  Vector3 casting_point = Vector3(0, 0, 0);
-  float casting_timer = 0.0f;
-  int casting_state = static_cast<int>(CastState::IDLE);
-
-  // Channel ticking (for periodic damage abilities)
-  float next_tick_time = 0.0f;  // When the next tick should occur
-
-  // Resource pool reference (for mana checks) - obtained via signal query
-  ResourcePoolComponent* resource_pool = nullptr;
-
  public:
   AbilityComponent();
   ~AbilityComponent();
 
-  void _physics_process(double delta) override;
   void _ready() override;
 
   // ========== ABILITY SLOT MANAGEMENT ==========
-  void set_ability_scene(int slot, const Ref<PackedScene>& scene);
-  AbilityNode* get_ability(int slot);
-  bool has_ability(int slot);
-
-  int get_ability_count() const;
-  void set_ability_count(int count);
-
-  // Array-based interface for editor exposure (PackedScene array)
   void set_ability_scenes(const godot::Array& scenes);
   godot::Array get_ability_scenes() const;
+  AbilityNode* get_ability(int slot);
+  bool has_ability(int slot);
+  int get_ability_count() const;
 
-  // Legacy compatibility - also bind as set_abilities/get_abilities
-  void set_abilities(const godot::Array& scenes);
-  godot::Array get_abilities() const;
-
-  // ========== ABILITY CASTING (Main Entry Points) ==========
-  // Try to cast ability at a unit target
-  bool try_cast(int slot, Object* target);
-
-  // Try to cast ability at a point (for point-target abilities)
+  // ========== CASTING ==========
+  bool try_cast(int slot, godot::Object* target);
   bool try_cast_point(int slot, const Vector3& point);
-
-  // ========== STATE QUERIES ==========
   bool is_casting() const;
-  bool is_on_cooldown(int slot) const;
-  float get_cooldown_remaining(int slot) const;
-  float get_cooldown_duration(int slot) const;
-  int get_cast_state(int slot) const;
-
-  // ========== CASTING CONTROL ==========
-  // Interrupt active channel or cast (applies cooldown)
   void interrupt_casting();
 
-  // Debug label registration
+  // Debug
   void register_debug_labels(LabelRegistry* registry) override;
 
-  // ========== INTERNAL METHODS ==========
  private:
-  // Get resource pool by ID, or return default if not found
-  ResourcePoolComponent* _get_resource_pool(const godot::String& pool_id);
+  godot::Array ability_scenes;  // PackedScene refs (editor) or AbilityNode* (runtime)
 
-  // Validation: check if ability can be cast
-  bool _can_cast(int slot);
+  // Active cast state
+  int casting_slot = -1;
+  Ref<AbilityContext> active_context;
 
-  // Check if we have enough resources (mana)
-  bool _can_afford(int slot);
+  // Pending cast (for chase-into-range retry)
+  int pending_slot = -1;
+  godot::Object* pending_target = nullptr;
+  Vector3 pending_point = Vector3();
 
-  // Begin the casting phase
-  void _begin_cast(int slot, Object* target);
+  // Instantiate ability scenes and add as children
+  void _instantiate_abilities();
 
-  // Execute the ability (call effect->execute)
-  // Returns true if executed, false if deferred
-  bool _execute_ability(int slot);
+  // Connect to an ability's lifecycle signals
+  void _connect_ability_signals(AbilityNode* ability, int slot);
 
-  // Apply cooldown after ability executes
-  void _apply_cooldown(int slot);
-
-  // Transition out of casting state
-  void _finish_casting();
-
-  // Handle chase_range_reached signal - re-execute deferred abilities
+  // Signal handlers
+  void _on_completed(const Ref<AbilityContext>& context);
+  void _on_cooldown_started(const Ref<AbilityContext>& context);
+  void _on_cooldown_finished(const Ref<AbilityContext>& context);
   void _on_chase_range_reached(godot::Object* target);
 
-  // Handle ability casting signals from InputManager/AI
-  void _on_cast_ability_unit_target(int slot, godot::Object* target);
-  void _on_cast_ability_point_target(int slot, const Vector3& position);
+  // Input signal handlers
+  void _on_cast_ability(int slot, godot::Object* target,
+                       const Vector3& position);
 };
 
 #endif  // GDEXTENSION_ABILITY_COMPONENT_H

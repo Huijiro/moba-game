@@ -9,12 +9,32 @@
 #include "camera/moba_camera.hpp"
 
 #include "components/abilities/ability_component.hpp"
+#include "components/abilities/ability_context.hpp"
 #include "components/abilities/ability_node.hpp"
-#include "components/abilities/implementations/beam_node.hpp"
-#include "components/abilities/implementations/explosion_node.hpp"
-#include "components/abilities/implementations/fireball_node.hpp"
-#include "components/abilities/implementations/frost_bolt_node.hpp"
-#include "components/abilities/implementations/instant_strike_node.hpp"
+#include "components/abilities/ability_subcomponent.hpp"
+#include "components/abilities/targeting_info.hpp"
+#include "components/abilities/ability_components/cast_time_component.hpp"
+#include "components/abilities/ability_components/instant_cast_component.hpp"
+#include "components/abilities/ability_components/unit_targeting_component.hpp"
+#include "components/abilities/ability_components/channel_component.hpp"
+#include "components/abilities/ability_components/cooldown_component.hpp"
+#include "components/abilities/ability_components/resource_cost_component.hpp"
+#include "components/abilities/ability_components/damage_effect_component.hpp"
+#include "components/abilities/ability_components/aoe_damage_component.hpp"
+#include "components/abilities/ability_components/point_targeting_component.hpp"
+#include "components/abilities/ability_components/homing_projectile_component.hpp"
+#include "components/abilities/ability_components/skillshot_projectile_component.hpp"
+#include "components/abilities/modules/ability_cast_module.hpp"
+#include "components/abilities/modules/ability_effect_module.hpp"
+#include "components/abilities/modules/ability_module.hpp"
+#include "components/abilities/modules/ability_range_module.hpp"
+#include "components/abilities/modules/ability_targeting_module.hpp"
+// Legacy ability implementations disabled during composition migration
+// #include "components/abilities/implementations/beam_node.hpp"
+// #include "components/abilities/implementations/explosion_node.hpp"
+// #include "components/abilities/implementations/fireball_node.hpp"
+// #include "components/abilities/implementations/frost_bolt_node.hpp"
+// #include "components/abilities/implementations/instant_strike_node.hpp"
 #include "components/combat/attack_component.hpp"
 #include "components/combat/projectile.hpp"
 #include "components/combat/skillshot_projectile.hpp"
@@ -69,12 +89,32 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(AttackComponent)
   GDREGISTER_CLASS(Projectile)
   GDREGISTER_CLASS(SkillshotProjectile)
+  GDREGISTER_CLASS(AbilityContext)
+  GDREGISTER_CLASS(TargetingInfo)
   GDREGISTER_CLASS(AbilityNode)
-  GDREGISTER_CLASS(BeamNode)
-  GDREGISTER_CLASS(ExplosionNode)
-  GDREGISTER_CLASS(InstantStrikeNode)
-  GDREGISTER_CLASS(FrostBoltNode)
-  GDREGISTER_CLASS(FireballNode)
+  GDREGISTER_CLASS(AbilitySubcomponent)
+  GDREGISTER_CLASS(AbilityModule)
+  GDREGISTER_CLASS(AbilityTargetingModule)
+  GDREGISTER_CLASS(AbilityCastModule)
+  GDREGISTER_CLASS(AbilityRangeModule)
+  GDREGISTER_CLASS(AbilityEffectModule)
+  GDREGISTER_CLASS(UnitTargetingComponent)
+  GDREGISTER_CLASS(InstantCastComponent)
+  GDREGISTER_CLASS(CastTimeComponent)
+  GDREGISTER_CLASS(ChannelComponent)
+  GDREGISTER_CLASS(CooldownComponent)
+  GDREGISTER_CLASS(ResourceCostComponent)
+  GDREGISTER_CLASS(DamageEffectComponent)
+  GDREGISTER_CLASS(AoEDamageComponent)
+  GDREGISTER_CLASS(PointTargetingComponent)
+  GDREGISTER_CLASS(HomingProjectileComponent)
+  GDREGISTER_CLASS(SkillshotProjectileComponent)
+  // Legacy ability implementations disabled during composition migration
+  // GDREGISTER_CLASS(BeamNode)
+  // GDREGISTER_CLASS(ExplosionNode)
+  // GDREGISTER_CLASS(InstantStrikeNode)
+  // GDREGISTER_CLASS(FrostBoltNode)
+  // GDREGISTER_CLASS(FireballNode)
   GDREGISTER_CLASS(AbilityComponent)
   GDREGISTER_CLASS(VisualDebugger)
   GDREGISTER_CLASS(DebugLogger)

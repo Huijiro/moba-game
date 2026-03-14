@@ -14,8 +14,8 @@ class Unit;
 /// Properties:
 /// - Channel cast (must hold button to maintain)
 /// - Targets a specific unit
-/// - Applies base_damage per tick at channel_tick_interval
-/// - Total damage = base_damage * (channel_duration / channel_tick_interval)
+/// - Applies base_damage per tick at tick_interval
+/// - Total damage = base_damage * (channel_duration / tick_interval)
 /// - Channeling can be interrupted if player releases button
 class BeamNode : public AbilityNode {
   GDCLASS(BeamNode, AbilityNode)

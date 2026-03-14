@@ -66,10 +66,10 @@ void MovementComponent::_bind_methods() {
                        &MovementComponent::_on_move_requested);
   ClassDB::bind_method(D_METHOD("_on_attack_requested", "target", "position"),
                        &MovementComponent::_on_attack_requested);
-  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target", "position"),
+  ClassDB::bind_method(D_METHOD("_on_chase_requested", "target"),
                        &MovementComponent::_on_chase_requested);
   ClassDB::bind_method(D_METHOD("_on_chase_to_range_requested", "target",
-                                "position", "desired_range"),
+                                "desired_range"),
                        &MovementComponent::_on_chase_to_range_requested);
   ClassDB::bind_method(D_METHOD("_on_stop_requested"),
                        &MovementComponent::_on_stop_requested);
@@ -375,33 +375,25 @@ void MovementComponent::_on_attack_requested(godot::Object* target,
   current_target_distance = 2.5f;
 }
 
-void MovementComponent::_on_chase_requested(godot::Object* target,
-                                            const Vector3& position) {
+void MovementComponent::_on_chase_requested(godot::Object* target) {
   // Chase orders - follow target with no distance constraint
   chase_target = Object::cast_to<Unit>(target);
-  is_stopped = false;  // Resume movement
+  is_stopped = false;
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
-  } else {
-    // Fallback to position if target invalid
-    set_desired_location(position);
   }
   current_target_distance = 0.0f;
 }
 
 void MovementComponent::_on_chase_to_range_requested(godot::Object* target,
-                                                     const Vector3& position,
                                                      float desired_range) {
   // Chase orders with desired range - follow target until in range
   chase_target = Object::cast_to<Unit>(target);
-  is_stopped = false;  // Resume movement
+  is_stopped = false;
   chase_desired_range = desired_range;
-  was_chase_in_range = false;  // Reset range tracking
+  was_chase_in_range = false;
   if (chase_target != nullptr && chase_target->is_inside_tree()) {
     set_desired_location(chase_target->get_global_position());
-  } else {
-    // Fallback to position if target invalid
-    set_desired_location(position);
   }
   current_target_distance = 0.0f;
 }

@@ -16,6 +16,7 @@
 
 #include "../common/casting_mode.hpp"
 #include "../common/unit_signals.hpp"
+#include "../components/abilities/targeting_info.hpp"
 
 namespace godot {
 class Object;
@@ -85,7 +86,8 @@ class InputManager : public Node {
   void _show_click_marker(const Vector3& position);
   void _update_click_marker(double delta);
   void _handle_ability_input(const String& key);
-  void _enter_ability_targeting_mode(int ability_slot, int targeting_type);
+  void _enter_ability_targeting_mode(int ability_slot);
+  AbilityComponent* _find_ability_component();
   void _handle_stop_command();
   void _cancel_targeting();
   void _init_default_keybinds();
@@ -121,7 +123,7 @@ class InputManager : public Node {
   Dictionary keybind_map;
 
   // Ability targeting types: 0=UNIT_TARGET, 1=POINT_TARGET, 3=SKILLSHOT
-  int ability_targeting_types[4] = {1, 1, 1, 1};  // Default to point target
+  // Targeting types removed — abilities validate targeting through subcomponents
 
   // Ability targeting state
   int awaiting_target_slot =

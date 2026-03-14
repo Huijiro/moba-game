@@ -18,7 +18,7 @@ BeamNode::BeamNode() {
   set_description("Channel beam dealing damage per tick while holding button");
   set_cast_type(static_cast<int>(CastType::CHANNEL));
   set_channel_duration(2.0f);
-  set_channel_tick_interval(0.5f);
+  set_tick_interval(0.5f);
   set_targeting_type(static_cast<int>(TargetingType::UNIT_TARGET));
   set_base_damage(20.0f);
   set_range(10.0f);
@@ -55,7 +55,7 @@ bool BeamNode::execute(Unit* caster, Unit* target, godot::Vector3 position) {
 
   // For channel abilities, this executes ONE TICK of the channel
   // The AbilityComponent is responsible for calling this repeatedly
-  // at channel_tick_interval to simulate the channel
+  // at tick_interval to simulate the channel
 
   float tick_damage = calculate_damage(caster, target);
 
@@ -90,6 +90,6 @@ bool BeamNode::can_execute_on_target(Unit* caster, Unit* target) const {
 float BeamNode::calculate_damage(Unit* caster, Unit* target) const {
   // Return damage per tick
   // Note: total damage = base_damage * number_of_ticks
-  // where number_of_ticks = channel_duration / channel_tick_interval
+  // where number_of_ticks = channel_duration / tick_interval
   return get_base_damage();
 }

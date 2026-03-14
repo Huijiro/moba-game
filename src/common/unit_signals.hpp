@@ -50,15 +50,10 @@ inline const StringName& get_chase_range_reached() {
   return signal;
 }
 
-// Ability casting signals - emitted by InputManager/AI, listened by
-// AbilityComponent
-inline const StringName& get_cast_ability_unit_target() {
-  static StringName signal = StringName("cast_ability_unit_target");
-  return signal;
-}
-
-inline const StringName& get_cast_ability_point_target() {
-  static StringName signal = StringName("cast_ability_point_target");
+// Ability casting signal - emitted by PlayerController/AI, listened by
+// AbilityComponent. Carries slot + target (nullable) + position.
+inline const StringName& get_cast_ability() {
+  static StringName signal = StringName("cast_ability");
   return signal;
 }
 
@@ -99,8 +94,7 @@ inline const StringName& get_health_changed() {
 #define stop_requested get_stop_requested()
 #define take_damage get_take_damage()
 #define chase_range_reached get_chase_range_reached()
-#define cast_ability_unit_target get_cast_ability_unit_target()
-#define cast_ability_point_target get_cast_ability_point_target()
+#define cast_ability get_cast_ability()
 #define ability_icon_requested get_ability_icon_requested()
 #define resource_pool_requested get_resource_pool_requested()
 #define ability_cooldown_started get_ability_cooldown_started()
