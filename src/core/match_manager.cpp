@@ -9,6 +9,7 @@
 #include "../input/cursor_world_query.hpp"
 #include "../input/hover_highlight.hpp"
 #include "../input/player_controller.hpp"
+#include "../input/targeting_preview.hpp"
 #include "unit.hpp"
 
 using godot::ClassDB;
@@ -90,6 +91,12 @@ void MatchManager::_setup_player_input() {
     auto* hover = Object::cast_to<HoverHighlight>(child);
     if (hover != nullptr) {
       hover->set_controlled_unit(main_unit);
+      continue;
+    }
+
+    auto* preview = Object::cast_to<TargetingPreview>(child);
+    if (preview != nullptr) {
+      preview->set_controlled_unit(main_unit);
       continue;
     }
   }

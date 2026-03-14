@@ -41,3 +41,9 @@ void AbilitySubcomponent::_ready() {
 AbilityNode* AbilitySubcomponent::get_ability() const {
   return owner_ability;
 }
+
+void AbilitySubcomponent::cleanup_preview(godot::Node3D* preview) {
+  if (preview != nullptr) {
+    preview->queue_free();
+  }
+}

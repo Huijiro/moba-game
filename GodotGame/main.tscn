@@ -50,6 +50,8 @@ click_indicator_scene = ExtResource("3_h2yge")
 
 [node name="HoverHighlight" type="HoverHighlight" parent="PlayerInput"]
 
+[node name="TargetingPreview" type="TargetingPreview" parent="PlayerInput"]
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1238631995]
 environment = SubResource("Environment_ig7tw")
 

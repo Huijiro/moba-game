@@ -5,7 +5,7 @@
 
 using godot::StringName;
 
-// Movement signals - emitted by Unit relay from InputManager/AI
+// Movement signals - emitted by Unit relay from PlayerController/AI
 // Use functions to get signal names lazily (avoids static initialization
 // issues)
 inline const StringName& get_move_requested() {

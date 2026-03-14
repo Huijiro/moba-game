@@ -46,6 +46,7 @@
 #include "components/unit_component.hpp"
 
 // Core
+#include "core/game_settings.hpp"
 #include "core/match_manager.hpp"
 #include "core/unit.hpp"
 #include "debug/debug_logger.hpp"
@@ -56,8 +57,8 @@
 #include "input/click_marker_handler.hpp"
 #include "input/cursor_world_query.hpp"
 #include "input/hover_highlight.hpp"
-#include "input/input_manager.hpp"
 #include "input/player_controller.hpp"
+#include "input/targeting_preview.hpp"
 
 // VFX (legacy — kept for now, no longer used by ability scenes)
 #include "visual/area_effects/area_effect_vfx.hpp"
@@ -74,12 +75,12 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
 
   // Core
   GDREGISTER_CLASS(Unit)
-  GDREGISTER_CLASS(InputManager)  // Legacy — kept during migration
   GDREGISTER_CLASS(CursorWorldQuery)
   GDREGISTER_CLASS(PlayerController)
   GDREGISTER_CLASS(AbilityTargetingHandler)
   GDREGISTER_CLASS(ClickMarkerHandler)
   GDREGISTER_CLASS(HoverHighlight)
+  GDREGISTER_CLASS(TargetingPreview)
   GDREGISTER_CLASS(MOBACamera)
   GDREGISTER_CLASS(MatchManager)
   GDREGISTER_CLASS(TestMovement)
@@ -132,6 +133,9 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(ProjectileVFX)
   GDREGISTER_CLASS(ExplosionVFX)
   GDREGISTER_CLASS(AreaEffectVFX)
+
+  // Register project settings
+  GameSettings::register_settings();
 }
 
 void uninitialize_example_module(ModuleInitializationLevel p_level) {

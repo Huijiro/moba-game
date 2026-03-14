@@ -2,6 +2,9 @@
 
 #include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/sphere_shape3d.hpp>
 #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
 #include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
 #include <godot_cpp/classes/shape3d.hpp>
@@ -20,6 +23,7 @@
 #include "../../../debug/debug_macros.hpp"
 #include "../ability_context.hpp"
 #include "../ability_node.hpp"
+#include "point_targeting_component.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -172,4 +176,73 @@ void AoEDamageComponent::_on_execute(const Ref<RefCounted>& context) {
   DBG_INFO("AoEDamage",
            ability_name + " hit " + String::num(hit_count) +
                " units for " + String::num(base_damage, 1) + " damage");
+}
+
+// --- Preview interface ---
+
+float AoEDamageComponent::_get_aoe_radius() const {
+  for (int i = 0; i < get_child_count(); i++) {
+    auto* cs = Object::cast_to<godot::CollisionShape3D>(get_child(i));
+    if (cs == nullptr || cs->get_shape().is_null()) continue;
+    auto sphere = godot::Ref<godot::SphereShape3D>(cs->get_shape());
+    if (sphere.is_valid()) return sphere->get_radius();
+  }
+  return 0.0f;
+}
+
+bool AoEDamageComponent::has_preview() const {
+  return _get_aoe_radius() > 0.0f;
+}
+
+godot::Node3D* AoEDamageComponent::create_preview() {
+  float radius = _get_aoe_radius();
+  if (radius <= 0.0f) return nullptr;
+
+  auto* resource_loader = godot::ResourceLoader::get_singleton();
+  Ref<godot::PackedScene> scene =
+      resource_loader->load("res://previews/aoe_circle.tscn");
+  if (scene.is_null()) return nullptr;
+
+  auto* preview = Object::cast_to<godot::Node3D>(scene->instantiate());
+  if (preview == nullptr) return nullptr;
+
+  preview->set_scale(Vector3(radius, 1.0f, radius));
+  return preview;
+}
+
+void AoEDamageComponent::update_preview(godot::Node3D* preview,
+                                        const Vector3& caster_pos,
+                                        const Vector3& ground_pos) {
+  if (preview == nullptr) return;
+
+  // AoE circle follows cursor, clamped to range
+  // Find sibling PointTargetingComponent range for clamping
+  float max_range = 0.0f;
+  if (owner_ability != nullptr) {
+    for (int i = 0; i < owner_ability->get_child_count(); i++) {
+      auto* pt = Object::cast_to<PointTargetingComponent>(
+          owner_ability->get_child(i));
+      if (pt != nullptr) {
+        max_range = pt->get_max_range();
+        break;
+      }
+    }
+  }
+
+  Vector3 target = ground_pos;
+  if (max_range > 0.0f) {
+    Vector3 offset = ground_pos - caster_pos;
+    offset.y = 0.0f;
+    if (offset.length() > max_range) {
+      offset = offset.normalized() * max_range;
+      target = caster_pos + offset;
+    }
+  }
+
+  target.y = 0.05f;
+  preview->set_global_position(target);
+}
+
+void AoEDamageComponent::cleanup_preview(godot::Node3D* preview) {
+  if (preview != nullptr) preview->queue_free();
 }

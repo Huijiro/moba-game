@@ -1,5 +1,7 @@
 #include "point_targeting_component.hpp"
 
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -91,4 +93,31 @@ void PointTargetingComponent::_on_query_targeting(
   }
   targeting->set_type(TargetingInfo::POINT);
   targeting->set_range(max_range);
+}
+
+// --- Preview interface ---
+
+bool PointTargetingComponent::has_preview() const { return max_range > 0.0f; }
+
+godot::Node3D* PointTargetingComponent::create_preview() {
+  auto* resource_loader = godot::ResourceLoader::get_singleton();
+  Ref<godot::PackedScene> scene =
+      resource_loader->load("res://previews/range_circle.tscn");
+  if (scene.is_null()) return nullptr;
+
+  auto* preview = godot::Object::cast_to<godot::Node3D>(scene->instantiate());
+  if (preview == nullptr) return nullptr;
+
+  preview->set_scale(Vector3(max_range, 1.0f, max_range));
+  return preview;
+}
+
+void PointTargetingComponent::update_preview(godot::Node3D* preview,
+                                             const Vector3& caster_pos,
+                                             const Vector3& ground_pos) {
+  if (preview == nullptr) return;
+  // Range circle stays centered on caster
+  Vector3 pos = caster_pos;
+  pos.y = 0.05f;
+  preview->set_global_position(pos);
 }

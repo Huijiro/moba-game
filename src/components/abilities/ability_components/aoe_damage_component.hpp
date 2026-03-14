@@ -2,6 +2,8 @@
 #define AOE_DAMAGE_COMPONENT_HPP
 
 #include <godot_cpp/classes/area3d.hpp>
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/variant/vector3.hpp>
 
 class AbilityNode;
 class Unit;
@@ -31,10 +33,18 @@ class AoEDamageComponent : public godot::Area3D {
 
   AbilityNode* get_ability() const;
 
+  // Preview interface (mirrors AbilitySubcomponent)
+  bool has_preview() const;
+  godot::Node3D* create_preview();
+  void update_preview(godot::Node3D* preview, const godot::Vector3& caster_pos,
+                      const godot::Vector3& ground_pos);
+  void cleanup_preview(godot::Node3D* preview);
+
  protected:
   static void _bind_methods();
 
  private:
+  float _get_aoe_radius() const;
   float base_damage = 0.0f;
   bool damage_caster = false;
   AbilityNode* owner_ability = nullptr;

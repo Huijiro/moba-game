@@ -1,10 +1,7 @@
 # Input handling systems
 target_sources(
   ${PROJECT_NAME} PRIVATE
-  # Legacy (kept for now during migration)
-  ./input_manager.hpp
-  ./input_manager.cpp
-  # New decomposed input system
+  # Decomposed input system
   ./cursor_world_query.hpp
   ./cursor_world_query.cpp
   ./player_controller.hpp
@@ -15,4 +12,6 @@ target_sources(
   ./click_marker_handler.cpp
   ./hover_highlight.hpp
   ./hover_highlight.cpp
+  ./targeting_preview.hpp
+  ./targeting_preview.cpp
 )

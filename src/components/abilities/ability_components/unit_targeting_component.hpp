@@ -17,6 +17,12 @@ class UnitTargetingComponent : public AbilitySubcomponent {
   void set_range(float r);
   float get_range() const;
 
+  // Preview interface
+  bool has_preview() const override;
+  godot::Node3D* create_preview() override;
+  void update_preview(godot::Node3D* preview, const godot::Vector3& caster_pos,
+                      const godot::Vector3& ground_pos) override;
+
  protected:
   static void _bind_methods();
 

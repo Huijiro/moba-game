@@ -1,5 +1,9 @@
 #include "skillshot_projectile_component.hpp"
 
+#include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/sphere_shape3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -182,4 +186,93 @@ void SkillshotProjectileComponent::_on_projectile_hit(
 void SkillshotProjectileComponent::_on_projectile_max_range(
     const Vector3& position) {
   // Skillshot missed — could trigger AoE effects here in the future
+}
+
+// --- Preview interface ---
+
+bool SkillshotProjectileComponent::has_preview() const {
+  return max_distance > 0.0f;
+}
+
+godot::Node3D* SkillshotProjectileComponent::create_preview() {
+  auto* resource_loader = godot::ResourceLoader::get_singleton();
+  Ref<godot::PackedScene> scene =
+      resource_loader->load("res://previews/skillshot_line.tscn");
+  if (scene.is_null()) return nullptr;
+
+  auto* preview = Object::cast_to<godot::Node3D>(scene->instantiate());
+  if (preview == nullptr) return nullptr;
+
+  // Read projectile collision radius for width
+  float width = 1.0f;
+  godot::Node3D* tmpl = _find_template();
+  if (tmpl != nullptr) {
+    for (int i = 0; i < tmpl->get_child_count(); i++) {
+      auto* cs = Object::cast_to<godot::CollisionShape3D>(tmpl->get_child(i));
+      if (cs == nullptr || cs->get_shape().is_null()) continue;
+      auto sphere = Ref<godot::SphereShape3D>(cs->get_shape());
+      if (sphere.is_valid()) {
+        width = sphere->get_radius() * 2.0f;
+        break;
+      }
+    }
+  }
+
+  // Store width and max_distance as metadata for update_preview to use
+  preview->set_meta("line_width", width);
+  preview->set_meta("max_distance", max_distance);
+
+  return preview;
+}
+
+void SkillshotProjectileComponent::update_preview(
+    godot::Node3D* preview, const Vector3& caster_pos,
+    const Vector3& ground_pos) {
+  if (preview == nullptr) return;
+
+  float width = preview->get_meta("line_width", 1.0f);
+  float max_dist = preview->get_meta("max_distance", max_distance);
+
+  // Direction from caster to cursor (horizontal only)
+  Vector3 direction = ground_pos - caster_pos;
+  direction.y = 0.0f;
+
+  if (direction.length_squared() < 0.01f) return;
+
+  float distance = direction.length();
+  if (distance > max_dist) distance = max_dist;
+  direction = direction.normalized();
+
+  // Body: centered between caster and endpoint
+  // PlaneMesh is 1x1 in XZ, so scale X=width, Z=distance
+  godot::Node3D* body = Object::cast_to<godot::Node3D>(
+      preview->get_node_or_null(godot::NodePath("Body")));
+  godot::Node3D* tip = Object::cast_to<godot::Node3D>(
+      preview->get_node_or_null(godot::NodePath("Tip")));
+
+  Vector3 endpoint = caster_pos + direction * distance;
+  Vector3 midpoint = (caster_pos + endpoint) * 0.5f;
+  midpoint.y = 0.05f;
+
+  // Orient preview to face direction
+  preview->set_global_position(caster_pos);
+  preview->set_global_position(Vector3(caster_pos.x, 0.05f, caster_pos.z));
+
+  // Calculate rotation angle around Y
+  float angle = godot::Math::atan2(-direction.x, -direction.z);
+  preview->set_rotation(Vector3(0.0f, angle, 0.0f));
+
+  if (body != nullptr) {
+    // Body is a PlaneMesh 1x1. Scale X=width, Z=distance.
+    // PlaneMesh lies in XZ plane. Position it so it starts at origin (caster)
+    // and extends forward along -Z (Godot's forward).
+    body->set_scale(Vector3(width, 1.0f, distance));
+    body->set_position(Vector3(0.0f, 0.0f, -distance * 0.5f));
+  }
+
+  if (tip != nullptr) {
+    // PrismMesh tip at the end of the line
+    tip->set_scale(Vector3(width, 1.0f, 1.0f));
+    tip->set_position(Vector3(0.0f, 0.0f, -distance));
+  }
 }
