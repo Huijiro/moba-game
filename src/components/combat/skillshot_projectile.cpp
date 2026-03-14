@@ -8,6 +8,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/collision_layers.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 
@@ -50,8 +51,11 @@ void SkillshotProjectile::_ready() {
   // Don't process until setup() is called — prevents template from running
   set_physics_process(false);
 
-  // Disable monitoring until setup — template shouldn't detect collisions
+  // Template: fully inert — no collision until setup()
   set_monitoring(false);
+  set_monitorable(false);
+  set_collision_layer(0);
+  set_collision_mask(0);
 }
 
 void SkillshotProjectile::_physics_process(double delta) {
@@ -106,9 +110,12 @@ void SkillshotProjectile::setup(Unit* caster_unit,
     direction = Vector3(0, 0, -1);
   }
 
-  // Enable physics and collision detection
+  // Enable physics and collision — projectile layer, detect units
   set_physics_process(true);
   set_monitoring(true);
+  set_monitorable(false);  // Nothing needs to detect projectiles
+  set_collision_layer(CollisionLayer::PROJECTILES);
+  set_collision_mask(CollisionLayer::UNITS);
 
   // Connect to body_entered for collision detection
   connect("body_entered", godot::Callable(this, "_on_body_entered"));

@@ -6,6 +6,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../common/collision_layers.hpp"
 #include "../../core/unit.hpp"
 #include "../../debug/debug_macros.hpp"
 
@@ -26,8 +27,12 @@ void Projectile::_bind_methods() {
 }
 
 void Projectile::_ready() {
+  // Template: fully inert — no collision until setup()
   set_physics_process(false);
   set_monitoring(false);
+  set_monitorable(false);
+  set_collision_layer(0);
+  set_collision_mask(0);
 }
 
 void Projectile::_physics_process(double delta) {
@@ -88,7 +93,11 @@ void Projectile::setup(Unit* attacker_unit,
     }
   }
 
+  // Enable physics and collision — projectile layer, detect units
   set_physics_process(true);
   set_monitoring(true);
+  set_monitorable(false);
+  set_collision_layer(CollisionLayer::PROJECTILES);
+  set_collision_mask(CollisionLayer::UNITS);
   connect("body_entered", godot::Callable(this, "_on_body_entered"));
 }

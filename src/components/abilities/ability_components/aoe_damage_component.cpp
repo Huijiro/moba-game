@@ -14,6 +14,7 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 
+#include "../../../common/collision_layers.hpp"
 #include "../../../common/unit_signals.hpp"
 #include "../../../core/unit.hpp"
 #include "../../../debug/debug_macros.hpp"
@@ -60,10 +61,11 @@ void AoEDamageComponent::_bind_methods() {
 void AoEDamageComponent::_ready() {
   if (Engine::get_singleton()->is_editor_hint()) return;
 
-  // This is an Area3D but we don't want runtime monitoring — shape is
-  // only used for one-shot queries
+  // AoE area: ability layer, not monitorable — shape only used for queries
   set_monitoring(false);
   set_monitorable(false);
+  set_collision_layer(CollisionLayer::ABILITIES);
+  set_collision_mask(0);  // We query manually, don't need mask
 
   // Find parent AbilityNode
   owner_ability = Object::cast_to<AbilityNode>(get_parent());
@@ -147,6 +149,7 @@ void AoEDamageComponent::_on_execute(const Ref<RefCounted>& context) {
   query->set_transform(xform);
   query->set_collide_with_bodies(true);
   query->set_collide_with_areas(false);
+  query->set_collision_mask(CollisionLayer::UNITS);
 
   godot::TypedArray<godot::Dictionary> results = space->intersect_shape(query);
 

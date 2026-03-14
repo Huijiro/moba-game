@@ -1,5 +1,6 @@
 #include "unit.hpp"
 
+#include "../common/collision_layers.hpp"
 #include "../components/abilities/ability_component.hpp"
 #include "../components/ui/label_registry.hpp"
 #include "../components/unit_component.hpp"
@@ -51,6 +52,10 @@ void Unit::_ready() {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
   }
+
+  // Units live on layer 2 so raycasts/projectiles can target them correctly
+  set_collision_layer(CollisionLayer::UNITS);
+  set_collision_mask(CollisionLayer::WORLD | CollisionLayer::UNITS);
 }
 
 void Unit::set_faction_id(int32_t new_faction_id) {

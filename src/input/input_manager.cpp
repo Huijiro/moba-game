@@ -19,6 +19,7 @@
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 
+#include "../common/collision_layers.hpp"
 #include "../common/unit_signals.hpp"
 #include "../components/abilities/ability_component.hpp"
 #include "../components/abilities/ability_node.hpp"
@@ -364,8 +365,10 @@ bool InputManager::_try_raycast(Vector3& out_position,
   // Setup raycast query
   Ref<PhysicsRayQueryParameters3D> query =
       PhysicsRayQueryParameters3D::create(ray_from, ray_to);
+  // Only hit world geometry and units — not projectiles or ability areas
   query->set_collide_with_bodies(true);
-  query->set_collide_with_areas(true);
+  query->set_collide_with_areas(false);
+  query->set_collision_mask(CollisionLayer::WORLD | CollisionLayer::UNITS);
 
   // Avoid hitting the player's own unit.
   if (controlled_unit != nullptr && controlled_unit->is_inside_tree()) {
