@@ -4,6 +4,7 @@
 
 #include "../common/unit_signals.hpp"
 #include "../components/abilities/ability_component.hpp"
+#include "../components/abilities/ability_components/cooldown_component.hpp"
 #include "../components/abilities/ability_node.hpp"
 #include "../components/abilities/targeting_info.hpp"
 #include "../core/unit.hpp"
@@ -46,6 +47,15 @@ void AbilityTargetingHandler::start(int ability_slot, Unit* unit) {
     DBG_INFO("AbilityTargeting",
              "No ability at slot " + String::num(ability_slot));
     return;
+  }
+
+  // Check cooldown — don't enter targeting if ability is on cooldown
+  for (int i = 0; i < ability->get_child_count(); i++) {
+    auto* cd = Object::cast_to<CooldownComponent>(ability->get_child(i));
+    if (cd != nullptr && cd->is_on_cooldown()) {
+      DBG_INFO("AbilityTargeting", "Ability on cooldown — cannot target");
+      return;
+    }
   }
 
   Ref<TargetingInfo> info = ability->get_targeting_info();
