@@ -1,13 +1,17 @@
 [gd_scene format=3 uid="uid://preview_skillshot_line"]
 
+[sub_resource type="Gradient" id="Gradient_body"]
+offsets = PackedFloat32Array(0.0, 0.1, 0.9, 1.0)
+colors = PackedColorArray(0, 0, 0, 0, 1, 0.6, 0.2, 0.5, 1, 0.6, 0.2, 0.5, 0, 0, 0, 0)
+
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_body"]
 width = 64
 height = 8
 gradient = SubResource("Gradient_body")
 
-[sub_resource type="Gradient" id="Gradient_body"]
-offsets = PackedFloat32Array(0.0, 0.1, 0.9, 1.0)
-colors = PackedColorArray(0, 0, 0, 0, 1, 0.6, 0.2, 0.5, 1, 0.6, 0.2, 0.5, 0, 0, 0, 0)
+[sub_resource type="Gradient" id="Gradient_tip"]
+offsets = PackedFloat32Array(0.0, 0.4, 1.0)
+colors = PackedColorArray(1, 0.6, 0.2, 0.7, 1, 0.6, 0.2, 0.4, 0, 0, 0, 0)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_tip"]
 width = 64
@@ -15,10 +19,6 @@ height = 64
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 gradient = SubResource("Gradient_tip")
-
-[sub_resource type="Gradient" id="Gradient_tip"]
-offsets = PackedFloat32Array(0.0, 0.4, 1.0)
-colors = PackedColorArray(1, 0.6, 0.2, 0.7, 1, 0.6, 0.2, 0.4, 0, 0, 0, 0)
 
 [node name="SkillshotLine" type="Node3D"]
 
