@@ -261,10 +261,10 @@ void AbilityComponent::_on_cooldown_started(const Ref<AbilityContext>& context) 
   }
 
   int slot = context->get_slot();
+  float duration = context->get_cooldown_duration();
   Unit* owner = get_unit();
   if (owner != nullptr) {
-    // Relay to UI
-    owner->relay(ability_cooldown_started, slot, 0.0f);
+    owner->relay(ability_cooldown_started, slot, duration);
   }
 }
 

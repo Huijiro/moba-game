@@ -38,6 +38,11 @@ void AbilityContext::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_slot"),
                        &AbilityContext::get_slot);
 
+  ClassDB::bind_method(D_METHOD("set_cooldown_duration", "duration"),
+                       &AbilityContext::set_cooldown_duration);
+  ClassDB::bind_method(D_METHOD("get_cooldown_duration"),
+                       &AbilityContext::get_cooldown_duration);
+
   ClassDB::bind_method(D_METHOD("block", "reason"),
                        &AbilityContext::block);
   ClassDB::bind_method(D_METHOD("is_blocked"),
@@ -81,6 +86,9 @@ int AbilityContext::get_slot() const {
   return slot;
 }
 
+void AbilityContext::set_cooldown_duration(float d) { cooldown_duration = d; }
+float AbilityContext::get_cooldown_duration() const { return cooldown_duration; }
+
 void AbilityContext::block(const String& reason) {
   blocked = true;
   block_reason = reason;
@@ -99,6 +107,7 @@ void AbilityContext::reset() {
   target = nullptr;
   position = Vector3();
   slot = -1;
+  cooldown_duration = 0.0f;
   blocked = false;
   block_reason = "";
 }

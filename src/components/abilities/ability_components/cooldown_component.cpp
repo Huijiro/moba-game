@@ -59,9 +59,9 @@ void CooldownComponent::_physics_process(double delta) {
 
     AbilityNode* ability = get_ability();
     if (ability != nullptr) {
-      // Create a minimal context for the signal
       Ref<AbilityContext> ctx;
       ctx.instantiate();
+      // Note: slot is not set here — AbilityComponent tracks it via connection
       ability->emit_signal("cooldown_finished", ctx);
     }
     return;
@@ -92,6 +92,9 @@ void CooldownComponent::_on_completed(const Ref<RefCounted>& context) {
   AbilityNode* ability = get_ability();
   if (ability != nullptr) {
     Ref<AbilityContext> ctx = context;
+    if (ctx.is_valid()) {
+      ctx->set_cooldown_duration(cooldown);
+    }
     ability->emit_signal("cooldown_started", ctx);
     DBG_INFO("CooldownComponent", "Cooldown started: " +
                  godot::String::num(cooldown, 1) + "s");

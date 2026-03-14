@@ -42,11 +42,7 @@ class CooldownIcon : public TextureRect {
   // Signal handler - listen for cooldown_started to handle sudden changes
   void _on_cooldown_started(int slot, float duration);
 
-  // Drawing
   void _draw_cooldown_overlay();
-
-  // Debug
-  void _log_debug_position();
 
  public:
   CooldownIcon();

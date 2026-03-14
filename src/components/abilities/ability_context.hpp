@@ -33,6 +33,9 @@ class AbilityContext : public godot::RefCounted {
   void set_slot(int s);
   int get_slot() const;
 
+  void set_cooldown_duration(float d);
+  float get_cooldown_duration() const;
+
   // Validation
   void block(const godot::String& reason);
   bool is_blocked() const;
@@ -49,6 +52,7 @@ class AbilityContext : public godot::RefCounted {
   Unit* target = nullptr;
   godot::Vector3 position = godot::Vector3();
   int slot = -1;
+  float cooldown_duration = 0.0f;
   bool blocked = false;
   godot::String block_reason = "";
 };
