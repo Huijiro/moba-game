@@ -1,5 +1,6 @@
 #include "point_targeting_component.hpp"
 
+#include <godot_cpp/classes/decal.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -108,7 +109,13 @@ godot::Node3D* PointTargetingComponent::create_preview() {
   auto* preview = godot::Object::cast_to<godot::Node3D>(scene->instantiate());
   if (preview == nullptr) return nullptr;
 
-  preview->set_scale(Vector3(max_range, 1.0f, max_range));
+  float diameter = max_range * 2.0f;
+  auto* decal = godot::Object::cast_to<godot::Decal>(preview);
+  if (decal != nullptr) {
+    decal->set_size(Vector3(diameter, 10.0f, diameter));
+  } else {
+    preview->set_scale(Vector3(max_range, 1.0f, max_range));
+  }
   return preview;
 }
 
@@ -116,8 +123,8 @@ void PointTargetingComponent::update_preview(godot::Node3D* preview,
                                              const Vector3& caster_pos,
                                              const Vector3& ground_pos) {
   if (preview == nullptr) return;
-  // Range circle stays centered on caster
+  // Range circle stays centered on caster, slightly above ground
   Vector3 pos = caster_pos;
-  pos.y = 0.05f;
+  pos.y += 0.1f;
   preview->set_global_position(pos);
 }

@@ -30,8 +30,13 @@ void AbilityTargetingHandler::_bind_methods() {
 }
 
 void AbilityTargetingHandler::start(int ability_slot, Unit* unit) {
+  DBG_INFO("AbilityTargeting", "start() called for slot " +
+               godot::String::num(ability_slot));
   caster = unit;
-  if (caster == nullptr) return;
+  if (caster == nullptr) {
+    DBG_WARN("AbilityTargeting", "No caster unit");
+    return;
+  }
 
   AbilityComponent* ability_comp = _find_ability_component(caster);
   if (ability_comp == nullptr) return;

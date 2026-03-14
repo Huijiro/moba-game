@@ -55,7 +55,9 @@ void TargetingPreview::_ready() {
 
 void TargetingPreview::_process(double delta) {
   if (Engine::get_singleton()->is_editor_hint()) return;
-  if (targeting_handler == nullptr || controlled_unit == nullptr) return;
+  if (targeting_handler == nullptr || controlled_unit == nullptr) {
+    return;
+  }
 
   bool handler_active = targeting_handler->is_active();
   int handler_slot = targeting_handler->get_active_slot();
@@ -79,7 +81,15 @@ void TargetingPreview::_process(double delta) {
 
 void TargetingPreview::_activate_previews(int slot) {
   AbilityNode* ability = _find_ability(slot);
-  if (ability == nullptr) return;
+  if (ability == nullptr) {
+    DBG_WARN("TargetingPreview",
+             "No ability found for slot " + String::num(slot));
+    return;
+  }
+  DBG_INFO("TargetingPreview",
+           "Activating previews for " + ability->get_ability_name() +
+               " (slot " + String::num(slot) + "), children: " +
+               String::num(ability->get_child_count()));
 
   // Walk children of the ability node, collecting preview providers
   for (int i = 0; i < ability->get_child_count(); i++) {

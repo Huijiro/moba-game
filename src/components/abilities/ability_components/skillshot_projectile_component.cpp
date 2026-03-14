@@ -1,6 +1,7 @@
 #include "skillshot_projectile_component.hpp"
 
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/decal.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/sphere_shape3d.hpp>
@@ -243,36 +244,28 @@ void SkillshotProjectileComponent::update_preview(
   if (distance > max_dist) distance = max_dist;
   direction = direction.normalized();
 
-  // Body: centered between caster and endpoint
-  // PlaneMesh is 1x1 in XZ, so scale X=width, Z=distance
-  godot::Node3D* body = Object::cast_to<godot::Node3D>(
+  auto* body = Object::cast_to<godot::Decal>(
       preview->get_node_or_null(godot::NodePath("Body")));
-  godot::Node3D* tip = Object::cast_to<godot::Node3D>(
+  auto* tip = Object::cast_to<godot::Decal>(
       preview->get_node_or_null(godot::NodePath("Tip")));
 
-  Vector3 endpoint = caster_pos + direction * distance;
-  Vector3 midpoint = (caster_pos + endpoint) * 0.5f;
-  midpoint.y = 0.05f;
-
-  // Orient preview to face direction
+  // Orient preview root to face direction
   preview->set_global_position(caster_pos);
-  preview->set_global_position(Vector3(caster_pos.x, 0.05f, caster_pos.z));
 
-  // Calculate rotation angle around Y
   float angle = godot::Math::atan2(-direction.x, -direction.z);
   preview->set_rotation(Vector3(0.0f, angle, 0.0f));
 
   if (body != nullptr) {
-    // Body is a PlaneMesh 1x1. Scale X=width, Z=distance.
-    // PlaneMesh lies in XZ plane. Position it so it starts at origin (caster)
-    // and extends forward along -Z (Godot's forward).
-    body->set_scale(Vector3(width, 1.0f, distance));
+    // Decal size: (width, projection_height, length)
+    // Decal projects downward, so X=width, Z=length along forward
+    body->set_size(Vector3(width, 10.0f, distance));
+    // Center the body between caster and endpoint
     body->set_position(Vector3(0.0f, 0.0f, -distance * 0.5f));
   }
 
   if (tip != nullptr) {
-    // PrismMesh tip at the end of the line
-    tip->set_scale(Vector3(width, 1.0f, 1.0f));
+    float tip_size = width * 2.0f;
+    tip->set_size(Vector3(tip_size, 10.0f, tip_size));
     tip->set_position(Vector3(0.0f, 0.0f, -distance));
   }
 }

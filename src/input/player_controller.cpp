@@ -135,6 +135,9 @@ void PlayerController::_handle_ability_key(const String& action_name) {
   }
 
   CastingMode casting_mode = GameSettings::get_casting_mode_enum();
+  DBG_INFO("PlayerController",
+           "Ability key: slot " + String::num(slot) + ", mode: " +
+               casting_mode_to_string(casting_mode));
 
   switch (casting_mode) {
     case CastingMode::INSTANT: {

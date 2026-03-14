@@ -1,7 +1,8 @@
 #include "unit_targeting_component.hpp"
 
-#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/decal.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -97,7 +98,6 @@ void UnitTargetingComponent::_on_query_targeting(
 bool UnitTargetingComponent::has_preview() const { return range > 0.0f; }
 
 godot::Node3D* UnitTargetingComponent::create_preview() {
-  // Load range circle scene
   auto* resource_loader = godot::ResourceLoader::get_singleton();
   Ref<godot::PackedScene> scene =
       resource_loader->load("res://previews/range_circle.tscn");
@@ -106,8 +106,14 @@ godot::Node3D* UnitTargetingComponent::create_preview() {
   auto* preview = godot::Object::cast_to<godot::Node3D>(scene->instantiate());
   if (preview == nullptr) return nullptr;
 
-  // Scale to range
-  preview->set_scale(godot::Vector3(range, 1.0f, range));
+  // Decal3D size: (diameter, projection_height, diameter)
+  float diameter = range * 2.0f;
+  auto* decal = godot::Object::cast_to<godot::Decal>(preview);
+  if (decal != nullptr) {
+    decal->set_size(godot::Vector3(diameter, 10.0f, diameter));
+  } else {
+    preview->set_scale(godot::Vector3(range, 1.0f, range));
+  }
   return preview;
 }
 
@@ -115,8 +121,8 @@ void UnitTargetingComponent::update_preview(godot::Node3D* preview,
                                             const godot::Vector3& caster_pos,
                                             const godot::Vector3& ground_pos) {
   if (preview == nullptr) return;
-  // Range circle stays centered on caster
+  // Range circle stays centered on caster, slightly above ground
   godot::Vector3 pos = caster_pos;
-  pos.y = 0.05f;  // Slightly above ground
+  pos.y += 0.1f;
   preview->set_global_position(pos);
 }

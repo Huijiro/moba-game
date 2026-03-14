@@ -1,6 +1,7 @@
 #include "aoe_damage_component.hpp"
 
 #include <godot_cpp/classes/collision_shape3d.hpp>
+#include <godot_cpp/classes/decal.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/packed_scene.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
@@ -206,7 +207,13 @@ godot::Node3D* AoEDamageComponent::create_preview() {
   auto* preview = Object::cast_to<godot::Node3D>(scene->instantiate());
   if (preview == nullptr) return nullptr;
 
-  preview->set_scale(Vector3(radius, 1.0f, radius));
+  float diameter = radius * 2.0f;
+  auto* decal = Object::cast_to<godot::Decal>(preview);
+  if (decal != nullptr) {
+    decal->set_size(Vector3(diameter, 10.0f, diameter));
+  } else {
+    preview->set_scale(Vector3(radius, 1.0f, radius));
+  }
   return preview;
 }
 
@@ -239,7 +246,7 @@ void AoEDamageComponent::update_preview(godot::Node3D* preview,
     }
   }
 
-  target.y = 0.05f;
+  target.y = caster_pos.y + 0.1f;
   preview->set_global_position(target);
 }
 
