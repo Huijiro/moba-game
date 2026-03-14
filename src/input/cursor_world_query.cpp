@@ -39,6 +39,10 @@ void CursorWorldQuery::_bind_methods() {
                        &CursorWorldQuery::get_hit_object);
   ClassDB::bind_method(D_METHOD("get_hit_unit"),
                        &CursorWorldQuery::get_hit_unit);
+  ClassDB::bind_method(D_METHOD("has_ground_hit"),
+                       &CursorWorldQuery::has_ground_hit);
+  ClassDB::bind_method(D_METHOD("get_ground_position"),
+                       &CursorWorldQuery::get_ground_position);
 
   ClassDB::bind_method(D_METHOD("set_camera", "camera"),
                        &CursorWorldQuery::set_camera);
@@ -81,6 +85,8 @@ void CursorWorldQuery::_update_query() {
   hit_position = Vector3();
   hit_object = nullptr;
   hit_unit = nullptr;
+  ground_hit = false;
+  ground_position = Vector3();
 
   if (camera == nullptr) return;
 
@@ -101,44 +107,67 @@ void CursorWorldQuery::_update_query() {
   Vector3 ray_normal = camera->project_ray_normal(mouse_pos);
   Vector3 ray_to = ray_from + (ray_normal * raycast_distance);
 
-  Ref<PhysicsRayQueryParameters3D> query =
-      PhysicsRayQueryParameters3D::create(ray_from, ray_to);
-  query->set_collide_with_bodies(true);
-  query->set_collide_with_areas(false);
-  query->set_collision_mask(CollisionLayer::WORLD | CollisionLayer::UNITS);
-
+  godot::Array exclude;
   if (controlled_unit != nullptr && controlled_unit->is_inside_tree()) {
-    godot::Array exclude;
     exclude.push_back(controlled_unit->get_rid());
+  }
+
+  // Raycast 1: WORLD + UNITS (for click targets)
+  {
+    Ref<PhysicsRayQueryParameters3D> query =
+        PhysicsRayQueryParameters3D::create(ray_from, ray_to);
+    query->set_collide_with_bodies(true);
+    query->set_collide_with_areas(false);
+    query->set_collision_mask(CollisionLayer::WORLD | CollisionLayer::UNITS);
     query->set_exclude(exclude);
-  }
 
-  Dictionary result = space->intersect_ray(query);
-  if (result.is_empty()) return;
+    Dictionary result = space->intersect_ray(query);
+    if (!result.is_empty()) {
+      hit = true;
+      hit_position = result["position"];
+      Object* collider = result["collider"];
 
-  hit = true;
-  hit_position = result["position"];
-  Object* collider = result["collider"];
-
-  // Walk up parents to find a Unit
-  Node* node = Object::cast_to<Node>(collider);
-  while (node != nullptr) {
-    Unit* unit = Object::cast_to<Unit>(node);
-    if (unit != nullptr) {
-      hit_unit = unit;
-      hit_object = unit;
-      return;
+      Node* node = Object::cast_to<Node>(collider);
+      while (node != nullptr) {
+        Unit* unit = Object::cast_to<Unit>(node);
+        if (unit != nullptr) {
+          hit_unit = unit;
+          hit_object = unit;
+          break;
+        }
+        node = node->get_parent();
+      }
+      if (hit_object == nullptr) {
+        hit_object = collider;
+      }
     }
-    node = node->get_parent();
   }
 
-  hit_object = collider;
+  // Raycast 2: WORLD only (for ground position, used by previews)
+  {
+    Ref<PhysicsRayQueryParameters3D> query =
+        PhysicsRayQueryParameters3D::create(ray_from, ray_to);
+    query->set_collide_with_bodies(true);
+    query->set_collide_with_areas(false);
+    query->set_collision_mask(CollisionLayer::WORLD);
+
+    Dictionary result = space->intersect_ray(query);
+    if (!result.is_empty()) {
+      ground_hit = true;
+      ground_position = result["position"];
+    }
+  }
 }
 
 bool CursorWorldQuery::has_hit() const { return hit; }
 Vector3 CursorWorldQuery::get_hit_position() const { return hit_position; }
 Object* CursorWorldQuery::get_hit_object() const { return hit_object; }
 Unit* CursorWorldQuery::get_hit_unit() const { return hit_unit; }
+
+bool CursorWorldQuery::has_ground_hit() const { return ground_hit; }
+Vector3 CursorWorldQuery::get_ground_position() const {
+  return ground_position;
+}
 
 void CursorWorldQuery::set_camera(godot::Camera3D* cam) { camera = cam; }
 godot::Camera3D* CursorWorldQuery::get_camera() const { return camera; }

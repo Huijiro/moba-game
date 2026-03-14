@@ -33,6 +33,11 @@ class CursorWorldQuery : public godot::Node {
   godot::Object* get_hit_object() const;
   Unit* get_hit_unit() const;
 
+  /// Ground-only hit position (WORLD layer only, ignores units).
+  /// Use this for preview positioning.
+  bool has_ground_hit() const;
+  godot::Vector3 get_ground_position() const;
+
   void set_camera(godot::Camera3D* cam);
   godot::Camera3D* get_camera() const;
 
@@ -55,6 +60,9 @@ class CursorWorldQuery : public godot::Node {
   godot::Vector3 hit_position;
   godot::Object* hit_object = nullptr;
   Unit* hit_unit = nullptr;
+
+  bool ground_hit = false;
+  godot::Vector3 ground_position;
 
   void _update_query();
 };

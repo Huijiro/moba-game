@@ -135,8 +135,8 @@ void TargetingPreview::_update_previews() {
   if (cursor_query == nullptr || controlled_unit == nullptr) return;
 
   Vector3 caster_pos = controlled_unit->get_global_position();
-  Vector3 ground_pos = cursor_query->has_hit()
-                           ? cursor_query->get_hit_position()
+  Vector3 ground_pos = cursor_query->has_ground_hit()
+                           ? cursor_query->get_ground_position()
                            : caster_pos;
 
   for (int i = 0; i < active_previews.size(); i++) {
