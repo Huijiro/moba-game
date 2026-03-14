@@ -22,12 +22,12 @@ gradient = SubResource("Gradient_tip")
 
 [node name="SkillshotLine" type="Node3D"]
 
-[node name="Body" type="Decal3D" parent="."]
+[node name="Body" type="Decal" parent="."]
 size = Vector3(1, 10, 1)
 texture_albedo = SubResource("GradientTexture2D_body")
 modulate = Color(1, 1, 1, 0.9)
 
-[node name="Tip" type="Decal3D" parent="."]
+[node name="Tip" type="Decal" parent="."]
 size = Vector3(1, 10, 1)
 texture_albedo = SubResource("GradientTexture2D_tip")
 modulate = Color(1, 1, 1, 0.9)
