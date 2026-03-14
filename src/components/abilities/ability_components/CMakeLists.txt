@@ -27,4 +27,7 @@ target_sources(
   ./cooldown_component.cpp
   ./resource_cost_component.hpp
   ./resource_cost_component.cpp
+  # VFX components
+  ./vfx_component.hpp
+  ./vfx_component.cpp
 )

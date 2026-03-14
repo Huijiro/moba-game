@@ -71,8 +71,7 @@ _data = {
 &"beam_tick": SubResource("Animation_beam")
 }
 
-[node name="beam_vfx" type="AreaEffectVFX" unique_id=1770922579]
-duration = 0.2
+[node name="beam_vfx" type="Node3D" unique_id=1770922579]
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1653806995]
 mesh = SubResource("BoxMesh_beam")

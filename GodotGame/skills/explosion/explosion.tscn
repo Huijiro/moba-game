@@ -9,6 +9,7 @@ description = "Cast an explosion at target location dealing AoE damage"
 icon = ExtResource("1_7mily")
 
 [node name="InstantCastComponent" type="InstantCastComponent" parent="."]
+emit_execute = false
 
 [node name="PointTargetingComponent" type="PointTargetingComponent" parent="."]
 max_range = 20.0
@@ -21,4 +22,10 @@ damage_caster = false
 [node name="CooldownComponent" type="CooldownComponent" parent="."]
 cooldown = 10.0
 
-[node name="explosion" parent="." unique_id=1770922579 instance=ExtResource("2_6bo6f")]
+[node name="VFXComponent" type="VFXComponent" parent="."]
+trigger_signal = "activated"
+position_mode = 2
+vfx_signal = "execute"
+emit_execute_on_vfx_signal = true
+
+[node name="explosion" parent="VFXComponent" instance=ExtResource("2_6bo6f")]

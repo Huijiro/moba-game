@@ -19,4 +19,8 @@ base_damage = 30.0
 [node name="CooldownComponent" type="CooldownComponent" parent="."]
 cooldown = 4.0
 
-[node name="impact" parent="." instance=ExtResource("2_strike")]
+[node name="VFXComponent" type="VFXComponent" parent="."]
+trigger_signal = "execute"
+position_mode = 1
+
+[node name="impact" parent="VFXComponent" instance=ExtResource("2_strike")]

@@ -76,6 +76,15 @@ void SkillshotProjectileComponent::_ready() {
   if (ability != nullptr) {
     ability->connect("execute",
                      godot::Callable(this, "_on_execute"));
+
+    // Hide the projectile template — it's duplicated on cast
+    if (!projectile_node_name.is_empty()) {
+      godot::Node* tmpl = ability->find_child(projectile_node_name, true, false);
+      auto* tmpl_3d = Object::cast_to<godot::Node3D>(tmpl);
+      if (tmpl_3d != nullptr) {
+        tmpl_3d->set_visible(false);
+      }
+    }
   }
 }
 

@@ -14,10 +14,15 @@ class InstantCastComponent : public AbilitySubcomponent {
 
   void _ready() override;
 
+  void set_emit_execute(bool value);
+  bool get_emit_execute() const;
+
  protected:
   static void _bind_methods();
 
  private:
+  bool emit_execute = true;
+
   void _on_activated(const godot::Ref<godot::RefCounted>& context);
 };
 

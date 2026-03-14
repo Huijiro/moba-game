@@ -17,6 +17,13 @@ InstantCastComponent::InstantCastComponent() = default;
 InstantCastComponent::~InstantCastComponent() = default;
 
 void InstantCastComponent::_bind_methods() {
+  ClassDB::bind_method(D_METHOD("set_emit_execute", "value"),
+                       &InstantCastComponent::set_emit_execute);
+  ClassDB::bind_method(D_METHOD("get_emit_execute"),
+                       &InstantCastComponent::get_emit_execute);
+  ADD_PROPERTY(godot::PropertyInfo(godot::Variant::BOOL, "emit_execute"),
+               "set_emit_execute", "get_emit_execute");
+
   ClassDB::bind_method(D_METHOD("_on_activated", "context"),
                        &InstantCastComponent::_on_activated);
 }
@@ -37,7 +44,20 @@ void InstantCastComponent::_on_activated(const Ref<RefCounted>& context) {
     return;
   }
 
-  DBG_INFO("InstantCastComponent", "Instant cast — firing immediately");
-  ability->emit_signal("execute", context);
+  if (emit_execute) {
+    DBG_INFO("InstantCastComponent", "Instant cast — firing immediately");
+    ability->emit_signal("execute", context);
+  } else {
+    DBG_INFO("InstantCastComponent",
+             "Instant cast — execute deferred to VFX/other");
+  }
   ability->emit_signal("completed", context);
+}
+
+void InstantCastComponent::set_emit_execute(bool value) {
+  emit_execute = value;
+}
+
+bool InstantCastComponent::get_emit_execute() const {
+  return emit_execute;
 }

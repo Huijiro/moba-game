@@ -24,6 +24,7 @@
 #include "components/abilities/ability_components/point_targeting_component.hpp"
 #include "components/abilities/ability_components/homing_projectile_component.hpp"
 #include "components/abilities/ability_components/skillshot_projectile_component.hpp"
+#include "components/abilities/ability_components/vfx_component.hpp"
 #include "components/abilities/modules/ability_cast_module.hpp"
 #include "components/abilities/modules/ability_effect_module.hpp"
 #include "components/abilities/modules/ability_module.hpp"
@@ -109,6 +110,7 @@ void initialize_example_module(ModuleInitializationLevel p_level) {
   GDREGISTER_CLASS(PointTargetingComponent)
   GDREGISTER_CLASS(HomingProjectileComponent)
   GDREGISTER_CLASS(SkillshotProjectileComponent)
+  GDREGISTER_CLASS(VFXComponent)
   // Legacy ability implementations disabled during composition migration
   // GDREGISTER_CLASS(BeamNode)
   // GDREGISTER_CLASS(ExplosionNode)

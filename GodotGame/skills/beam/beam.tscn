@@ -21,4 +21,8 @@ base_damage = 20.0
 [node name="CooldownComponent" type="CooldownComponent" parent="."]
 cooldown = 6.0
 
-[node name="beam_vfx" parent="." unique_id=1770922579 instance=ExtResource("2_beam")]
+[node name="VFXComponent" type="VFXComponent" parent="."]
+trigger_signal = "activated"
+position_mode = 0
+
+[node name="beam_vfx" parent="VFXComponent" instance=ExtResource("2_beam")]
