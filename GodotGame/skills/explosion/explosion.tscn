@@ -19,8 +19,10 @@ max_range = 20.0
 
 [node name="AoEDamageComponent" type="AoEDamageComponent" parent="."]
 base_damage = 60.0
-shape = SubResource("SphereShape3D_aoe")
 damage_caster = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AoEDamageComponent"]
+shape = SubResource("SphereShape3D_aoe")
 
 [node name="CooldownComponent" type="CooldownComponent" parent="."]
 cooldown = 10.0

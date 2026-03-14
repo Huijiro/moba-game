@@ -1,7 +1,9 @@
 #include "aoe_damage_component.hpp"
 
+#include <godot_cpp/classes/collision_shape3d.hpp>
 #include <godot_cpp/classes/physics_direct_space_state3d.hpp>
 #include <godot_cpp/classes/physics_shape_query_parameters3d.hpp>
+#include <godot_cpp/classes/shape3d.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
@@ -38,14 +40,6 @@ void AoEDamageComponent::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_damage"), "set_base_damage",
                "get_base_damage");
 
-  ClassDB::bind_method(D_METHOD("set_shape", "shape"),
-                       &AoEDamageComponent::set_shape);
-  ClassDB::bind_method(D_METHOD("get_shape"),
-                       &AoEDamageComponent::get_shape);
-  ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape",
-                            godot::PROPERTY_HINT_RESOURCE_TYPE, "Shape3D"),
-               "set_shape", "get_shape");
-
   ClassDB::bind_method(D_METHOD("set_damage_caster", "damage"),
                        &AoEDamageComponent::set_damage_caster);
   ClassDB::bind_method(D_METHOD("get_damage_caster"),
@@ -65,18 +59,25 @@ void AoEDamageComponent::_ready() {
     ability->connect("execute", godot::Callable(this, "_on_execute"));
   }
 
-  if (shape.is_null()) {
-    DBG_WARN("AoEDamage", "No shape configured — AoE won't detect anything");
+  shape_node = _find_shape_child();
+  if (shape_node == nullptr) {
+    DBG_WARN("AoEDamage",
+             "No CollisionShape3D child found — add one to define the AoE area");
   }
+}
+
+godot::CollisionShape3D* AoEDamageComponent::_find_shape_child() const {
+  for (int i = 0; i < get_child_count(); i++) {
+    auto* cs = Object::cast_to<godot::CollisionShape3D>(get_child(i));
+    if (cs != nullptr) return cs;
+  }
+  return nullptr;
 }
 
 void AoEDamageComponent::set_base_damage(float damage) {
   base_damage = damage;
 }
 float AoEDamageComponent::get_base_damage() const { return base_damage; }
-
-void AoEDamageComponent::set_shape(const Ref<godot::Shape3D>& s) { shape = s; }
-Ref<godot::Shape3D> AoEDamageComponent::get_shape() const { return shape; }
 
 void AoEDamageComponent::set_damage_caster(bool damage) {
   damage_caster = damage;
@@ -87,7 +88,10 @@ void AoEDamageComponent::_on_execute(const Ref<RefCounted>& context) {
   Ref<AbilityContext> ctx = context;
   if (ctx.is_null()) return;
 
-  if (shape.is_null() || base_damage <= 0.0f) return;
+  if (shape_node == nullptr || base_damage <= 0.0f) return;
+
+  Ref<godot::Shape3D> shape = shape_node->get_shape();
+  if (shape.is_null()) return;
 
   Unit* caster = ctx->get_caster();
   Vector3 center = ctx->get_position();
@@ -102,7 +106,7 @@ void AoEDamageComponent::_on_execute(const Ref<RefCounted>& context) {
     return;
   }
 
-  // Get physics space from the ability node
+  // Get physics space
   godot::Node3D* spatial = Object::cast_to<godot::Node3D>(get_ability());
   if (spatial == nullptr || !spatial->is_inside_tree()) return;
 
@@ -112,7 +116,7 @@ void AoEDamageComponent::_on_execute(const Ref<RefCounted>& context) {
   godot::PhysicsDirectSpaceState3D* space = world->get_direct_space_state();
   if (space == nullptr) return;
 
-  // Setup query with the configured shape
+  // Setup query with the shape from our CollisionShape3D child
   Ref<godot::PhysicsShapeQueryParameters3D> query;
   query.instantiate();
   query->set_shape(shape);
