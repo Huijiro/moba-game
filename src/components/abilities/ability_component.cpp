@@ -12,6 +12,7 @@
 #include "../ui/label_registry.hpp"
 #include "ability_context.hpp"
 #include "ability_node.hpp"
+#include "targeting_info.hpp"
 
 using godot::ClassDB;
 using godot::D_METHOD;
@@ -316,13 +317,16 @@ void AbilityComponent::_on_cast_ability(int slot, Object* target,
     DBG_INFO("AbilityComponent",
              "Cast blocked: " + ability->get_ability_name() + " - " + reason);
 
-    // Chase into range for unit-targeted abilities
+    // Chase into range for targeted abilities
     if (reason == "out_of_range" && target != nullptr) {
       pending_slot = slot;
       pending_target = target;
       Unit* owner = get_unit();
       if (owner != nullptr) {
-        owner->relay(get_chase_requested(), target);
+        // Query ability for its range so MovementComponent knows when to stop
+        Ref<TargetingInfo> info = ability->get_targeting_info();
+        float chase_range = info->get_range();
+        owner->relay(get_chase_to_range_requested(), target, chase_range);
       }
       DBG_INFO("AbilityComponent",
                "Chasing target for " + ability->get_ability_name());
