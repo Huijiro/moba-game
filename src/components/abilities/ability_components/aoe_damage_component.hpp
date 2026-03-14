@@ -1,24 +1,21 @@
 #ifndef AOE_DAMAGE_COMPONENT_HPP
 #define AOE_DAMAGE_COMPONENT_HPP
 
-#include "../ability_subcomponent.hpp"
+#include <godot_cpp/classes/area3d.hpp>
 
-namespace godot {
-class CollisionShape3D;
-}
-
+class AbilityNode;
 class Unit;
 
-/// Deals damage to all units overlapping a shape at the target position.
-/// Uses Godot's physics space query (intersect_shape) for instant area detection.
+/// Deals damage to all units overlapping this Area3D at the target position.
+/// Uses Godot's physics space query (intersect_shape) for instant detection.
 ///
-/// Add a CollisionShape3D child in the editor to define the AoE area.
-/// The shape gizmo renders in the editor so you can see and tweak the area.
-/// Supports SphereShape3D, BoxShape3D, CylinderShape3D, etc.
+/// Extends Area3D directly — add a CollisionShape3D child to define the area.
+/// The shape gizmo renders in the editor. Monitoring is disabled; the shape
+/// is only used for one-shot physics queries on execute.
 ///
 /// Listens to execute. Uses context position (or target unit position) as center.
-class AoEDamageComponent : public AbilitySubcomponent {
-  GDCLASS(AoEDamageComponent, AbilitySubcomponent);
+class AoEDamageComponent : public godot::Area3D {
+  GDCLASS(AoEDamageComponent, godot::Area3D);
 
  public:
   AoEDamageComponent();
@@ -32,19 +29,17 @@ class AoEDamageComponent : public AbilitySubcomponent {
   void set_damage_caster(bool damage);
   bool get_damage_caster() const;
 
+  AbilityNode* get_ability() const;
+
  protected:
   static void _bind_methods();
 
  private:
   float base_damage = 0.0f;
   bool damage_caster = false;
-
-  godot::CollisionShape3D* shape_node = nullptr;
+  AbilityNode* owner_ability = nullptr;
 
   void _on_execute(const godot::Ref<godot::RefCounted>& context);
-
-  /// Find first CollisionShape3D child
-  godot::CollisionShape3D* _find_shape_child() const;
 };
 
 #endif  // AOE_DAMAGE_COMPONENT_HPP
