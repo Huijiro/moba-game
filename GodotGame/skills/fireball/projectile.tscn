@@ -9,12 +9,13 @@ radius = 0.3
 height = 0.6
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_hitbox"]
-radius = 0.5
+radius = 0.30255654
 
-[node name="projectile" type="SkillshotProjectile"]
+[node name="projectile" type="SkillshotProjectile" unique_id=1550266325]
+monitoring = false
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1934121848]
 mesh = SubResource("SphereMesh_opnfr")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=613831352]
 shape = SubResource("SphereShape3D_hitbox")
