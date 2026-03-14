@@ -65,5 +65,4 @@ _data = {
 mesh = SubResource("BoxMesh_strike")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=645695221]
-autoplay = "strike_impact"
 libraries/ = SubResource("AnimationLibrary_strike")

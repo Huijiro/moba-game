@@ -134,7 +134,6 @@ material = SubResource("StandardMaterial3D_vra24")
 mesh = SubResource("SphereMesh_explosion")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=645695221]
-autoplay = "explosion_anticipation_boom"
 libraries/ = SubResource("AnimationLibrary_4u2pf")
 
 [node name="Lazer" type="MeshInstance3D" parent="." unique_id=695716720]

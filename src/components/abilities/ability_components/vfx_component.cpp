@@ -1,6 +1,9 @@
 #include "vfx_component.hpp"
 
+#include <godot_cpp/classes/animation_library.hpp>
+#include <godot_cpp/classes/animation_player.hpp>
 #include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/variant/variant.hpp>
@@ -84,8 +87,6 @@ void VFXComponent::_ready() {
   }
 
   // Hide VFX template children — they're just templates for duplication
-  DBG_INFO("VFXComponent",
-           "Ready: " + String::num(get_child_count()) + " children");
   for (int i = 0; i < get_child_count(); i++) {
     Node3D* child = Object::cast_to<Node3D>(get_child(i));
     if (child != nullptr) {
@@ -155,15 +156,8 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
 
   // Find and duplicate the VFX template (first Node3D child)
   godot::Node* template_node = nullptr;
-  DBG_DEBUG("VFXComponent",
-            "Looking for template among " +
-                String::num(get_child_count()) + " children");
   for (int i = 0; i < get_child_count(); i++) {
-    godot::Node* raw_child = get_child(i);
-    DBG_DEBUG("VFXComponent",
-              "  Child " + String::num(i) + ": " + raw_child->get_name() +
-                  " class=" + raw_child->get_class());
-    Node3D* child = Object::cast_to<Node3D>(raw_child);
+    Node3D* child = Object::cast_to<Node3D>(get_child(i));
     if (child != nullptr) {
       template_node = child;
       break;
@@ -196,6 +190,35 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
     vfx_3d->set_global_position(pos);
     if (vfx_scale != 1.0f) {
       vfx_3d->set_scale(Vector3(vfx_scale, vfx_scale, vfx_scale));
+    }
+  }
+
+  // Start any AnimationPlayer on the spawned instance
+  if (vfx_instance != nullptr) {
+    for (int i = 0; i < vfx_instance->get_child_count(); i++) {
+      godot::AnimationPlayer* ap =
+          Object::cast_to<godot::AnimationPlayer>(vfx_instance->get_child(i));
+      if (ap != nullptr) {
+        // Play the first animation in the first library
+        godot::TypedArray<godot::StringName> libs = ap->get_animation_library_list();
+        for (int l = 0; l < libs.size(); l++) {
+          godot::Ref<godot::AnimationLibrary> lib =
+              ap->get_animation_library(libs[l]);
+          if (lib.is_valid()) {
+            godot::TypedArray<godot::StringName> anims =
+                lib->get_animation_list();
+            for (int a = 0; a < anims.size(); a++) {
+              godot::String anim_name = anims[a];
+              if (anim_name != "RESET") {
+                ap->play(anim_name);
+                break;
+              }
+            }
+          }
+          break;
+        }
+        break;
+      }
     }
   }
 
