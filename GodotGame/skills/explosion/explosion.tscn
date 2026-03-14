@@ -25,6 +25,7 @@ cooldown = 10.0
 [node name="VFXComponent" type="VFXComponent" parent="."]
 trigger_signal = "activated"
 position_mode = 2
+scale = 8.0
 vfx_signal = "execute"
 emit_execute_on_vfx_signal = true
 

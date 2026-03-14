@@ -84,6 +84,8 @@ void VFXComponent::_ready() {
   }
 
   // Hide VFX template children — they're just templates for duplication
+  DBG_INFO("VFXComponent",
+           "Ready: " + String::num(get_child_count()) + " children");
   for (int i = 0; i < get_child_count(); i++) {
     Node3D* child = Object::cast_to<Node3D>(get_child(i));
     if (child != nullptr) {
@@ -153,8 +155,15 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
 
   // Find and duplicate the VFX template (first Node3D child)
   godot::Node* template_node = nullptr;
+  DBG_DEBUG("VFXComponent",
+            "Looking for template among " +
+                String::num(get_child_count()) + " children");
   for (int i = 0; i < get_child_count(); i++) {
-    Node3D* child = Object::cast_to<Node3D>(get_child(i));
+    godot::Node* raw_child = get_child(i);
+    DBG_DEBUG("VFXComponent",
+              "  Child " + String::num(i) + ": " + raw_child->get_name() +
+                  " class=" + raw_child->get_class());
+    Node3D* child = Object::cast_to<Node3D>(raw_child);
     if (child != nullptr) {
       template_node = child;
       break;
@@ -180,11 +189,14 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
 
   world->add_child(vfx_instance);
 
-  // Position it
+  // Position and scale it
   Node3D* vfx_3d = Object::cast_to<Node3D>(vfx_instance);
   if (vfx_3d != nullptr) {
     vfx_3d->set_visible(true);
     vfx_3d->set_global_position(pos);
+    if (vfx_scale != 1.0f) {
+      vfx_3d->set_scale(Vector3(vfx_scale, vfx_scale, vfx_scale));
+    }
   }
 
   // If we need to listen for a VFX animation signal, connect to the spawned instance
