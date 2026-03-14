@@ -46,13 +46,6 @@ void VFXComponent::_bind_methods() {
                             "At Caster,At Target,At Position"),
                "set_position_mode", "get_position_mode");
 
-  ClassDB::bind_method(D_METHOD("set_scale", "scale"),
-                       &VFXComponent::set_scale);
-  ClassDB::bind_method(D_METHOD("get_scale"),
-                       &VFXComponent::get_scale);
-  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "scale"),
-               "set_scale", "get_scale");
-
   ClassDB::bind_method(D_METHOD("set_vfx_signal", "signal"),
                        &VFXComponent::set_vfx_signal);
   ClassDB::bind_method(D_METHOD("get_vfx_signal"),
@@ -146,11 +139,6 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
       break;
   }
 
-  // Build params
-  Dictionary params;
-  params["position"] = pos;
-  params["scale"] = vfx_scale;
-
   // Store context for VFX signal forwarding
   last_context = context;
 
@@ -183,14 +171,11 @@ void VFXComponent::_on_triggered(const Ref<RefCounted>& context) {
 
   world->add_child(vfx_instance);
 
-  // Position and scale it
+  // Position the VFX (scale comes from the template scene itself)
   Node3D* vfx_3d = Object::cast_to<Node3D>(vfx_instance);
   if (vfx_3d != nullptr) {
     vfx_3d->set_visible(true);
     vfx_3d->set_global_position(pos);
-    if (vfx_scale != 1.0f) {
-      vfx_3d->set_scale(Vector3(vfx_scale, vfx_scale, vfx_scale));
-    }
   }
 
   // Start any AnimationPlayer on the spawned instance
@@ -257,9 +242,6 @@ String VFXComponent::get_trigger_signal() const { return trigger_signal; }
 
 void VFXComponent::set_position_mode(int mode) { position_mode = mode; }
 int VFXComponent::get_position_mode() const { return position_mode; }
-
-void VFXComponent::set_scale(float s) { vfx_scale = s; }
-float VFXComponent::get_scale() const { return vfx_scale; }
 
 void VFXComponent::set_vfx_signal(const String& signal) { vfx_signal = signal; }
 String VFXComponent::get_vfx_signal() const { return vfx_signal; }

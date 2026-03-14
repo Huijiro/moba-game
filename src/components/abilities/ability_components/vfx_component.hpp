@@ -39,9 +39,6 @@ class VFXComponent : public AbilitySubcomponent {
   void set_position_mode(int mode);
   int get_position_mode() const;
 
-  void set_scale(float s);
-  float get_scale() const;
-
   void set_vfx_signal(const godot::String& signal);
   godot::String get_vfx_signal() const;
 
@@ -54,7 +51,6 @@ class VFXComponent : public AbilitySubcomponent {
  private:
   godot::String trigger_signal = "execute";
   int position_mode = AT_CASTER;
-  float vfx_scale = 1.0f;
 
   /// Name of the VFX animation signal to listen for (e.g. "explosion_damage").
   /// When the VFX emits this signal, and emit_execute_on_vfx_signal is true,

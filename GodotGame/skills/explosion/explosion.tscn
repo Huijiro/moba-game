@@ -11,27 +11,26 @@ ability_name = "Explosion"
 description = "Cast an explosion at target location dealing AoE damage"
 icon = ExtResource("1_7mily")
 
-[node name="InstantCastComponent" type="InstantCastComponent" parent="."]
+[node name="InstantCastComponent" type="InstantCastComponent" parent="." unique_id=1143973591]
 emit_execute = false
 
-[node name="PointTargetingComponent" type="PointTargetingComponent" parent="."]
-max_range = 20.0
+[node name="PointTargetingComponent" type="PointTargetingComponent" parent="." unique_id=242547580]
 
-[node name="AoEDamageComponent" type="AoEDamageComponent" parent="."]
+[node name="AoEDamageComponent" type="AoEDamageComponent" parent="." unique_id=1223358766]
 base_damage = 60.0
-damage_caster = false
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="AoEDamageComponent"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AoEDamageComponent" unique_id=530858813]
 shape = SubResource("SphereShape3D_aoe")
 
-[node name="CooldownComponent" type="CooldownComponent" parent="."]
+[node name="CooldownComponent" type="CooldownComponent" parent="." unique_id=1092372031]
 cooldown = 10.0
 
-[node name="VFXComponent" type="VFXComponent" parent="."]
+[node name="VFXComponent" type="VFXComponent" parent="." unique_id=1558344250]
 trigger_signal = "activated"
 position_mode = 2
 scale = 8.0
 vfx_signal = "execute"
 emit_execute_on_vfx_signal = true
 
-[node name="explosion" parent="VFXComponent" instance=ExtResource("2_6bo6f")]
+[node name="explosion" parent="VFXComponent" unique_id=1913221453 instance=ExtResource("2_6bo6f")]
+transform = Transform3D(8, 0, 0, 0, 8, 0, 0, 0, 8, 0, 0, 0)
