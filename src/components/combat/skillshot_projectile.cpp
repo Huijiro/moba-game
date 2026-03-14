@@ -49,6 +49,11 @@ void SkillshotProjectile::_bind_methods() {
                "get_hit_radius");
 }
 
+void SkillshotProjectile::_ready() {
+  // Don't process until setup() is called — prevents template from self-destructing
+  set_physics_process(false);
+}
+
 void SkillshotProjectile::_physics_process(double delta) {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
@@ -132,6 +137,8 @@ void SkillshotProjectile::setup(Unit* caster_unit,
   } else {
     direction = Vector3(0, 0, -1);
   }
+
+  set_physics_process(true);
 
   DBG_INFO("SkillshotProjectile",
            "Setup: speed=" + godot::String::num(speed) +

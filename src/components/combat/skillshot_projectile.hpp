@@ -34,6 +34,7 @@ class SkillshotProjectile : public Node3D {
   SkillshotProjectile();
   ~SkillshotProjectile();
 
+  void _ready() override;
   void _physics_process(double delta) override;
 
   /// Setup projectile with travel parameters only.

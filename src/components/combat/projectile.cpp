@@ -29,6 +29,10 @@ void Projectile::_bind_methods() {
                "get_hit_radius");
 }
 
+void Projectile::_ready() {
+  set_physics_process(false);
+}
+
 void Projectile::_physics_process(double delta) {
   if (Engine::get_singleton()->is_editor_hint()) {
     return;
@@ -90,6 +94,8 @@ void Projectile::setup(Unit* attacker_unit,
       direction = to_target / distance;
     }
   }
+
+  set_physics_process(true);
 }
 
 void Projectile::set_hit_radius(float radius) {

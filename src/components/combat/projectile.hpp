@@ -28,6 +28,7 @@ class Projectile : public Node3D {
   Projectile();
   ~Projectile();
 
+  void _ready() override;
   void _physics_process(double delta) override;
 
   // Setup projectile with attacker, target, damage, and speed
